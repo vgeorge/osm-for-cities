@@ -5,10 +5,10 @@ const { parseISO, addDays, format, formatISO } = require("date-fns");
 
 async function main() {
   // Init repository path
+  // await fs.remove(contentPath);
   await fs.ensureDir(contentPath);
 
-  const git = simpleGit({ baseDir: contentPath });
-  const status = await git.init();
+  const git = simpleGit({ baseDir: contentPath }).init();
 
   // Get next day to update
   let nextDay;
@@ -25,13 +25,13 @@ async function main() {
   });
 
   const nextDayISO = nextDay.toISOString();
-  await git()
+  await git
     .env({
       GIT_COMMITTER_DATE: nextDayISO,
       GIT_AUTHOR_DATE: nextDayISO,
     })
     .add("./*")
-    .commit(`Status of ${nextDay}`);
+    .commit(`Status of ${nextDayISO}`);
 }
 
 main();
