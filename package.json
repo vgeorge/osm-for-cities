@@ -4,13 +4,15 @@
   "description": "Track OSM datasets history with git",
   "main": "index.js",
   "scripts": {
-    "u": "node index.js"
+    "u": "node index.js",
+    "download-br-areas": "./src/br/areas/download.sh"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "date-fns": "^2.25.0",
     "fs-extra": "^10.0.0",
+    "shp2json": "^1.4.0",
     "simple-git": "^2.46.0"
   }
 }
