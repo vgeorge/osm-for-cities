@@ -25,11 +25,11 @@ yarn install
 
 ## Updating Content
 
-At the moment, Brazil is the only country available.
+At the moment only Brazil is available.
 
 ### Download areas
 
-Brazil extract is split from top to bottom following UF -> microregion -> municipality. Boundaring are from IBGE, which can be downloaded and prepared with:
+Brazil extract is split top to bottom with UF -> microrregion -> municipality. Boundaries area from IBGE, which can be downloaded and prepared with:
 
 ```bash
 yarn download-br-area
