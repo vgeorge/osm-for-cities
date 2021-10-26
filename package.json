@@ -2,7 +2,6 @@
   "name": "osm-git-history",
   "version": "0.0.0",
   "description": "Track OSM datasets history with git",
-  "main": "index.js",
   "scripts": {
     "u": "node index.js",
     "download-br-areas": "./src/br/areas/download.sh"
@@ -10,7 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fast-csv/parse": "^4.3.6",
     "date-fns": "^2.25.0",
+    "esm": "^3.2.25",
+    "execa": "^5.1.1",
     "fs-extra": "^10.0.0",
     "shp2json": "^1.4.0",
     "simple-git": "^2.46.0"
