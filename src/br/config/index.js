@@ -9,6 +9,7 @@ const dataPath = path.join(basePath, "data", "br");
 const dailyDataPath = path.join(tmpDir, "daily");
 const outputPath = path.join(dataPath, "osm");
 const historyPath = path.join(dataPath, "history");
+const osmLatestPath = path.join(dataPath, "osm-latest");
 const areasPath = path.join(dataPath, "areas");
 const osmiumConfigs = path.join(areasPath, "osmium");
 const fullHistoryFile = path.join(historyPath, "brazil-full.osh.pbf");
@@ -28,4 +29,5 @@ module.exports = {
   selectedFeaturesFile,
   tmpDir,
   tmpOsmPath,
+  osmLatestPath,
 };
