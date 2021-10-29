@@ -8,9 +8,16 @@ const { osmLatestPath } = require("../config");
 const execa = require("execa");
 
 /**
- * Scripts to slice a day from OSM history file from Brazil.
+ * Commander program
+ *
+ * Usage: daily-update [options]
+ *
+ * Fetch latest OSM data and update all files
+ *
+ * Options:
+ *   -h, --help  output usage information
  */
-async function main() {
+module.exports = async function dailyUpdate() {
   try {
     // Create required folders
     await fs.ensureDir(osmLatestPath);
@@ -78,5 +85,4 @@ async function main() {
   } catch (error) {
     console.log(error);
   }
-}
-main();
+};
