@@ -21,6 +21,7 @@ module.exports = {
   contentPath,
   countryDailyPath,
   dailyDataPath,
+  dataPath,
   emptyPbfSize: 105,
   fullHistoryFile,
   osmiumConfigs,
