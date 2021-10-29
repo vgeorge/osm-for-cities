@@ -19,5 +19,8 @@
     "node-fetch": "^2.6.2",
     "shp2json": "^1.4.0",
     "simple-git": "^2.46.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.1.0"
   }
 }
