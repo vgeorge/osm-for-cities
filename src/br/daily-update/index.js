@@ -48,7 +48,7 @@ async function main() {
       }
 
       // Remove old file
-      // await fs.remove(osmLatestFile);
+      await fs.remove(osmLatestFile);
     }
 
     // Download latest
