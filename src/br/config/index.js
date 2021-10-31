@@ -3,39 +3,51 @@ const path = require("path");
 const basePath = path.join(__dirname, "..", "..", "..");
 const configPath = path.join(__dirname);
 const contentPath = path.join(basePath, "content");
-const tmpDir = path.join("/", "tmp", "osm-br-extracts");
-const tmpOsmPath = path.join(tmpDir, "osm");
 const dataPath = path.join(basePath, "data", "br");
-const dailyDataPath = path.join(tmpDir, "daily");
-const outputPath = path.join(dataPath, "osm");
 const historyPath = path.join(dataPath, "history");
-const osmPath = path.join(dataPath, "osm-latest");
-const areasPath = path.join(dataPath, "areas");
-const osmiumConfigs = path.join(areasPath, "osmium");
 const fullHistoryFile = path.join(historyPath, "brazil-full.osh.pbf");
 const selectedFeaturesFile = path.join(historyPath, "brazil-selected.osh.pbf");
-const countryDailyPath = path.join(dailyDataPath, "br");
+
+// AREAS
+const areasPath = path.join(dataPath, "areas");
+const areasPolysPath = path.join(areasPath, "poly");
+const areasUfsPolyPath = path.join(areasPolysPath, "ufs");
+const areasMicroregionsPolyPath = path.join(areasPolysPath, "microregions");
+
+// OSMIUM
+const osmiumPath = path.join(dataPath, "osmium");
+const osmiumUfConfigFile = path.join(osmiumPath, "ufs.conf");
+const osmiumMicroregionConfigPath = path.join(osmiumPath, "microregions");
+const osmiumMunicipalitiesConfigPath = path.join(osmiumPath, "municipalities");
+
+// OSM Data
+const osmPath = path.join(dataPath, "osm");
 const osmLatestFile = path.join(osmPath, "brazil-internal.osh.pbf");
-const osmSelectedTagsFile = path.join(
-  osmPath,
-  "brazil-selected-tags.osh.pbf"
-);
+const osmSelectedTagsFile = path.join(osmPath, "brazil-selected-tags.osh.pbf");
+const osmCurrentDayPath = path.join(osmPath, "current-day");
+const osmCurrentDayUfsPath = path.join(osmCurrentDayPath, "ufs");
+const osmCurrentDayMicroregionsPath = path.join(osmCurrentDayPath, "microregions");
+const osmCurrentDayMunicipalitiesPath = path.join(osmCurrentDayPath, "municipalities");
 
 module.exports = {
+  areasPath,
+  areasMicroregionsPolyPath,
+  areasPolysPath,
+  areasUfsPolyPath,
   configPath,
   contentPath,
-  countryDailyPath,
-  dailyDataPath,
   dataPath,
-  emptyPbfSize: 105,
   fullHistoryFile,
-  osmiumConfigs,
-  outputPath,
-  areasPath,
-  selectedFeaturesFile,
-  tmpDir,
-  tmpOsmPath,
-  osmPath,
+  osmCurrentDayPath,
+  osmCurrentDayUfsPath,
+  osmCurrentDayMicroregionsPath,
+  osmCurrentDayMunicipalitiesPath,
+  osmiumMunicipalitiesConfigPath,
+  osmiumMicroregionConfigPath,
+  osmiumPath,
+  osmiumUfConfigFile,
   osmLatestFile,
+  osmPath,
   osmSelectedTagsFile,
+  selectedFeaturesFile,
 };

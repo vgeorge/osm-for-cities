@@ -1,8 +1,8 @@
 const path = require("path");
 const fs = require("fs-extra");
 
-const { areasPath } = require("../config");
-const polyPath = path.join(areasPath, "poly");
+const { areasPath, areasPolysPath } = require("./config");
+const { logger } = require("../utils");
 
 function parsePolygon(id, coordinates) {
   const poly = [`area-${id}`];
@@ -22,7 +22,7 @@ async function generatePoly(sourceFile, options) {
 
   const { features } = await fs.readJSON(sourceFile);
 
-  await fs.ensureDir(path.join(polyPath, areaType));
+  await fs.ensureDir(path.join(areasPolysPath, areaType));
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
@@ -46,29 +46,30 @@ async function generatePoly(sourceFile, options) {
     poly.push("END");
 
     // Write file
-    const polyFilename = `${polyPath}/${areaType}/${id}.poly`;
+    const polyFilename = `${areasPolysPath}/${areaType}/${id}.poly`;
     await fs.writeFile(polyFilename, poly.join("\n"));
   }
 }
 
-async function main() {
+module.exports = async function buildPolys() {
+  // Clear directory
+  await fs.remove(areasPolysPath);
+
   // Parse UFs
-  console.log("Generating polys for UFs...");
+  logger("Generating poly files for UFs...");
   await generatePoly(`${areasPath}/geojson/BR_UF_2020.geojson`, {
     areaType: "ufs",
   });
 
   // Parse microregioes
-  console.log("Generating polys for Microregioes...");
+  logger("Generating poly files for microregions...");
   await generatePoly(`${areasPath}/geojson/BR_Microrregioes_2020.geojson`, {
-    areaType: "microregioes",
+    areaType: "microregions",
   });
 
   // Parse municipios
-  console.log("Generating polys for Municipios...");
+  logger("Generating poly files for municipalities...");
   await generatePoly(`${areasPath}/geojson/BR_Municipios_2020.geojson`, {
-    areaType: "municipios",
+    areaType: "municipalities",
   });
-}
-
-main();
+};

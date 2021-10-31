@@ -1,10 +1,10 @@
 const fs = require("fs-extra");
 const fetch = require("node-fetch");
-const execa = require("execa");
 const { formatISO } = require("date-fns");
-const { osmPath, osmLatestFile } = require("../config");
+const { osmPath, osmLatestFile } = require("./config");
+const { logger, exec } = require("../utils");
 
-module.exports = async function downloadLatest() {
+module.exports = async function downloadHistory() {
   // Create required folders
   await fs.ensureDir(osmPath);
 
@@ -29,7 +29,7 @@ module.exports = async function downloadLatest() {
 
     // Bypass updates if no changes are detected
     if (osmLatestTimestamp.getTime() === osmLatestRemoteTimestamp.getTime()) {
-      console.log(
+      logger(
         `Latest OSM file has no updates (${formatISO(
           osmLatestRemoteTimestamp
         )}).`
@@ -41,8 +41,8 @@ module.exports = async function downloadLatest() {
     await fs.remove(osmLatestFile);
   }
 
-  console.log("Downloading latest, this may take a while...");
-  const curlProcess = execa("curl", [
+  logger("Downloading latest, this may take a while...");
+  await exec("curl", [
     "https://osm-internal.download.geofabrik.de/south-america/brazil-internal.osh.pbf",
     "--retry",
     "5",
@@ -54,7 +54,4 @@ module.exports = async function downloadLatest() {
     "--output",
     `${osmLatestFile}`,
   ]);
-  curlProcess.stdout.pipe(process.stdout);
-  curlProcess.stderr.pipe(process.stdout);
-  await curlProcess;
 };
