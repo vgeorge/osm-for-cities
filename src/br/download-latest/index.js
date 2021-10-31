@@ -1,16 +1,12 @@
-const path = require("path");
 const fs = require("fs-extra");
 const fetch = require("node-fetch");
 const execa = require("execa");
 const { formatISO } = require("date-fns");
-const { osmLatestPath } = require("../config");
+const { osmPath, osmLatestFile } = require("../config");
 
 module.exports = async function downloadLatest() {
   // Create required folders
-  await fs.ensureDir(osmLatestPath);
-
-  // Local filename for OSM latest
-  const osmLatestFile = path.join(osmLatestPath, "brazil-internal.osh.pbf");
+  await fs.ensureDir(osmPath);
 
   // Check if update is necessary
   if (await fs.pathExists(osmLatestFile)) {

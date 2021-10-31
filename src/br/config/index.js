@@ -9,12 +9,17 @@ const dataPath = path.join(basePath, "data", "br");
 const dailyDataPath = path.join(tmpDir, "daily");
 const outputPath = path.join(dataPath, "osm");
 const historyPath = path.join(dataPath, "history");
-const osmLatestPath = path.join(dataPath, "osm-latest");
+const osmPath = path.join(dataPath, "osm-latest");
 const areasPath = path.join(dataPath, "areas");
 const osmiumConfigs = path.join(areasPath, "osmium");
 const fullHistoryFile = path.join(historyPath, "brazil-full.osh.pbf");
 const selectedFeaturesFile = path.join(historyPath, "brazil-selected.osh.pbf");
 const countryDailyPath = path.join(dailyDataPath, "br");
+const osmLatestFile = path.join(osmPath, "brazil-internal.osh.pbf");
+const osmSelectedTagsFile = path.join(
+  osmPath,
+  "brazil-selected-tags.osh.pbf"
+);
 
 module.exports = {
   configPath,
@@ -30,5 +35,7 @@ module.exports = {
   selectedFeaturesFile,
   tmpDir,
   tmpOsmPath,
-  osmLatestPath,
+  osmPath,
+  osmLatestFile,
+  osmSelectedTagsFile,
 };
