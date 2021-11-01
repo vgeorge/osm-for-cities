@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs-extra");
 
-const { areasPath, areasPolysPath } = require("./config");
+const { areasPath, areasPolysPath } = require("./config/paths");
 const { logger } = require("../utils");
 
 function parsePolygon(id, coordinates) {

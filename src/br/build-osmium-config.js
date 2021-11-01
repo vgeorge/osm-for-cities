@@ -11,7 +11,7 @@ const {
   areasUfsPolyPath,
   areasMicroregionsPolyPath,
   osmiumMicroregionConfigPath,
-} = require("./config");
+} = require("./config/paths");
 const { loadMunicipalities } = require("./daily-update/helpers/load-csv");
 
 /**

@@ -1,7 +1,7 @@
 const fs = require("fs-extra");
 const fetch = require("node-fetch");
 const { formatISO } = require("date-fns");
-const { osmPath, osmLatestFile } = require("./config");
+const { osmPath, osmLatestFile } = require("./config/paths");
 const { logger, exec } = require("../utils");
 
 module.exports = async function downloadHistory() {

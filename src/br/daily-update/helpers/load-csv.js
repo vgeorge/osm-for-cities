@@ -1,6 +1,6 @@
 const path = require("path");
 const csv = require("@fast-csv/parse");
-const { configPath } = require("../../config");
+const { configPath } = require("../../config/paths");
 
 // Constants
 const MUNICIPALITIES_CSV_PATH = path.join(configPath, "municipios.csv");
