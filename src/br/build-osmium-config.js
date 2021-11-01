@@ -11,6 +11,7 @@ const {
   areasUfsPolyPath,
   areasMicroregionsPolyPath,
   osmiumMicroregionConfigPath,
+  areasMunicipalitiesPolyPath,
 } = require("./config/paths");
 const { loadMunicipalities } = require("./daily-update/helpers/load-csv");
 
@@ -106,7 +107,7 @@ async function buildMunicipalitiesConfig() {
     acc[mrId] = (acc[mrId] || []).concat({
       output: `${mnId}.osm.pbf`,
       polygon: {
-        file_name: `${path.join(areasMicroregionsPolyPath, mnId)}.poly`,
+        file_name: `${path.join(areasMunicipalitiesPolyPath, mnId)}.poly`,
         file_type: "poly",
       },
     });
