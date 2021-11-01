@@ -36,6 +36,10 @@ const osmCurrentDayMunicipalitiesPath = path.join(
   osmCurrentDayPath,
   "municipalities"
 );
+const osmCurrentDayDatasetsPath = path.join(
+  osmCurrentDayPath,
+  "datasets"
+);
 
 module.exports = {
   areasPath,
@@ -52,6 +56,7 @@ module.exports = {
   osmCurrentDayUfsPath,
   osmCurrentDayMicroregionsPath,
   osmCurrentDayMunicipalitiesPath,
+  osmCurrentDayDatasetsPath,
   osmiumMunicipalitiesConfigPath,
   osmiumMicroregionConfigPath,
   osmiumPath,

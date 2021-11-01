@@ -4,8 +4,6 @@ const path = require("path");
 const {
   dataPath,
   osmSelectedTagsFile,
-  osmPath,
-  osmLatestFile,
   osmiumUfConfigFile,
   osmCurrentDayFile,
   osmCurrentDayUfsPath,
@@ -13,18 +11,21 @@ const {
   osmCurrentDayMicroregionsPath,
   osmiumMunicipalitiesConfigPath,
   osmCurrentDayMunicipalitiesPath,
+  osmCurrentDayDatasetsPath,
 } = require("../config/paths");
 const datasets = require("../config/datasets.json");
 const { parseISO, addDays } = require("date-fns");
-const { logger, exec, filterDay, pbfIsEmpty } = require("../../utils");
+const { logger, exec, pbfIsEmpty } = require("../../utils");
 const execa = require("execa");
-const { default: nextDay } = require("date-fns/nextDay");
+const { loadMunicipalities } = require("./helpers/load-csv");
 
 const gitPath = path.join(dataPath, "git");
 const statsFile = path.join(gitPath, "stats.json");
-const initialDate = "2021-10-01Z";
+const initialDate = "2021-01-01Z";
 
-module.exports = async function dailyUpdate() {
+require("events").EventEmitter.defaultMaxListeners = 20;
+
+module.exports = async function dailyUpdate(options) {
   // Init repository path
   await fs.ensureDir(gitPath);
 
@@ -35,26 +36,13 @@ module.exports = async function dailyUpdate() {
   if (!(await fs.pathExists(statsFile))) {
     currentDay = parseISO(initialDate);
   } else {
-    const { lastUpdated } = await fs.readJSON(statsFile);
-    currentDay = addDays(parseISO(lastUpdated), 1);
+    const { updatedAt } = await fs.readJSON(statsFile);
+    currentDay = addDays(parseISO(updatedAt), 1);
   }
 
   const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
 
-  logger("Extracting target tags from history file...");
-  const osmiumFilters = datasets.map((d) => d.osmium_filter);
-  await exec("osmium", [
-    "tags-filter",
-    osmLatestFile,
-    "-v",
-    "--overwrite",
-    ...osmiumFilters,
-    "-o",
-    osmSelectedTagsFile,
-  ]);
-
-  logger("Filtering current date...");
-  // Execute filter
+  logger(`Filtering: ${currentDayISO}`);
   await exec("osmium", [
     "time-filter",
     osmSelectedTagsFile,
@@ -70,6 +58,7 @@ module.exports = async function dailyUpdate() {
   }
 
   // Clear UF path and split country file
+  logger(`Splitting UFs...`);
   await fs.remove(osmCurrentDayUfsPath);
   await fs.ensureDir(osmCurrentDayUfsPath);
   await exec(`osmium`, [
@@ -81,7 +70,7 @@ module.exports = async function dailyUpdate() {
   ]);
 
   // Extract microregioes
-  logger("Splitting into microregions...");
+  logger("Splitting microregions...");
   const osmiumMicroregionsFiles = await fs.readdir(osmiumMicroregionConfigPath);
   await fs.remove(osmCurrentDayMicroregionsPath);
   await fs.ensureDir(osmCurrentDayMicroregionsPath);
@@ -89,7 +78,6 @@ module.exports = async function dailyUpdate() {
     osmiumMicroregionsFiles.map((f) => {
       return (async () => {
         const ufId = f.split(".")[0];
-        console.time(`    ${ufId} parsed in`); // eslint-disable-line
         await exec(`osmium`, [
           `extract`,
           `-c`,
@@ -97,12 +85,11 @@ module.exports = async function dailyUpdate() {
           path.join(osmCurrentDayUfsPath, `${ufId}.osm.pbf`),
           `--overwrite`,
         ]);
-        console.timeEnd(`    ${ufId} parsed in`); // eslint-disable-line
       })();
     })
   );
 
-  // Clear microregion empty files
+  // // Clear microregion empty files
   logger("Clearing empty microregion files...");
   await Promise.all(
     (
@@ -113,7 +100,7 @@ module.exports = async function dailyUpdate() {
     })
   );
 
-  logger("Splitting into municipalities...");
+  logger("Splitting municipalities...");
   const osmiumMunicipalitiesFiles = await fs.readdir(
     osmiumMunicipalitiesConfigPath
   );
@@ -155,19 +142,107 @@ module.exports = async function dailyUpdate() {
     })
   );
 
+  /**
+   * Split municipalities in datasets
+   */
+  logger(`Updating GeoJSON files...`);
+
+  // Clear OSM datasets
+  await fs.emptyDir(osmCurrentDayDatasetsPath);
+
+  // Update GeoJSON files
+  const municipalities = await loadMunicipalities();
+  for (let i = 0; i < municipalities.length; i++) {
+    const {
+      municipio: municipalityId,
+      slug_name: municipalitySlug,
+      uf_code: municipalityUf,
+    } = municipalities[i];
+    const municipalityFile = path.join(
+      osmCurrentDayMunicipalitiesPath,
+      `${municipalityId}.osm.pbf`
+    );
+
+    // Bypass if municipality is empty
+    if (!(await fs.pathExists(municipalityFile))) {
+      continue;
+    }
+
+    // Extract datasets
+    await Promise.all(
+      datasets.map(async (d) => {
+        const datasetFilePath = path.join(
+          osmCurrentDayDatasetsPath,
+          `${municipalityId}-${d.id}.osm.pbf`
+        );
+
+        await exec(
+          "osmium",
+          [
+            "tags-filter",
+            municipalityFile,
+            "-v",
+            "--overwrite",
+            d.osmium_filter,
+            "-o",
+            datasetFilePath,
+          ],
+          { silent: true }
+        );
+
+        if (!(await pbfIsEmpty(datasetFilePath))) {
+          const geojsonFile = path.join(
+            gitPath,
+            `${municipalityUf.toLowerCase()}-${municipalitySlug}-${
+              d.id
+            }.geojson`
+          );
+
+          const { stdout: geojsonString } = await execa(
+            `./node_modules/.bin/osmtogeojson ${datasetFilePath}`,
+            { shell: true }
+          );
+
+          const geojson = JSON.parse(geojsonString);
+
+          await fs.writeJSON(
+            geojsonFile,
+            {
+              type: "FeatureCollection",
+              features: geojson.features.map((f) => {
+                // Strip user data
+                const { user, uid, ...clearedProperties } = f.properties;
+                return {
+                  ...f,
+                  properties: clearedProperties,
+                };
+              }),
+            },
+            { spaces: 2 }
+          );
+        }
+      })
+    );
+  }
+
   // Persist last updated day
-  // await fs.writeJSON(statsFile, {
-  //   lastUpdated: nextDay,
-  // });
+  await fs.writeJSON(
+    statsFile,
+    {
+      updatedAt: currentDay,
+    },
+    { spaces: 2 }
+  );
 
-  // const nextDayISO = nextDay.toISOString();
-  // await git
-  //   .env({
-  //     GIT_COMMITTER_DATE: nextDayISO,
-  //     GIT_AUTHOR_DATE: nextDayISO,
-  //   })
-  //   .add("./*")
-  //   .commit(`Status of ${nextDayISO}`);
+  await git
+    .env({
+      GIT_COMMITTER_DATE: currentDayISO,
+      GIT_AUTHOR_DATE: currentDayISO,
+    })
+    .add("./*")
+    .commit(`Status of ${currentDayISO}`);
 
-  // logger(`Updated to ${nextDayISO}`);
+  if (options && options.recursive) {
+    dailyUpdate(options);
+  }
 };

@@ -9,26 +9,13 @@ function logger(message) {
  * Wrapper function to log execa process to stdout
  * @returns
  */
-async function exec(cmd, args) {
+async function exec(cmd, args, options) {
   const execProcess = execa(cmd, args);
-  execProcess.stdout.pipe(process.stdout);
-  execProcess.stderr.pipe(process.stdout);
+  if (!options || !options.silent) {
+    execProcess.stdout.pipe(process.stdout);
+    execProcess.stderr.pipe(process.stdout);
+  }
   return execProcess;
-}
-
-/**
- * Filter day from OSM history file
- */
-async function filterDay(dayIso, sourceFile, destFile) {
-  // Execute filter
-  await exec("osmium", [
-    "time-filter",
-    sourceFile,
-    dayIso,
-    "--overwrite",
-    "-o",
-    destFile,
-  ]);
 }
 
 /**
@@ -42,6 +29,5 @@ async function pbfIsEmpty(pbfPath) {
 module.exports = {
   logger,
   exec,
-  filterDay,
   pbfIsEmpty,
 };
