@@ -211,6 +211,7 @@ module.exports = async function dailyUpdate(options) {
               type: "FeatureCollection",
               features: geojson.features.map((f) => {
                 // Strip user data
+                // eslint-disable-next-line
                 const { user, uid, ...clearedProperties } = f.properties;
                 return {
                   ...f,
