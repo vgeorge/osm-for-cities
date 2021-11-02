@@ -1,5 +1,5 @@
 const { osmLatestFile, osmSelectedTagsFile } = require("./config/paths");
-const { exec } = require("../utils");
+const { exec } = require("../utils/general");
 const datasets = require("./config/datasets.json");
 
 

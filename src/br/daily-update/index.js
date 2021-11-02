@@ -15,7 +15,7 @@ const {
 } = require("../config/paths");
 const datasets = require("../config/datasets.json");
 const { parseISO, addDays } = require("date-fns");
-const { logger, exec, pbfIsEmpty } = require("../../utils");
+const { logger, exec, pbfIsEmpty } = require("../../utils/general");
 const execa = require("execa");
 const { loadMunicipalities } = require("./helpers/load-csv");
 

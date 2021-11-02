@@ -2,9 +2,13 @@ const fs = require("fs-extra");
 const fetch = require("node-fetch");
 const { formatISO } = require("date-fns");
 const { osmPath, osmLatestFile } = require("./config/paths");
-const { logger, exec } = require("../utils");
+const { logger, exec } = require("../utils/general");
+const geofabrikLogin = require("../utils/geofabrik-login");
 
 module.exports = async function downloadHistory() {
+  // Login to geofabrik
+  const authCookie = await geofabrikLogin();
+
   // Create required folders
   await fs.ensureDir(osmPath);
 
@@ -18,7 +22,7 @@ module.exports = async function downloadHistory() {
       "https://osm-internal.download.geofabrik.de/south-america/brazil-internal.osh.pbf",
       {
         headers: {
-          Cookie: `gf_download_oauth="${process.env.GEOFABRIK_COOKIE}"`,
+          Cookie: `gf_download_oauth=${authCookie}`,
         },
       }
     );

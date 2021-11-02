@@ -23,6 +23,10 @@ Install Node modules:
 yarn install
 ```
 
+### Setup OSM access
+
+This project relies on [Geofabrik extracts](https://download.geofabrik.de) to generate datasets and an OpenStreetMap account is needed. Username and password can be passed as environment variables `OSM_USERNAME` and `OSM_PASSWORD` or by add an `.env` at root repository directory based on [.env.example](.env.example).
+
 ## Updating Content
 
 At the moment only Brazil is available.
