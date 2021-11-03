@@ -1,6 +1,7 @@
-const fs = require("fs-extra");
-const path = require("path");
-const {
+import fs from "fs-extra";
+import path from "path";
+import { getMunicipalities, logger } from "../utils/general.js";
+import {
   osmCurrentDayPath,
   osmCurrentDayUfsPath,
   osmCurrentDayMicroregionsPath,
@@ -12,13 +13,13 @@ const {
   areasMicroregionsPolyPath,
   osmiumMicroregionConfigPath,
   areasMunicipalitiesPolyPath,
-} = require("./config/paths");
-const { loadMunicipalities } = require("./daily-update/helpers/load-csv");
+} from "./config/paths.js";
 
 /**
  * Generate configuration files for splitting OSM History file by UFs
  */
 async function buildUfsConfig() {
+  logger("Building UFs Osmium config files...");
   // From the list of poly files available, generate extract configuration
   // pointing to poly and output path.
   const extracts = (await fs.readdir(areasUfsPolyPath))
@@ -33,9 +34,6 @@ async function buildUfsConfig() {
         },
       };
     });
-
-  // Create directory for Osmium configs
-  await fs.ensureDir(osmiumPath);
 
   // Write configuration file
   await fs.writeJSON(
@@ -52,6 +50,7 @@ async function buildUfsConfig() {
  * Generate configuration files for splitting the OSM History file by Microregioes
  */
 async function buildMicroregionsConfig() {
+  logger("Building microregions Osmium config files...");
   // Generate config objects for each UF
   const microregioes = (await fs.readdir(areasMicroregionsPolyPath))
     .filter((f) => f.endsWith(".poly"))
@@ -99,8 +98,9 @@ async function buildMicroregionsConfig() {
  * Generate configuration files for splitting the OSM History file by Microregioes
  */
 async function buildMunicipalitiesConfig() {
+  logger("Building municipalities Osmium config files...");
   // Group municipalities into microregions
-  const municipalities = await loadMunicipalities();
+  const municipalities = await getMunicipalities();
   const municipios = municipalities.reduce((acc, m) => {
     const mnId = m.municipio;
     const mrId = m.microregion;
@@ -149,12 +149,12 @@ async function buildMunicipalitiesConfig() {
   }
 }
 
-module.exports = async function buildOsmiumConfig() {
+export default async function buildOsmiumConfig() {
   // Clear existing configs
-  await fs.remove(osmiumPath);
+  await fs.emptyDir(osmiumPath);
 
   // Build configs
   await buildUfsConfig();
   await buildMicroregionsConfig();
   await buildMunicipalitiesConfig();
-};
+}

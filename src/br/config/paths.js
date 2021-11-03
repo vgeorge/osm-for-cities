@@ -1,68 +1,64 @@
-const path = require("path");
+import * as path from "path";
 
-const basePath = path.join(__dirname, "..", "..", "..");
-const configPath = path.join(__dirname);
-const contentPath = path.join(basePath, "content");
-const dataPath = path.join(basePath, "data", "br");
-const historyPath = path.join(dataPath, "history");
-const fullHistoryFile = path.join(historyPath, "brazil-full.osh.pbf");
-const selectedFeaturesFile = path.join(historyPath, "brazil-selected.osh.pbf");
+const basePath = path.resolve();
 
-// AREAS
-const areasPath = path.join(dataPath, "areas");
-const areasPolysPath = path.join(areasPath, "poly");
-const areasUfsPolyPath = path.join(areasPolysPath, "ufs");
-const areasMicroregionsPolyPath = path.join(areasPolysPath, "microregions");
-const areasMunicipalitiesPolyPath = path.join(areasPolysPath, "municipalities");
+// Data files
+export const municipalitiesCsvFile = path.resolve(
+  "./src/br/config/municipios.csv"
+);
+export const datasetsJsonFile = path.resolve("./src/br/config/datasets.json");
 
-// OSMIUM
-const osmiumPath = path.join(dataPath, "osmium");
-const osmiumUfConfigFile = path.join(osmiumPath, "ufs.conf");
-const osmiumMicroregionConfigPath = path.join(osmiumPath, "microregions");
-const osmiumMunicipalitiesConfigPath = path.join(osmiumPath, "municipalities");
+// Base directories
+export const dataPath = path.join(basePath, "data", "br");
+export const gitPath = path.join(dataPath, "git");
+
+// Areas
+export const areasPath = path.join(dataPath, "areas");
+export const areasPolysPath = path.join(areasPath, "poly");
+export const areasUfsPolyPath = path.join(areasPolysPath, "ufs");
+export const areasMicroregionsPolyPath = path.join(
+  areasPolysPath,
+  "microregions"
+);
+export const areasMunicipalitiesPolyPath = path.join(
+  areasPolysPath,
+  "municipalities"
+);
+
+// Osmium
+export const osmiumPath = path.join(dataPath, "osmium");
+export const osmiumUfConfigFile = path.join(osmiumPath, "ufs.conf");
+export const osmiumMicroregionConfigPath = path.join(
+  osmiumPath,
+  "microregions"
+);
+export const osmiumMunicipalitiesConfigPath = path.join(
+  osmiumPath,
+  "municipalities"
+);
 
 // OSM Data
-const osmPath = path.join(dataPath, "osm");
-const osmLatestFile = path.join(osmPath, "brazil-internal.osh.pbf");
-const osmSelectedTagsFile = path.join(osmPath, "brazil-selected-tags.osh.pbf");
-const osmCurrentDayFile = path.join(osmPath, "brazil-current-day.osm.pbf");
-const osmCurrentDayPath = path.join(osmPath, "current-day");
-const osmCurrentDayUfsPath = path.join(osmCurrentDayPath, "ufs");
-const osmCurrentDayMicroregionsPath = path.join(
+export const osmPath = path.join(dataPath, "osm");
+export const osmLatestFile = path.join(osmPath, "brazil-internal.osh.pbf");
+export const osmSelectedTagsFile = path.join(
+  osmPath,
+  "brazil-selected-tags.osh.pbf"
+);
+export const osmCurrentDayFile = path.join(
+  osmPath,
+  "brazil-current-day.osm.pbf"
+);
+export const osmCurrentDayPath = path.join(osmPath, "current-day");
+export const osmCurrentDayUfsPath = path.join(osmCurrentDayPath, "ufs");
+export const osmCurrentDayMicroregionsPath = path.join(
   osmCurrentDayPath,
   "microregions"
 );
-const osmCurrentDayMunicipalitiesPath = path.join(
+export const osmCurrentDayMunicipalitiesPath = path.join(
   osmCurrentDayPath,
   "municipalities"
 );
-const osmCurrentDayDatasetsPath = path.join(
+export const osmCurrentDayDatasetsPath = path.join(
   osmCurrentDayPath,
   "datasets"
 );
-
-module.exports = {
-  areasPath,
-  areasMicroregionsPolyPath,
-  areasMunicipalitiesPolyPath,
-  areasPolysPath,
-  areasUfsPolyPath,
-  configPath,
-  contentPath,
-  dataPath,
-  fullHistoryFile,
-  osmCurrentDayFile,
-  osmCurrentDayPath,
-  osmCurrentDayUfsPath,
-  osmCurrentDayMicroregionsPath,
-  osmCurrentDayMunicipalitiesPath,
-  osmCurrentDayDatasetsPath,
-  osmiumMunicipalitiesConfigPath,
-  osmiumMicroregionConfigPath,
-  osmiumPath,
-  osmiumUfConfigFile,
-  osmLatestFile,
-  osmPath,
-  osmSelectedTagsFile,
-  selectedFeaturesFile,
-};

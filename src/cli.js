@@ -1,24 +1,16 @@
-require("dotenv").config();
-const program = require("commander");
+import "dotenv/config";
+import fs from "fs-extra";
+import { Command } from "commander/esm.mjs";
+import downloadHistory from "./br/download-history.js";
+import extractSelectedTags from "./br/extract-selected-tags.js";
+import buildOsmiumConfig from "./br/build-osmium-config.js";
+import buildPolys from "./br/build-polys.js";
+import dailyUpdate from "./br/daily-update.js";
 
-const pkg = require("../package.json");
-const buildOsmiumConfig = require("./br/build-osmium-config");
-const buildPolys = require("./br/build-polys");
-const dailyUpdate = require("./br/daily-update");
-const downloadHistory = require("./br/download-history");
-const extractSelectedTags = require("./br/extract-selected-tags");
+const pkg = await fs.readJson("./package.json");
 
+const program = new Command();
 program.description("Mapas Livres CLI").version(pkg.version);
-
-program
-  .command("build-polys")
-  .description("Generate poly files")
-  .action(buildPolys);
-
-program
-  .command("build-osmium-config")
-  .description("Generate configuration files for Osmium")
-  .action(buildOsmiumConfig);
 
 program
   .command("download-history")
@@ -29,6 +21,16 @@ program
   .command("extract-selected-tags")
   .description("Extract selected tags for OSM History")
   .action(extractSelectedTags);
+
+program
+  .command("build-polys")
+  .description("Generate poly files")
+  .action(buildPolys);
+
+program
+  .command("build-osmium-config")
+  .description("Generate configuration files for Osmium")
+  .action(buildOsmiumConfig);
 
 program
   .command("daily-update")

@@ -1,9 +1,10 @@
-const { osmLatestFile, osmSelectedTagsFile } = require("./config/paths");
-const { exec } = require("../utils/general");
-const datasets = require("./config/datasets.json");
+import { osmPath, osmLatestFile, osmSelectedTagsFile } from "./config/paths.js";
+import { exec, getDatasets } from "../utils/general.js";
+import fs from "fs-extra";
 
-
-module.exports = async function extractSelectedTags() {
+export default async function extractSelectedTags() {
+  const datasets = await getDatasets();
+  await fs.ensureDir(osmPath);
   const osmiumFilters = datasets.map((d) => d.osmium_filter);
   await exec("osmium", [
     "tags-filter",
@@ -14,4 +15,4 @@ module.exports = async function extractSelectedTags() {
     "-o",
     osmSelectedTagsFile,
   ]);
-};
+}

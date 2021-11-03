@@ -1,8 +1,8 @@
-const path = require("path");
-const fs = require("fs-extra");
+import * as path from "path";
+import fs from "fs-extra";
 
-const { areasPath, areasPolysPath } = require("./config/paths");
-const { logger } = require("../utils/general");
+import { areasPath, areasPolysPath } from "./config/paths.js";
+import { logger } from "../utils/general.js";
 
 function parsePolygon(id, coordinates) {
   const poly = [`area-${id}`];
@@ -51,9 +51,9 @@ async function generatePoly(sourceFile, options) {
   }
 }
 
-module.exports = async function buildPolys() {
+export default async function buildPolys() {
   // Clear directory
-  await fs.remove(areasPolysPath);
+  await fs.emptyDir(areasPolysPath);
 
   // Parse UFs
   logger("Generating poly files for UFs...");
@@ -72,4 +72,4 @@ module.exports = async function buildPolys() {
   await generatePoly(`${areasPath}/geojson/BR_Municipios_2020.geojson`, {
     areaType: "municipalities",
   });
-};
+}

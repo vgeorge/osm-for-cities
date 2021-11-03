@@ -1,7 +1,9 @@
-const execa = require("execa");
-const fs = require("fs-extra");
+import execa from "execa";
+import fs from "fs-extra";
+import * as csv from "@fast-csv/parse";
+import { datasetsJsonFile, municipalitiesCsvFile } from "../br/config/paths.js";
 
-function logger(message) {
+export function logger(message) {
   console.log(message); // eslint-disable-line no-console
 }
 
@@ -9,7 +11,7 @@ function logger(message) {
  * Wrapper function to log execa process to stdout
  * @returns
  */
-async function exec(cmd, args, options) {
+export async function exec(cmd, args, options) {
   const execProcess = execa(cmd, args);
   if (!options || !options.silent) {
     execProcess.stdout.pipe(process.stdout);
@@ -21,13 +23,28 @@ async function exec(cmd, args, options) {
 /**
  * Verify if PBF file is empty
  */
-async function pbfIsEmpty(pbfPath) {
+export async function pbfIsEmpty(pbfPath) {
   const { size } = await fs.stat(pbfPath);
   return size <= 105;
 }
 
-module.exports = {
-  logger,
-  exec,
-  pbfIsEmpty,
-};
+// Load CSV using a promise
+async function loadCsv(path, options = { headers: true }) {
+  const rows = [];
+  return new Promise((resolve, reject) => {
+    csv
+      .parseFile(path, options)
+      .on("error", (error) => reject(error))
+      .on("data", (row) => rows.push(row))
+      .on("end", () => resolve(rows));
+  });
+}
+
+// Load municipalities
+export async function getMunicipalities() {
+  return await loadCsv(municipalitiesCsvFile);
+}
+
+export async function getDatasets() {
+  return await fs.readJson(datasetsJsonFile);
+}

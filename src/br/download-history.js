@@ -1,11 +1,11 @@
-const fs = require("fs-extra");
-const fetch = require("node-fetch");
-const { formatISO } = require("date-fns");
-const { osmPath, osmLatestFile } = require("./config/paths");
-const { logger, exec } = require("../utils/general");
-const geofabrikLogin = require("../utils/geofabrik-login");
+import fs from "fs-extra";
+import fetch from "node-fetch";
+import { formatISO } from "date-fns";
+import { osmPath, osmLatestFile } from "./config/paths.js";
+import { logger, exec } from "../utils/general.js";
+import geofabrikLogin from "../utils/geofabrik-login.js";
 
-module.exports = async function downloadHistory() {
+export default async function downloadHistory() {
   // Login to geofabrik
   const authCookie = await geofabrikLogin();
 
@@ -58,4 +58,4 @@ module.exports = async function downloadHistory() {
     "--output",
     `${osmLatestFile}`,
   ]);
-};
+}

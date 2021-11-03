@@ -1,8 +1,8 @@
-const fs = require("fs-extra");
-const simpleGit = require("simple-git");
-const path = require("path");
-const {
-  dataPath,
+import fs from "fs-extra";
+import simpleGit from "simple-git";
+import path from "path";
+import {
+  gitPath,
   osmSelectedTagsFile,
   osmiumUfConfigFile,
   osmCurrentDayFile,
@@ -12,20 +12,22 @@ const {
   osmiumMunicipalitiesConfigPath,
   osmCurrentDayMunicipalitiesPath,
   osmCurrentDayDatasetsPath,
-} = require("../config/paths");
-const datasets = require("../config/datasets.json");
-const { parseISO, addDays } = require("date-fns");
-const { logger, exec, pbfIsEmpty } = require("../../utils/general");
-const execa = require("execa");
-const { loadMunicipalities } = require("./helpers/load-csv");
+} from "./config/paths.js";
 
-const gitPath = path.join(dataPath, "git");
+import { parseISO, addDays } from "date-fns";
+import {
+  logger,
+  exec,
+  pbfIsEmpty,
+  getDatasets,
+  getMunicipalities,
+} from "../utils/general.js";
+import execa from "execa";
+
 const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2021-01-01Z";
 
-require("events").EventEmitter.defaultMaxListeners = 20;
-
-module.exports = async function dailyUpdate(options) {
+export default async function dailyUpdate(options) {
   // Init repository path
   await fs.ensureDir(gitPath);
 
@@ -151,7 +153,7 @@ module.exports = async function dailyUpdate(options) {
   await fs.emptyDir(osmCurrentDayDatasetsPath);
 
   // Update GeoJSON files
-  const municipalities = await loadMunicipalities();
+  const municipalities = await getMunicipalities();
   for (let i = 0; i < municipalities.length; i++) {
     const {
       municipio: municipalityId,
@@ -167,6 +169,8 @@ module.exports = async function dailyUpdate(options) {
     if (!(await fs.pathExists(municipalityFile))) {
       continue;
     }
+
+    const datasets = await getDatasets();
 
     // Extract datasets
     await Promise.all(
@@ -246,4 +250,4 @@ module.exports = async function dailyUpdate(options) {
   if (options && options.recursive) {
     dailyUpdate(options);
   }
-};
+}

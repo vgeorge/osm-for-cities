@@ -1,11 +1,11 @@
-const puppeteer = require("puppeteer");
-const { logger } = require("./general");
+import puppeteer from "puppeteer";
+import { logger } from "./general.js";
 
 /**
  * Login to Geofabrik internal server
  * @returns {string} gf_download_oauth
  */
-module.exports = async function geofabrikLogin() {
+export default async function geofabrikLogin() {
   logger("Geofabrik login...");
 
   // Init browser
@@ -57,4 +57,4 @@ module.exports = async function geofabrikLogin() {
   }
 
   return gf_download_oauth_Cookie;
-};
+}
