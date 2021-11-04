@@ -35,8 +35,6 @@ export default async function dailyUpdate(options) {
   // Init repository path
   await fs.ensureDir(gitPath);
 
-  const git = simpleGit({ baseDir: gitPath }).init();
-
   // Get next day to update
   let currentDay;
   if (!(await fs.pathExists(statsFile))) {
@@ -249,11 +247,13 @@ export default async function dailyUpdate(options) {
     { spaces: 2 }
   );
 
-  await git
+  await simpleGit({ baseDir: gitPath })
     .env({
+      GIT_AUTHOR_NAME: "Mapas Livres",
+      GIT_AUTHOR_EMAIL: "https://github.com/mapaslivres",
       GIT_COMMITTER_DATE: currentDayISO,
-      GIT_AUTHOR_DATE: currentDayISO,
     })
+    .init()
     .add("./*")
     .commit(`Status of ${currentDayISO}`);
 
