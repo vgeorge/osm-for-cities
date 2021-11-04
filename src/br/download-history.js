@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import fetch from "node-fetch";
 import { formatISO } from "date-fns";
 import { osmPath, osmLatestFile } from "./config/paths.js";
-import { logger, exec } from "../utils/general.js";
+import { logger, execWithLog } from "../utils/general.js";
 import geofabrikLogin from "../utils/geofabrik-login.js";
 
 export default async function downloadHistory() {
@@ -46,7 +46,7 @@ export default async function downloadHistory() {
   }
 
   logger("Downloading latest, this may take a while...");
-  await exec("curl", [
+  await execWithLog("curl", [
     "https://osm-internal.download.geofabrik.de/south-america/brazil-internal.osh.pbf",
     "--retry",
     "5",

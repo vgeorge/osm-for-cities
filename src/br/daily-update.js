@@ -17,15 +17,19 @@ import {
 import { parseISO, addDays } from "date-fns";
 import {
   logger,
-  exec,
   pbfIsEmpty,
   getDatasets,
   getMunicipalities,
 } from "../utils/general.js";
 import execa from "execa";
+import pLimit from "p-limit";
+const limit = pLimit(10);
 
 const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2021-01-01Z";
+
+// eslint-disable-next-line
+const { time, timeEnd } = console.time;
 
 export default async function dailyUpdate(options) {
   // Init repository path
@@ -45,7 +49,7 @@ export default async function dailyUpdate(options) {
   const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
 
   logger(`Filtering: ${currentDayISO}`);
-  await exec("osmium", [
+  await execa("osmium", [
     "time-filter",
     osmSelectedTagsFile,
     currentDayISO,
@@ -61,38 +65,44 @@ export default async function dailyUpdate(options) {
 
   // Clear UF path and split country file
   logger(`Splitting UFs...`);
+  time("Finished in");
   await fs.remove(osmCurrentDayUfsPath);
   await fs.ensureDir(osmCurrentDayUfsPath);
-  await exec(`osmium`, [
+  await execa(`osmium`, [
     `extract`,
     `-c`,
     osmiumUfConfigFile,
     osmCurrentDayFile,
     `--overwrite`,
   ]);
+  timeEnd("Finished in");
 
   // Extract microregioes
   logger("Splitting microregions...");
   const osmiumMicroregionsFiles = await fs.readdir(osmiumMicroregionConfigPath);
-  await fs.remove(osmCurrentDayMicroregionsPath);
-  await fs.ensureDir(osmCurrentDayMicroregionsPath);
+  await fs.emptyDir(osmCurrentDayMicroregionsPath);
+  time("Finished in");
   await Promise.all(
     osmiumMicroregionsFiles.map((f) => {
-      return (async () => {
+      return limit(async () => {
         const ufId = f.split(".")[0];
-        await exec(`osmium`, [
+        // console.log('start', ufId);
+        await execa(`osmium`, [
           `extract`,
           `-c`,
           path.join(osmiumMicroregionConfigPath, f),
           path.join(osmCurrentDayUfsPath, `${ufId}.osm.pbf`),
           `--overwrite`,
         ]);
-      })();
+        // console.log('end', ufId);
+      });
     })
   );
+  timeEnd("Finished in");
 
-  // // Clear microregion empty files
+  // Clear microregion empty files
   logger("Clearing empty microregion files...");
+  time("Finished in");
   await Promise.all(
     (
       await fs.readdir(osmCurrentDayMicroregionsPath)
@@ -101,6 +111,7 @@ export default async function dailyUpdate(options) {
       return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
     })
   );
+  timeEnd("Finished in");
 
   logger("Splitting municipalities...");
   const osmiumMunicipalitiesFiles = await fs.readdir(
@@ -123,7 +134,7 @@ export default async function dailyUpdate(options) {
 
       // Execute
       return (async () => {
-        await exec(`osmium`, [
+        await execa(`osmium`, [
           `extract`,
           `-c`,
           path.join(osmiumMunicipalitiesConfigPath, mrConf),
@@ -135,6 +146,7 @@ export default async function dailyUpdate(options) {
   );
 
   logger("Clearing empty municipalities files...");
+  time("Finished in");
   await Promise.all(
     (
       await fs.readdir(osmCurrentDayMunicipalitiesPath)
@@ -143,12 +155,13 @@ export default async function dailyUpdate(options) {
       return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
     })
   );
+  timeEnd("Finished in");
 
   /**
    * Split municipalities in datasets
    */
   logger(`Updating GeoJSON files...`);
-
+  time("Finished in");
   // Clear OSM datasets
   await fs.emptyDir(osmCurrentDayDatasetsPath);
 
@@ -180,19 +193,15 @@ export default async function dailyUpdate(options) {
           `${municipalityId}-${d.id}.osm.pbf`
         );
 
-        await exec(
-          "osmium",
-          [
-            "tags-filter",
-            municipalityFile,
-            "-v",
-            "--overwrite",
-            d.osmium_filter,
-            "-o",
-            datasetFilePath,
-          ],
-          { silent: true }
-        );
+        await execa("osmium", [
+          "tags-filter",
+          municipalityFile,
+          "-v",
+          "--overwrite",
+          d.osmium_filter,
+          "-o",
+          datasetFilePath,
+        ]);
 
         if (!(await pbfIsEmpty(datasetFilePath))) {
           const geojsonFile = path.join(
@@ -229,6 +238,7 @@ export default async function dailyUpdate(options) {
       })
     );
   }
+  timeEnd("Finished in");
 
   // Persist last updated day
   await fs.writeJSON(

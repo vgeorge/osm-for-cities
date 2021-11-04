@@ -11,7 +11,7 @@ export function logger(message) {
  * Wrapper function to log execa process to stdout
  * @returns
  */
-export async function exec(cmd, args, options) {
+export async function execWithLog(cmd, args, options) {
   const execProcess = execa(cmd, args);
   if (!options || !options.silent) {
     execProcess.stdout.pipe(process.stdout);
