@@ -17,7 +17,6 @@ import {
 import {
   parseISO,
   addDays,
-  differenceInSeconds,
   differenceInMilliseconds,
 } from "date-fns";
 import {
@@ -28,10 +27,10 @@ import {
 } from "../utils/general.js";
 import execa from "execa";
 import pLimit from "p-limit";
-const limit = pLimit(50);
+const limit = pLimit(20);
 
 const statsFile = path.join(gitPath, "stats.json");
-const initialDate = "2008-01-01Z";
+const initialDate = "2012-01-01Z";
 
 export default async function dailyUpdate(options) {
   const start = Date.now();

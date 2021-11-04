@@ -6,7 +6,7 @@ const basePath = path.resolve();
 export const municipalitiesCsvFile = path.resolve(
   "./src/br/config/municipios.csv"
 );
-export const datasetsJsonFile = path.resolve("./src/br/config/datasets.json");
+export const datasetsCsvFile = path.resolve("./src/br/config/datasets.csv");
 
 // Base directories
 export const dataPath = path.join(basePath, "data", "br");

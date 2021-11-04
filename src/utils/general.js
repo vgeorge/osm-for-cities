@@ -1,7 +1,7 @@
 import execa from "execa";
 import fs from "fs-extra";
 import * as csv from "@fast-csv/parse";
-import { datasetsJsonFile, municipalitiesCsvFile } from "../br/config/paths.js";
+import { datasetsCsvFile, municipalitiesCsvFile } from "../br/config/paths.js";
 
 export function logger(message) {
   console.log(message); // eslint-disable-line no-console
@@ -46,5 +46,5 @@ export async function getMunicipalities() {
 }
 
 export async function getDatasets() {
-  return await fs.readJson(datasetsJsonFile);
+  return await loadCsv(datasetsCsvFile);
 }
