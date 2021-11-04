@@ -23,10 +23,10 @@ import {
 } from "../utils/general.js";
 import execa from "execa";
 import pLimit from "p-limit";
-const limit = pLimit(10);
+const limit = pLimit(50);
 
 const statsFile = path.join(gitPath, "stats.json");
-const initialDate = "2021-01-01Z";
+const initialDate = "2008-01-01Z";
 
 // eslint-disable-next-line
 const { time, timeEnd } = console;
@@ -84,7 +84,6 @@ export default async function dailyUpdate(options) {
     osmiumMicroregionsFiles.map((f) => {
       return limit(async () => {
         const ufId = f.split(".")[0];
-        // console.log('start', ufId);
         await execa(`osmium`, [
           `extract`,
           `-c`,
@@ -92,7 +91,6 @@ export default async function dailyUpdate(options) {
           path.join(osmCurrentDayUfsPath, `${ufId}.osm.pbf`),
           `--overwrite`,
         ]);
-        // console.log('end', ufId);
       });
     })
   );
@@ -165,84 +163,97 @@ export default async function dailyUpdate(options) {
 
   // Update GeoJSON files
   const municipalities = await getMunicipalities();
-  for (let i = 0; i < municipalities.length; i++) {
-    const {
-      municipio: municipalityId,
-      slug_name: municipalitySlug,
-      uf_code: municipalityUf,
-    } = municipalities[i];
-    const municipalityFile = path.join(
-      osmCurrentDayMunicipalitiesPath,
-      `${municipalityId}.osm.pbf`
-    );
+  const datasets = await getDatasets();
 
-    // Bypass if municipality is empty
-    if (!(await fs.pathExists(municipalityFile))) {
-      continue;
-    }
+  await Promise.all(
+    municipalities.map(async (m) =>
+      limit(async () => {
+        const {
+          municipio: municipalityId,
+          slug_name: municipalitySlug,
+          uf_code: municipalityUf,
+        } = m;
 
-    const datasets = await getDatasets();
-
-    // Extract datasets
-    await Promise.all(
-      datasets.map(async (d) => {
-        const datasetFilePath = path.join(
-          osmCurrentDayDatasetsPath,
-          `${municipalityId}-${d.id}.osm.pbf`
+        const municipalityFile = path.join(
+          osmCurrentDayMunicipalitiesPath,
+          `${municipalityId}.osm.pbf`
         );
 
-        await execa("osmium", [
-          "tags-filter",
-          municipalityFile,
-          "-v",
-          "--overwrite",
-          d.osmium_filter,
-          "-o",
-          datasetFilePath,
-        ]);
-
-        if (!(await pbfIsEmpty(datasetFilePath))) {
-          const geojsonFile = path.join(
-            gitPath,
-            `${municipalityUf.toLowerCase()}-${municipalitySlug}-${
-              d.id
-            }.geojson`
-          );
-
-          const { stdout: geojsonString } = await execa(
-            `./node_modules/.bin/osmtogeojson ${datasetFilePath}`,
-            { shell: true }
-          );
-
-          const geojson = JSON.parse(geojsonString);
-
-          await fs.writeJSON(
-            geojsonFile,
-            {
-              type: "FeatureCollection",
-              features: geojson.features.map((f) => {
-                // Strip user data
-                // eslint-disable-next-line
-                const { user, uid, ...clearedProperties } = f.properties;
-                return {
-                  ...f,
-                  properties: clearedProperties,
-                };
-              }),
-            },
-            { spaces: 2 }
-          );
+        // Bypass if municipality is empty
+        if (!(await fs.pathExists(municipalityFile))) {
+          return;
         }
+
+        // Create target geojson path
+        const geojsonPath = path.join(
+          gitPath,
+          municipalityUf,
+          municipalitySlug
+        );
+        await fs.ensureDir(geojsonPath);
+
+        // Extract datasets
+        await Promise.all(
+          datasets.map(async (d) => {
+            const datasetFilePath = path.join(
+              osmCurrentDayDatasetsPath,
+              `${municipalityId}-${d.id}.osm.pbf`
+            );
+
+            await execa("osmium", [
+              "tags-filter",
+              municipalityFile,
+              "-v",
+              "--overwrite",
+              d.osmium_filter,
+              "-o",
+              datasetFilePath,
+            ]);
+
+            if (!(await pbfIsEmpty(datasetFilePath))) {
+              const geojsonFile = path.join(geojsonPath, `${d.id}.geojson`);
+
+              const { stdout: geojsonString } = await execa(
+                `./node_modules/.bin/osmtogeojson ${datasetFilePath}`,
+                { shell: true }
+              );
+
+              const geojson = JSON.parse(geojsonString);
+
+              await fs.writeJSON(
+                geojsonFile,
+                {
+                  type: "FeatureCollection",
+                  features: geojson.features.map((f) => {
+                    // Strip user data
+                    // eslint-disable-next-line
+                    const { user, uid, ...clearedProperties } = f.properties;
+                    return {
+                      ...f,
+                      properties: clearedProperties,
+                    };
+                  }),
+                },
+                { spaces: 2 }
+              );
+            }
+          })
+        );
       })
-    );
-  }
+    )
+  );
   timeEnd("Finished in");
+
+  const totalSizeKb = parseInt(
+    (await execa("du", ["-sk", gitPath])).stdout.split("\t")[0]
+  );
 
   // Persist last updated day
   await fs.writeJSON(
     statsFile,
     {
       updatedAt: currentDay,
+      totalSizeKb,
     },
     { spaces: 2 }
   );
