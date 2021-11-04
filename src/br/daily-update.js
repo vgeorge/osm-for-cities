@@ -29,7 +29,7 @@ const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2021-01-01Z";
 
 // eslint-disable-next-line
-const { time, timeEnd } = console.time;
+const { time, timeEnd } = console;
 
 export default async function dailyUpdate(options) {
   // Init repository path
