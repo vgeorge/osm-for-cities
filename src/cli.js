@@ -6,11 +6,19 @@ import extractSelectedTags from "./br/extract-selected-tags.js";
 import buildOsmiumConfig from "./br/build-osmium-config.js";
 import buildPolys from "./br/build-polys.js";
 import dailyUpdate from "./br/daily-update.js";
+import { gitPath } from "./br/config/paths.js";
 
 const pkg = await fs.readJson("./package.json");
 
 const program = new Command();
 program.description("Mapas Livres CLI").version(pkg.version);
+
+program
+  .command("reset-git")
+  .description("Reset git history ")
+  .action(async () => {
+    await fs.emptyDir(gitPath);
+  });
 
 program
   .command("download-history")
