@@ -14,7 +14,12 @@ import {
   osmCurrentDayDatasetsPath,
 } from "./config/paths.js";
 
-import { parseISO, addDays } from "date-fns";
+import {
+  parseISO,
+  addDays,
+  differenceInSeconds,
+  differenceInMilliseconds,
+} from "date-fns";
 import {
   logger,
   pbfIsEmpty,
@@ -28,10 +33,9 @@ const limit = pLimit(50);
 const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2008-01-01Z";
 
-// eslint-disable-next-line
-const { time, timeEnd } = console;
-
 export default async function dailyUpdate(options) {
+  const start = Date.now();
+
   // Init repository path
   await fs.ensureDir(gitPath);
 
@@ -46,6 +50,7 @@ export default async function dailyUpdate(options) {
 
   const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
 
+  const filteringStart = Date.now();
   logger(`Filtering: ${currentDayISO}`);
   await execa("osmium", [
     "time-filter",
@@ -55,6 +60,10 @@ export default async function dailyUpdate(options) {
     "-o",
     osmCurrentDayFile,
   ]);
+  const filteringDurationMs = differenceInMilliseconds(
+    Date.now(),
+    filteringStart
+  );
 
   if (await pbfIsEmpty(osmCurrentDayFile)) {
     logger(`No data found, skipping ${currentDayISO}`);
@@ -63,7 +72,7 @@ export default async function dailyUpdate(options) {
 
   // Clear UF path and split country file
   logger(`Splitting UFs...`);
-  time("Finished in");
+  const splitUfStart = Date.now();
   await fs.remove(osmCurrentDayUfsPath);
   await fs.ensureDir(osmCurrentDayUfsPath);
   await execa(`osmium`, [
@@ -73,13 +82,13 @@ export default async function dailyUpdate(options) {
     osmCurrentDayFile,
     `--overwrite`,
   ]);
-  timeEnd("Finished in");
+  const splitUfDurationMs = differenceInMilliseconds(Date.now(), splitUfStart);
 
   // Extract microregioes
   logger("Splitting microregions...");
+  const splitMicroregionsStart = Date.now();
   const osmiumMicroregionsFiles = await fs.readdir(osmiumMicroregionConfigPath);
   await fs.emptyDir(osmCurrentDayMicroregionsPath);
-  time("Finished in");
   await Promise.all(
     osmiumMicroregionsFiles.map((f) => {
       return limit(async () => {
@@ -94,11 +103,13 @@ export default async function dailyUpdate(options) {
       });
     })
   );
-  timeEnd("Finished in");
+  const splitMicroregionsDurationMs = differenceInMilliseconds(
+    Date.now(),
+    splitMicroregionsStart
+  );
 
   // Clear microregion empty files
   logger("Clearing empty microregion files...");
-  time("Finished in");
   await Promise.all(
     (
       await fs.readdir(osmCurrentDayMicroregionsPath)
@@ -107,9 +118,9 @@ export default async function dailyUpdate(options) {
       return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
     })
   );
-  timeEnd("Finished in");
 
   logger("Splitting municipalities...");
+  const splitMunicipalitiesStart = Date.now();
   const osmiumMunicipalitiesFiles = await fs.readdir(
     osmiumMunicipalitiesConfigPath
   );
@@ -142,7 +153,6 @@ export default async function dailyUpdate(options) {
   );
 
   logger("Clearing empty municipalities files...");
-  time("Finished in");
   await Promise.all(
     (
       await fs.readdir(osmCurrentDayMunicipalitiesPath)
@@ -151,13 +161,11 @@ export default async function dailyUpdate(options) {
       return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
     })
   );
-  timeEnd("Finished in");
 
   /**
    * Split municipalities in datasets
    */
   logger(`Updating GeoJSON files...`);
-  time("Finished in");
   // Clear OSM datasets
   await fs.emptyDir(osmCurrentDayDatasetsPath);
 
@@ -242,7 +250,10 @@ export default async function dailyUpdate(options) {
       })
     )
   );
-  timeEnd("Finished in");
+  const splitMunicipalitiesDurationMs = differenceInMilliseconds(
+    Date.now(),
+    splitMunicipalitiesStart
+  );
 
   const totalSizeKb = parseInt(
     (await execa("du", ["-sk", gitPath])).stdout.split("\t")[0]
@@ -254,6 +265,11 @@ export default async function dailyUpdate(options) {
     {
       updatedAt: currentDay,
       totalSizeKb,
+      taskDurationMs: differenceInMilliseconds(Date.now(), start),
+      filteringDurationMs,
+      splitMunicipalitiesDurationMs,
+      splitUfDurationMs,
+      splitMicroregionsDurationMs,
     },
     { spaces: 2 }
   );
