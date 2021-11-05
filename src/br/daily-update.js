@@ -30,7 +30,7 @@ import pLimit from "p-limit";
 const limit = pLimit(20);
 
 const statsFile = path.join(gitPath, "stats.json");
-const initialDate = "2012-01-01Z";
+const initialDate = "2021-01-01Z";
 
 export default async function dailyUpdate(options) {
   const start = Date.now();
