@@ -39,6 +39,13 @@ Brazil extract is split top to bottom with UF -> microrregion -> municipality. B
 yarn download-br-area
 ```
 
+## Serve content locally
+
+```bash
+yarn serve
+```
+
+This will start a server at <http://localhost:2000>.
 ## License
 
 [MIT](LICENSE)

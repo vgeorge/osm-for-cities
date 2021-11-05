@@ -4,9 +4,9 @@ const basePath = path.resolve();
 
 // Data files
 export const municipalitiesCsvFile = path.resolve(
-  "./src/br/config/municipios.csv"
+  "./data/br/municipalities.csv"
 );
-export const datasetsCsvFile = path.resolve("./src/br/config/datasets.csv");
+export const datasetsCsvFile = path.resolve("./data/br/datasets.csv");
 
 // Base directories
 export const dataPath = path.join(basePath, "data", "br");

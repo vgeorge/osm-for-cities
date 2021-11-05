@@ -1,4 +1,8 @@
 *.env
 node_modules/
 yarn-error.log
-data/
+data/br/areas
+data/br/git
+data/br/osm
+data/br/osmium
+# data/br
