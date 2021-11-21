@@ -8,6 +8,16 @@ export function logger(message) {
 }
 
 /**
+ * Rounds a number to a specified amount of decimals.
+ *
+ * @param {number} value The value to round
+ * @param {number} decimals The number of decimals to keep. Default to 2
+ */
+export function round(value, decimals = 2) {
+  return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
+}
+
+/**
  * Wrapper function to log execa process to stdout
  * @returns
  */
@@ -46,5 +56,11 @@ export async function getMunicipalities() {
 }
 
 export async function getDatasets() {
-  return await loadCsv(datasetsCsvFile);
+  return (await loadCsv(datasetsCsvFile)).map((d) => {
+    return {
+      ...d,
+      requiredTags: d.required_tags ? d.required_tags.split(",") : [],
+      desiredTags: d.desired_tags ? d.desired_tags.split(",") : [],
+    };
+  });
 }
