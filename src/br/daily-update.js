@@ -26,7 +26,7 @@ import pLimit from "p-limit";
 import computeStats from "./compute-stats.js";
 const limit = pLimit(5);
 
-const statsFile = path.join(gitPath, "git-stats.json");
+const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2010-01-01Z";
 
 export default async function dailyUpdate(options) {
