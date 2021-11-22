@@ -8,9 +8,17 @@ import {
   round,
 } from "../utils/general.js";
 
-export default async function generateStats() {
+export default async function computeStats(gitStats) {
   const municipalities = await getMunicipalities();
   const datasets = await getDatasets();
+
+  let countryStats = {
+    areaCount: 0,
+    datasetCount: 0,
+    featureCount: 0,
+    requiredTagsCoverageWeightedAvg: 0,
+    desiredTagsCoverageWeightedAvg: 0,
+  };
 
   for (let i = 0; i < municipalities.length; i++) {
     const {
@@ -33,6 +41,7 @@ export default async function generateStats() {
       id: municipalityId,
       slugName: `${municipalitySlug}-${municipalityUf.toLowerCase()}`,
       featureCount: 0,
+      datasetCount: 0,
       requiredTagsCoverageWeightedAvg: 0,
       desiredTagsCoverageWeightedAvg: 0,
       datasets: [],
@@ -49,6 +58,8 @@ export default async function generateStats() {
       const dataset = datasets.find((d) => d.id === datasetId);
 
       if (!dataset) continue;
+
+      areaStats.datasetCount += 1;
 
       let features;
       const geojsonPath = path.join(areaPath, `${dataset.id}.geojson`);
@@ -158,8 +169,33 @@ export default async function generateStats() {
       1
     );
 
+    // Update country stats
+    countryStats.requiredTagsCoverageWeightedAvg = round(
+      (countryStats.requiredTagsCoverageWeightedAvg * countryStats.areaCount +
+        areaStats.requiredTagsCoverageWeightedAvg) /
+        (countryStats.areaCount + 1),
+      1
+    );
+    countryStats.desiredTagsCoverageWeightedAvg = round(
+      (countryStats.desiredTagsCoverageWeightedAvg * countryStats.areaCount +
+        areaStats.desiredTagsCoverageWeightedAvg) /
+        (countryStats.areaCount + 1),
+      1
+    );
+    countryStats.areaCount += 1;
+    countryStats.datasetCount += areaStats.datasetCount;
+    countryStats.featureCount += areaStats.featureCount;
+
     await fs.writeJSON(path.join(areaPath, "stats.json"), areaStats, {
       spaces: 2,
     });
   }
+
+  await fs.writeJSON(
+    path.join(gitPath, "stats.json"),
+    { ...gitStats, ...countryStats },
+    {
+      spaces: 2,
+    }
+  );
 }

@@ -7,7 +7,7 @@ import buildOsmiumConfig from "./br/build-osmium-config.js";
 import buildPolys from "./br/build-polys.js";
 import dailyUpdate from "./br/daily-update.js";
 import { gitPath } from "./br/config/paths.js";
-import generateStats from "./br/generate-stats.js";
+import computeStats from "./br/compute-stats.js";
 
 const pkg = await fs.readJson("./package.json");
 
@@ -48,8 +48,8 @@ program
   .action(dailyUpdate);
 
 program
-  .command("generate-stats")
+  .command("compute-stats")
   .description("Generate statistics for each area")
-  .action(generateStats);
+  .action(computeStats);
 
 program.parse();

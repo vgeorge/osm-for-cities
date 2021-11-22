@@ -14,11 +14,7 @@ import {
   osmCurrentDayDatasetsPath,
 } from "./config/paths.js";
 
-import {
-  parseISO,
-  addDays,
-  differenceInMilliseconds,
-} from "date-fns";
+import { parseISO, addDays, differenceInMilliseconds } from "date-fns";
 import {
   logger,
   pbfIsEmpty,
@@ -27,10 +23,11 @@ import {
 } from "../utils/general.js";
 import execa from "execa";
 import pLimit from "p-limit";
-const limit = pLimit(20);
+import computeStats from "./compute-stats.js";
+const limit = pLimit(5);
 
-const statsFile = path.join(gitPath, "stats.json");
-const initialDate = "2021-01-01Z";
+const statsFile = path.join(gitPath, "git-stats.json");
+const initialDate = "2010-01-01Z";
 
 export default async function dailyUpdate(options) {
   const start = Date.now();
@@ -254,24 +251,18 @@ export default async function dailyUpdate(options) {
     splitMunicipalitiesStart
   );
 
-  const totalSizeKb = parseInt(
-    (await execa("du", ["-sk", gitPath])).stdout.split("\t")[0]
-  );
-
-  // Persist last updated day
-  await fs.writeJSON(
-    statsFile,
-    {
-      updatedAt: currentDay,
-      totalSizeKb,
-      taskDurationMs: differenceInMilliseconds(Date.now(), start),
-      filteringDurationMs,
-      splitMunicipalitiesDurationMs,
-      splitUfDurationMs,
-      splitMicroregionsDurationMs,
-    },
-    { spaces: 2 }
-  );
+  logger("Computing stats...");
+  await computeStats({
+    updatedAt: currentDay,
+    gitSizeKb: parseInt(
+      (await execa("du", ["-sk", gitPath])).stdout.split("\t")[0]
+    ),
+    taskDurationMs: differenceInMilliseconds(Date.now(), start),
+    filteringDurationMs,
+    splitMunicipalitiesDurationMs,
+    splitUfDurationMs,
+    splitMicroregionsDurationMs,
+  });
 
   await simpleGit({ baseDir: gitPath })
     .env({
