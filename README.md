@@ -1,6 +1,7 @@
+
 # OSM git history
 
-Creates a daily versioned repository of OSM data using the file system and git.
+Creates a git repository of daily updates for OpenStreetMap extracts.
 
 ## Getting started
 
@@ -20,23 +21,17 @@ nvm install
 Install Node modules:
 
 ```sh
-yarn install
+yarn
 ```
 
 ### Setup OSM access
 
-This project relies on [Geofabrik extracts](https://download.geofabrik.de) to generate datasets and an OpenStreetMap account is needed. Username and password can be passed as environment variables `OSM_USERNAME` and `OSM_PASSWORD` or by add an `.env` at root repository directory based on [.env.example](.env.example).
+This project relies on [Geofabrik extracts](https://download.geofabrik.de) to generate datasets, an OpenStreetMap account is needed. Username and password can be passed as environment variables `OSM_USERNAME` and `OSM_PASSWORD` or by add an `.env` at root repository directory based on [.env.example](.env.example).
 
-## Updating Content
-
-At the moment only Brazil is available.
-
-### Download areas
-
-Brazil extract is split top to bottom with UF -> microrregion -> municipality. Boundaries area from IBGE, which can be downloaded and prepared with:
+## Download boundaries
 
 ```bash
-yarn download-br-area
+yarn download-boundaries
 ```
 
 ## Serve content locally

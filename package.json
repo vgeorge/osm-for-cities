@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "http-server data -p 2000",
     "ml": "node src/cli.js",
-    "download-br-areas": "./src/br/areas/download.sh"
+    "download-boundaries": "./src/br/areas/download.sh && yarn ml build-polys"
   },
   "author": "",
   "license": "ISC",
