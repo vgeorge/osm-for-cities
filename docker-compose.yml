@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  ogh:
+      image: timescale/timescaledb:latest-pg14
+      restart: 'always'
+      environment:
+          - POSTGRES_USER=docker
+          - POSTGRES_PASSWORD=docker
+          - PGDATA=/opt/postgres/data
+      ports:
+          - "5433:5432"
+
