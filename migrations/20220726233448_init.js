@@ -1,7 +1,5 @@
 function up(knex) {
   return knex.schema.raw(`
-      CREATE EXTENSION IF NOT EXISTS POSTGIS;  
-  
       CREATE TABLE extracts (
         id                  BIGSERIAL PRIMARY KEY,
         commit              TEXT UNIQUE NOT NULL,
@@ -11,25 +9,24 @@ function up(knex) {
      CREATE TABLE areas (
        id                  BIGSERIAL PRIMARY KEY,
        slug                TEXT UNIQUE NOT NULL,
-       ref                 TEXT UNIQUE NOT NULL,
-       name                TEXT UNIQUE NOT NULL,
-       country             TEXT UNIQUE NOT NULL,
-       osm_relation_id     BIGINT NOT NULL, 
-       wikidata_id         TEXT NOT NULL,
-       is_capital          BOOLEAN DEFAULT FALSE,
-       wikipedia_pt        TEXT NOT NULL,
-       lon                 NUMERIC NOT NULL,
-       lat                 NUMERIC NOT NULL
+       ref                 TEXT UNIQUE,
+       name                TEXT NOT NULL,
+       "fullname"          TEXT UNIQUE NOT NULL,
+       "isCapital"         BOOLEAN DEFAULT FALSE,
+       "countryIso"        TEXT NOT NULL,
+       "osmRelationId"     BIGINT NOT NULL, 
+       "wikidataId"        TEXT,
+       "wikipediaPt"       TEXT
      );      
 
       CREATE TABLE dataset_types (
         id                  BIGSERIAL PRIMARY KEY,
         name                TEXT UNIQUE NOT NULL,
         slug                TEXT UNIQUE NOT NULL,
-        category            TEXT UNIQUE NOT NULL,
-        osmium_filter       TEXT UNIQUE NOT NULL,
-        required_tags       TEXT UNIQUE NOT NULL,
-        desired_tags        TEXT UNIQUE NOT NULL,
+        category            TEXT NOT NULL,
+        "osmiumFilter"      TEXT UNIQUE NOT NULL,
+        "requiredTags"      TEXT NOT NULL,
+        "desiredTags"       TEXT NOT NULL,
         created             TIMESTAMP NOT NULL DEFAULT Now()
       );
 
@@ -67,7 +64,6 @@ function up(knex) {
      );
 
      SELECT create_hypertable('dataset_stats', 'time');
-
   `);
 }
 
