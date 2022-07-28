@@ -4,7 +4,7 @@
   "description": "Track OSM datasets history with git",
   "scripts": {
     "serve": "http-server data -p 2000",
-    "ml": "node src/cli.js",
+    "etl": "node etl/cli.js",
     "download-boundaries": "./src/br/areas/download.sh && yarn ml build-polys"
   },
   "author": "",
