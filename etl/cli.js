@@ -4,7 +4,7 @@ import { Command } from "commander/esm.mjs";
 import downloadHistory from "./actions/download-history.js";
 import extractSelectedTags from "./actions/extract-selected-tags.js";
 // import buildOsmiumConfig from "./br/build-osmium-config.js";
-// import buildPolys from "./br/build-polys.js";
+import buildPolys from "./actions/build-br-polys.js";
 // import dailyUpdate from "./br/daily-update.js";
 // import { gitPath } from "./br/config/paths.js";
 // import computeStats from "./br/compute-stats.js";
@@ -31,10 +31,10 @@ program
   .description("Extract selected tags for OSM History")
   .action(extractSelectedTags);
 
-// program
-//   .command("build-polys")
-//   .description("Generate poly files")
-//   .action(buildPolys);
+program
+  .command("build-br-polys")
+  .description("Generate poly files for Brazil")
+  .action(buildPolys);
 
 // program
 //   .command("build-osmium-config")
