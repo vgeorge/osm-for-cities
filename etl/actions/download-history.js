@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import fetch from "node-fetch";
 import { formatISO } from "date-fns";
 import { osmPath, osmLatestFile } from "../../config/paths.js";
-import { execWithLog } from "../../utils/exec.js";
+import exec from "../../utils/exec.js";
 import logger from "../../utils/logger.js";
 import geofabrikLogin from "../../etl/utils/get-geofabrik-cookie.js";
 
