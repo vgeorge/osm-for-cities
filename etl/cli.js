@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import { Command } from "commander/esm.mjs";
 import downloadHistory from "./actions/download-history.js";
 import extractSelectedTags from "./actions/extract-selected-tags.js";
-// import buildOsmiumConfig from "./br/build-osmium-config.js";
+import buildOsmiumConfig from "./actions/build-br-osmium-config-files.js";
 import buildPolys from "./actions/build-br-polys.js";
 // import dailyUpdate from "./br/daily-update.js";
 // import { gitPath } from "./br/config/paths.js";
@@ -36,10 +36,10 @@ program
   .description("Generate poly files for Brazil")
   .action(buildPolys);
 
-// program
-//   .command("build-osmium-config")
-//   .description("Generate configuration files for Osmium")
-//   .action(buildOsmiumConfig);
+program
+  .command("build-br-osmium-config-files")
+  .description("Generate Osmium configuration files for Osmium")
+  .action(buildOsmiumConfig);
 
 // program
 //   .command("daily-update")
