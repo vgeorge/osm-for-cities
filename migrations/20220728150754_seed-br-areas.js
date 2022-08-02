@@ -16,6 +16,9 @@ async function up(knex) {
         osmRelationId: a.osm_relation_id,
         wikidataId: a.wikidata_id,
         wikipediaPt: a.wikipedia_pt,
+        meta: {
+          ...a,
+        },
       }))
     )
     .into("areas");

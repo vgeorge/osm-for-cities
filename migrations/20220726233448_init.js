@@ -16,7 +16,8 @@ function up(knex) {
        "countryIso"        TEXT NOT NULL,
        "osmRelationId"     BIGINT NOT NULL, 
        "wikidataId"        TEXT,
-       "wikipediaPt"       TEXT
+       "wikipediaPt"       TEXT,
+       "meta"              JSONB
      );      
 
       CREATE TABLE dataset_types (
