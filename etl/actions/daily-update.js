@@ -19,10 +19,6 @@ import logger from "../../utils/logger.js";
 import pbfIsEmpty from "../../utils/pbf-is-empty.js";
 import execa from "execa";
 import pLimit from "p-limit";
-// import db, {
-//   getBrMunicipalities,
-//   getDatasetTypes,
-// } from "../../utils/db.js";
 import db from "../../utils/db.js";
 import cliProgress from "cli-progress";
 
@@ -31,10 +27,10 @@ async function getDatasetTypes() {
 }
 
 async function getBrMunicipalities() {
-  return db("areas").select().where("countryIso", "BRA").limit(10);
+  return db("areas").select().where("countryIso", "BRA");
 }
 
-const limit = pLimit(30);
+const limit = pLimit(5);
 
 const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2010-01-01Z";
@@ -45,13 +41,26 @@ export default async function dailyUpdate(options) {
   // Init repository path
   await fs.ensureDir(gitPath);
 
-  // Get next day to update
-  let currentDay;
-  if (!(await fs.pathExists(statsFile))) {
-    currentDay = parseISO(initialDate);
-  } else {
-    const { updatedAt } = await fs.readJSON(statsFile);
-    currentDay = addDays(parseISO(updatedAt), 1);
+  // Initialize current date pointer
+  let currentDay = parseISO(initialDate);
+
+  try {
+    // If git repository is initialized
+    if (await fs.pathExists(path.join(gitPath, ".git"))) {
+      // Get last commit date
+      const lastCommitTimestamp = await simpleGit({ baseDir: gitPath }).show([
+        "-s",
+        "--format=%ci",
+      ]);
+
+      // Convert ISO string to date
+      currentDay = new Date(lastCommitTimestamp);
+
+      // Increment pointer
+      currentDay = addDays(currentDay, 1);
+    }
+  } catch (error) {
+    logger("Could not find last commit date, using default.");
   }
 
   const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
