@@ -265,6 +265,8 @@ export default async function dailyUpdate(options) {
     )
   );
 
+  geojsonProgressBar.stop();
+
   // const splitMunicipalitiesDurationMs = differenceInMilliseconds(
   //   Date.now(),
   //   splitMunicipalitiesStart
