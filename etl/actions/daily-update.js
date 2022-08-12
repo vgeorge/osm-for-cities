@@ -44,23 +44,25 @@ export default async function dailyUpdate(options) {
   // Initialize current date pointer
   let currentDay = parseISO(initialDate);
 
-  try {
+  const git = await simpleGit({ baseDir: gitPath });
+
+  if (await fs.pathExists(path.join(gitPath, ".git"))) {
     // If git repository is initialized
-    if (await fs.pathExists(path.join(gitPath, ".git"))) {
+    try {
       // Get last commit date
-      const lastCommitTimestamp = await simpleGit({ baseDir: gitPath }).show([
-        "-s",
-        "--format=%ci",
-      ]);
+      const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
 
       // Convert ISO string to date
       currentDay = new Date(lastCommitTimestamp);
 
       // Increment pointer
       currentDay = addDays(currentDay, 1);
+    } catch (error) {
+      logger("Could not find last commit date, using default.");
     }
-  } catch (error) {
-    logger("Could not find last commit date, using default.");
+  } else {
+    // Initialize git
+    await git.init();
   }
 
   const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
@@ -276,39 +278,27 @@ export default async function dailyUpdate(options) {
 
   geojsonProgressBar.stop();
 
-  // const splitMunicipalitiesDurationMs = differenceInMilliseconds(
-  //   Date.now(),
-  //   splitMunicipalitiesStart
-  // );
+  const splitMunicipalitiesDurationMs = differenceInMilliseconds(
+    Date.now(),
+    splitMunicipalitiesStart
+  );
 
-  // // logger("Computing stats...");
-  // // await computeStats({
-  // //   updatedAt: currentDay,
-  // //   gitSizeKb: parseInt(
-  // //     (await execa("du", ["-sk", gitPath])).stdout.split("\t")[0]
-  // //   ),
-  // //   taskDurationMs: differenceInMilliseconds(Date.now(), start),
-  // //   filteringDurationMs,
-  // //   splitMunicipalitiesDurationMs,
-  // //   splitUfDurationMs,
-  // //   splitMicroregionsDurationMs,
-  // // });
+  await fs.writeJSON(path.join(gitPath, "package.json"), {
+    updatedAt: currentDay,
+  });
 
-  await simpleGit({ baseDir: gitPath })
+  await git
     .env({
       GIT_AUTHOR_NAME: "Mapas Livres",
       GIT_AUTHOR_EMAIL: "https://github.com/mapaslivres",
       GIT_COMMITTER_DATE: currentDayISO,
     })
-    .init()
-    .add("./*")
+    .add(".")
     .commit(`Status of ${currentDayISO}`);
 
   if (options && options.recursive) {
     dailyUpdate(options);
+  } else {
+    await db.destroy();
   }
-
-  await db.destroy();
-
-  return;
 }

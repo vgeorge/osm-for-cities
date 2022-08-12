@@ -15,8 +15,8 @@ const program = new Command();
 program.description("Mapas Livres CLI").version(pkg.version);
 
 program
-  .command("reset-br-git")
-  .description("Reset git history for Brazil")
+  .command("reset-git")
+  .description("Reset git history")
   .action(async () => {
     await fs.emptyDir(gitPath);
   });
