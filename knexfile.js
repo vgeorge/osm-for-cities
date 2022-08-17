@@ -7,7 +7,6 @@ export default {
   },
   migrations: {
       tableName: 'knex_migrations',
-      stub: 'migrations/migration.stub',
       directory: String(new URL('./migrations', import.meta.url)).replace('file://', '')
   }
 };

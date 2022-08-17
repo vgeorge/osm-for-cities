@@ -21,6 +21,7 @@ import execa from "execa";
 import pLimit from "p-limit";
 import db from "../../utils/db.js";
 import cliProgress from "cli-progress";
+import { features } from "process";
 
 async function getDatasetTypes() {
   return db("dataset_types").select();
@@ -35,7 +36,12 @@ const limit = pLimit(5);
 const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2010-01-01Z";
 
+const trxProvider = db.transactionProvider();
+
 export default async function dailyUpdate(options) {
+  const trxProvider = db.transactionProvider();
+  const trx = await trxProvider();
+
   const start = Date.now();
 
   // Init repository path
@@ -189,6 +195,10 @@ export default async function dailyUpdate(options) {
   // Update GeoJSON files
   const municipalities = await getBrMunicipalities();
   const datasetsTypes = await getDatasetTypes();
+  const statTypes = (await db("stat_types").select()).reduce((acc, s) => {
+    acc[s.slug] = s;
+    return acc;
+  }, {});
 
   const geojsonProgressBar = new cliProgress.SingleBar(
     {},
@@ -241,6 +251,10 @@ export default async function dailyUpdate(options) {
               datasetFilePath,
             ]);
 
+            const stats = {
+              "feature-count": 0,
+            };
+
             if (!(await pbfIsEmpty(datasetFilePath))) {
               const geojsonFile = path.join(geojsonPath, `${d.slug}.geojson`);
 
@@ -250,6 +264,8 @@ export default async function dailyUpdate(options) {
               );
 
               const geojson = JSON.parse(geojsonString);
+
+              stats["feature-count"] = geojson.features.length;
 
               await fs.writeJSON(
                 geojsonFile,
@@ -268,6 +284,15 @@ export default async function dailyUpdate(options) {
                 { spaces: 2 }
               );
             }
+
+            // Insert stats for area and dataset
+            await trx("timelines").insert({
+              area_id: m.id,
+              stat_type_id: statTypes["feature-count"].id,
+              dataset_type_id: d.id,
+              time: currentDay,
+              value: stats["feature-count"],
+            });
           })
         );
 
@@ -286,6 +311,8 @@ export default async function dailyUpdate(options) {
   await fs.writeJSON(path.join(gitPath, "package.json"), {
     updatedAt: currentDay,
   });
+
+  await trx.commit();
 
   await git
     .env({

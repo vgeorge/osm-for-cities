@@ -31,48 +31,41 @@ function up(knex) {
         created             TIMESTAMP NOT NULL DEFAULT Now()
       );
 
-      CREATE TABLE datasets (
-        id                  BIGSERIAL PRIMARY KEY,
-        dataset_type_id     BIGINT NOT NULL, 
-        area_id             BIGINT NOT NULL, 
-
-        CONSTRAINT fk_dataset_type
-            FOREIGN KEY (dataset_type_id)
-            REFERENCES dataset_types(id),
-        CONSTRAINT fk_area
-            FOREIGN KEY (area_id)
-            REFERENCES areas(id)
-      );              
-
-      CREATE TABLE stats (
+      CREATE TABLE stat_types (
         id      BIGSERIAL PRIMARY KEY,
-        label   TEXT UNIQUE NOT NULL
+        slug    TEXT UNIQUE NOT NULL,
+        name   TEXT NOT NULL
       );
 
-      CREATE TABLE dataset_stats (
-        time        TIMESTAMPTZ       NOT NULL,
-        dataset_id  BIGINT            NOT NULL,
-        stat_id  BIGINT            NOT NULL,
-        value       NUMERIC,
+      CREATE TABLE timelines (
+        time              TIMESTAMPTZ       NOT NULL,
+        area_id           BIGINT            NOT NULL,
+        dataset_type_id   BIGINT            NOT NULL,
+        stat_type_id      BIGINT            NOT NULL,
+        value             NUMERIC,
+
+        CONSTRAINT fk_area
+            FOREIGN KEY (area_id)
+            REFERENCES areas(id),
 
         CONSTRAINT fk_dataset
-            FOREIGN KEY (dataset_id)
-            REFERENCES datasets(id),
+            FOREIGN KEY (dataset_type_id)
+            REFERENCES dataset_types(id),
 
-        CONSTRAINT fk_stat
-            FOREIGN KEY (stat_id)
-            REFERENCES stats(id)
+        CONSTRAINT fk_stat_type
+            FOREIGN KEY (stat_type_id)
+            REFERENCES stat_types(id)
      );
 
-     SELECT create_hypertable('dataset_stats', 'time');
+     SELECT create_hypertable('timelines', 'time');
   `);
 }
 
 function down(knex) {
   return knex.schema.raw(`
-      DROP TABLE IF EXISTS dataset_stats;
+      DROP TABLE IF EXISTS timelines;
       DROP TABLE IF EXISTS datasets;
-      DROP TABLE IF EXISTS stats;
+      DROP TABLE IF EXISTS stat_types;
       DROP TABLE IF EXISTS dataset_types;
       DROP TABLE IF EXISTS extracts;
       DROP TABLE IF EXISTS areas;
