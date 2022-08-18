@@ -37,12 +37,14 @@ function up(knex) {
         name   TEXT NOT NULL
       );
 
-      CREATE TABLE timelines (
-        time              TIMESTAMPTZ       NOT NULL,
-        area_id           BIGINT            NOT NULL,
-        dataset_type_id   BIGINT            NOT NULL,
-        stat_type_id      BIGINT            NOT NULL,
-        value             NUMERIC,
+      CREATE TABLE dataset_stats (
+        time                    TIMESTAMPTZ       NOT NULL,
+        area_id                 BIGINT            NOT NULL,
+        dataset_type_id         BIGINT            NOT NULL,
+        stat_type_id            BIGINT            NOT NULL,
+        feature_count           NUMERIC           NOT NULL,
+        required_tags_cov       NUMERIC           NOT NULL,
+        recommended_tags_cov    NUMERIC           NOT NULL,
 
         CONSTRAINT fk_area
             FOREIGN KEY (area_id)
@@ -57,13 +59,13 @@ function up(knex) {
             REFERENCES stat_types(id)
      );
 
-     SELECT create_hypertable('timelines', 'time');
+     SELECT create_hypertable('dataset_stats', 'time');
   `);
 }
 
 function down(knex) {
   return knex.schema.raw(`
-      DROP TABLE IF EXISTS timelines;
+      DROP TABLE IF EXISTS dataset_stats;
       DROP TABLE IF EXISTS datasets;
       DROP TABLE IF EXISTS stat_types;
       DROP TABLE IF EXISTS dataset_types;

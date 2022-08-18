@@ -6,8 +6,7 @@ import extractSelectedTags from "./actions/extract-selected-tags.js";
 import buildOsmiumConfig from "./actions/build-br-osmium-config-files.js";
 import buildPolys from "./actions/build-br-polys.js";
 import dailyUpdate from "./actions/daily-update.js";
-import { gitPath } from "../config/paths.js";
-// import computeStats from "./br/compute-stats.js";
+import resetHistory from "./actions/reset-history.js";
 
 const pkg = await fs.readJson("./package.json");
 
@@ -15,11 +14,9 @@ const program = new Command();
 program.description("Mapas Livres CLI").version(pkg.version);
 
 program
-  .command("reset-git")
-  .description("Reset git history")
-  .action(async () => {
-    await fs.emptyDir(gitPath);
-  });
+  .command("reset-history")
+  .description("Reset OSM history")
+  .action(resetHistory);
 
 program
   .command("download-history")
@@ -46,10 +43,5 @@ program
   .option("-r, --recursive", "Repeat updates to present day", false)
   .description("Add daily update to the git data repository")
   .action(dailyUpdate);
-
-// program
-//   .command("compute-stats")
-//   .description("Generate statistics for each area")
-//   .action(computeStats);
 
 program.parse();

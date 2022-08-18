@@ -286,12 +286,12 @@ export default async function dailyUpdate(options) {
             }
 
             // Insert stats for area and dataset
-            await trx("timelines").insert({
+            await trx("dataset_stats").insert({
               area_id: m.id,
               stat_type_id: statTypes["feature-count"].id,
               dataset_type_id: d.id,
               time: currentDay,
-              value: stats["feature-count"],
+              feature_count: stats["feature-count"],
             });
           })
         );
