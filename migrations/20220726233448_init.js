@@ -31,17 +31,10 @@ function up(knex) {
         created             TIMESTAMP NOT NULL DEFAULT Now()
       );
 
-      CREATE TABLE stat_types (
-        id      BIGSERIAL PRIMARY KEY,
-        slug    TEXT UNIQUE NOT NULL,
-        name   TEXT NOT NULL
-      );
-
       CREATE TABLE dataset_stats (
         time                    TIMESTAMPTZ       NOT NULL,
         area_id                 BIGINT            NOT NULL,
         dataset_type_id         BIGINT            NOT NULL,
-        stat_type_id            BIGINT            NOT NULL,
         feature_count           NUMERIC           NOT NULL,
         required_tags_cov       NUMERIC           NOT NULL,
         recommended_tags_cov    NUMERIC           NOT NULL,
@@ -67,7 +60,6 @@ function down(knex) {
   return knex.schema.raw(`
       DROP TABLE IF EXISTS dataset_stats;
       DROP TABLE IF EXISTS datasets;
-      DROP TABLE IF EXISTS stat_types;
       DROP TABLE IF EXISTS dataset_types;
       DROP TABLE IF EXISTS extracts;
       DROP TABLE IF EXISTS areas;
