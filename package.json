@@ -6,7 +6,8 @@
     "serve": "http-server data -p 2000",
     "etl": "node etl/cli.js",
     "download-boundaries": "./src/br/areas/download.sh && yarn ml build-polys",
-    "lint": "eslint etl migrations src utils"
+    "lint": "eslint etl migrations src utils",
+    "migrate": "knex migrate:latest"
   },
   "author": "",
   "license": "ISC",

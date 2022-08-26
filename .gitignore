@@ -6,3 +6,4 @@ data/br/git
 data/br/osm
 data/br/osmium
 # data/br
+docker/postgres-data
