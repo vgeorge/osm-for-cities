@@ -36,8 +36,8 @@ function up(knex) {
         area_id                 BIGINT            NOT NULL,
         dataset_type_id         BIGINT            NOT NULL,
         feature_count           NUMERIC           NOT NULL,
-        required_tags_cov       NUMERIC           NOT NULL,
-        recommended_tags_cov    NUMERIC           NOT NULL,
+        required_tags_cov       NUMERIC           ,
+        recommended_tags_cov    NUMERIC           ,
 
         CONSTRAINT fk_area
             FOREIGN KEY (area_id)
@@ -45,11 +45,7 @@ function up(knex) {
 
         CONSTRAINT fk_dataset
             FOREIGN KEY (dataset_type_id)
-            REFERENCES dataset_types(id),
-
-        CONSTRAINT fk_stat_type
-            FOREIGN KEY (stat_type_id)
-            REFERENCES stat_types(id)
+            REFERENCES dataset_types(id)
      );
 
      SELECT create_hypertable('dataset_stats', 'time');
@@ -59,7 +55,6 @@ function up(knex) {
 function down(knex) {
   return knex.schema.raw(`
       DROP TABLE IF EXISTS dataset_stats;
-      DROP TABLE IF EXISTS datasets;
       DROP TABLE IF EXISTS dataset_types;
       DROP TABLE IF EXISTS extracts;
       DROP TABLE IF EXISTS areas;

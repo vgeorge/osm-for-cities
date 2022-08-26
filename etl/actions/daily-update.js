@@ -31,7 +31,7 @@ async function getBrMunicipalities() {
   return db("areas").select().where("countryIso", "BRA");
 }
 
-const limit = pLimit(5);
+const limit = pLimit(20);
 
 const statsFile = path.join(gitPath, "stats.json");
 const initialDate = "2010-01-01Z";
@@ -195,10 +195,6 @@ export default async function dailyUpdate(options) {
   // Update GeoJSON files
   const municipalities = await getBrMunicipalities();
   const datasetsTypes = await getDatasetTypes();
-  const statTypes = (await db("stat_types").select()).reduce((acc, s) => {
-    acc[s.slug] = s;
-    return acc;
-  }, {});
 
   const geojsonProgressBar = new cliProgress.SingleBar(
     {},
@@ -288,7 +284,6 @@ export default async function dailyUpdate(options) {
             // Insert stats for area and dataset
             await trx("dataset_stats").insert({
               area_id: m.id,
-              stat_type_id: statTypes["feature-count"].id,
               dataset_type_id: d.id,
               time: currentDay,
               feature_count: stats["feature-count"],
