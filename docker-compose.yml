@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+    database:
+        image: timescale/timescaledb:latest-pg14
+        restart: 'always'
+        environment:
+            - POSTGRES_USER=docker
+            - POSTGRES_PASSWORD=docker
+            - PGDATA=/opt/postgres/data
+        ports:
+            - "5433:5432"
+        volumes:
+            - ./docker/postgres-data:/opt/postgres/data
+    metabase:
+        image: metabase/metabase
+        environment:
+            - MB_DB_FILE=/metabase-data/metabase.db
+        volumes:
+            - ./docker/metabase-data:/metabase-data
+        ports:
+            - "3000:3000"
+        depends_on:
+            - database
+        links:
+            - database
