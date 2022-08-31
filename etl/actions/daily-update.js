@@ -21,7 +21,6 @@ import execa from "execa";
 import pLimit from "p-limit";
 import db from "../../utils/db.js";
 import cliProgress from "cli-progress";
-import { features } from "process";
 
 async function getDatasetTypes() {
   return db("dataset_types").select();
@@ -231,10 +230,10 @@ export default async function dailyUpdate(options) {
 
         // Extract datasets
         await Promise.all(
-          datasetsTypes.map(async (d) => {
+          datasetsTypes.map(async (datasetType) => {
             const datasetFilePath = path.join(
               osmCurrentDayDatasetsPath,
-              `${municipalityId}-${d.slug}.osm.pbf`
+              `${municipalityId}-${datasetType.slug}.osm.pbf`
             );
 
             await execa("osmium", [
@@ -242,17 +241,20 @@ export default async function dailyUpdate(options) {
               municipalityFile,
               "-v",
               "--overwrite",
-              d.osmiumFilter,
+              datasetType.osmiumFilter,
               "-o",
               datasetFilePath,
             ]);
 
             const stats = {
-              "feature-count": 0,
+              featureCount: 0,
             };
 
             if (!(await pbfIsEmpty(datasetFilePath))) {
-              const geojsonFile = path.join(geojsonPath, `${d.slug}.geojson`);
+              const geojsonFile = path.join(
+                geojsonPath,
+                `${datasetType.slug}.geojson`
+              );
 
               const { stdout: geojsonString } = await execa(
                 `./node_modules/.bin/osmtogeojson ${datasetFilePath}`,
@@ -261,8 +263,49 @@ export default async function dailyUpdate(options) {
 
               const geojson = JSON.parse(geojsonString);
 
-              stats["feature-count"] = geojson.features.length;
+              const requiredTags = datasetType.requiredTags.split(",");
+              const recommendedTags = datasetType.desiredTags.split(",");
+              stats.featureCount = geojson.features.length;
 
+              // Init counters
+              let requiredFeatureTagsCount = 0;
+              let recommendedFeatureTagsCount = 0;
+              stats.requiredTags = {};
+              stats.recommendedTags = {};
+              requiredTags.forEach((tag) => {
+                stats.requiredTags[tag] = 0;
+              });
+              recommendedTags.forEach((tag) => {
+                stats.recommendedTags[tag] = 0;
+              });
+
+              // Count tags in features
+              geojson.features.forEach((feature) => {
+                requiredTags.forEach((tag) => {
+                  if (feature.properties[tag]) {
+                    ++stats.requiredTags[tag];
+                    ++requiredFeatureTagsCount;
+                  }
+                });
+                recommendedTags.forEach((tag) => {
+                  if (feature.properties[tag]) {
+                    ++stats.recommendedTags[tag];
+                    ++recommendedFeatureTagsCount;
+                  }
+                });
+              });
+
+              // Calculate coverage
+              stats.requiredTagsCoverage =
+                (requiredFeatureTagsCount /
+                  (stats.featureCount * requiredTags.length)) *
+                100;
+              stats.recommendedTagsCoverage =
+                (recommendedFeatureTagsCount /
+                  (stats.featureCount * recommendedTags.length)) *
+                100;
+
+              // Write GeoJSON file
               await fs.writeJSON(
                 geojsonFile,
                 {
@@ -281,12 +324,14 @@ export default async function dailyUpdate(options) {
               );
             }
 
-            // Insert stats for area and dataset
+            // Add stats to the database
             await trx("dataset_stats").insert({
               area_id: m.id,
-              dataset_type_id: d.id,
+              dataset_type_id: datasetType.id,
               time: currentDay,
-              feature_count: stats["feature-count"],
+              feature_count: stats.featureCount,
+              required_tags_cov: stats.requiredTagsCoverage,
+              recommended_tags_cov: stats.recommendedTagsCoverage,
             });
           })
         );
