@@ -25,19 +25,19 @@ function up(knex) {
         name                TEXT UNIQUE NOT NULL,
         slug                TEXT UNIQUE NOT NULL,
         category            TEXT NOT NULL,
-        "osmiumFilter"      TEXT UNIQUE NOT NULL,
-        "requiredTags"      TEXT NOT NULL,
-        "desiredTags"       TEXT NOT NULL,
+        osmium_filter       TEXT UNIQUE NOT NULL,
+        required_tags       TEXT NOT NULL,
+        recommended_tags    TEXT NOT NULL,
         created             TIMESTAMP NOT NULL DEFAULT Now()
       );
 
       CREATE TABLE dataset_stats (
-        time                    TIMESTAMPTZ       NOT NULL,
-        area_id                 BIGINT            NOT NULL,
-        dataset_type_id         BIGINT            NOT NULL,
-        feature_count           NUMERIC           NOT NULL,
-        required_tags_cov       NUMERIC           ,
-        recommended_tags_cov    NUMERIC           ,
+        time                        TIMESTAMPTZ       NOT NULL,
+        area_id                     BIGINT            NOT NULL,
+        dataset_type_id             BIGINT            NOT NULL,
+        feature_count               NUMERIC           NOT NULL,
+        required_tags_coverage      NUMERIC           ,
+        recommended_tags_coverage   NUMERIC           ,
 
         CONSTRAINT fk_area
             FOREIGN KEY (area_id)

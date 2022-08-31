@@ -9,18 +9,18 @@ async function up(knex) {
       datasetsTypes.map(
         ({
           id,
-          category,
           name,
+          category,
           osmium_filter,
           required_tags,
-          desired_tags,
+          recommended_tags,
         }) => ({
           slug: id,
           name,
           category,
-          osmiumFilter: osmium_filter,
-          requiredTags: required_tags,
-          desiredTags: desired_tags,
+          osmium_filter,
+          required_tags,
+          recommended_tags,
         })
       )
     )

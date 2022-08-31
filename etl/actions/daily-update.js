@@ -241,7 +241,7 @@ export default async function dailyUpdate(options) {
               municipalityFile,
               "-v",
               "--overwrite",
-              datasetType.osmiumFilter,
+              datasetType.osmium_filter,
               "-o",
               datasetFilePath,
             ]);
@@ -263,8 +263,8 @@ export default async function dailyUpdate(options) {
 
               const geojson = JSON.parse(geojsonString);
 
-              const requiredTags = datasetType.requiredTags.split(",");
-              const recommendedTags = datasetType.desiredTags.split(",");
+              const requiredTags = datasetType.required_tags.split(",");
+              const recommendedTags = datasetType.recommended_tags.split(",");
               stats.featureCount = geojson.features.length;
 
               // Init counters
@@ -330,8 +330,8 @@ export default async function dailyUpdate(options) {
               dataset_type_id: datasetType.id,
               time: currentDay,
               feature_count: stats.featureCount,
-              required_tags_cov: stats.requiredTagsCoverage,
-              recommended_tags_cov: stats.recommendedTagsCoverage,
+              required_tags_coverage: stats.requiredTagsCoverage,
+              recommended_tags_coverage: stats.recommendedTagsCoverage,
             });
           })
         );

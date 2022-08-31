@@ -1,4 +1,4 @@
-id,name,category,osmium_filter,required_tags,desired_tags
+id,name,category,osmium_filter,required_tags,recommended_tags
 bicycle-rental,Bicycle Rentals,cycling,nrw/amenity=bicycle_rental,"name,network,operator","ref,capacity"
 bicycle-parking,Bicycle Parking,cycling,nrw/amenity=bicycle_parking,"capacity,covered,access,operator,bicycle_parking,fee,surveillance","name,operator,rooms,beds,addr:housenumber,addr:street,phone"
 bicycle-shop,Bicycle Shops,cycling,nrw/shop=bicycle,"name,addr:housenumber,addr:street,phone,opening_hours",website
