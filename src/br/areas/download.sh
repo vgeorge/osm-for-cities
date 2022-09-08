@@ -22,7 +22,10 @@ unzip -o BR_Municipios_2020.zip -d ../shapefiles
 unzip -o BR_Microrregioes_2020.zip -d ../shapefiles
 unzip -o BR_UF_2020.zip -d ../shapefiles
 echo "Converting to GeoJSON..."
-"$SHP2JSON_BIN" ../shapefiles/BR_Municipios_2020.shp >../geojson/BR_Municipios_2020.geojson
-"$SHP2JSON_BIN" ../shapefiles/BR_Microrregioes_2020.shp >../geojson/BR_Microrregioes_2020.geojson
-"$SHP2JSON_BIN" ../shapefiles/BR_UF_2020.shp >../geojson/BR_UF_2020.geojson
+rm -f -- ../geojson/BR_Municipios_2020.geojson
+ogr2ogr ../geojson/BR_Municipios_2020.geojson ../shapefiles/BR_Municipios_2020.shp
+rm -f -- ../geojson/BR_Microrregioes_2020.geojson
+ogr2ogr ../geojson/BR_Microrregioes_2020.geojson ../shapefiles/BR_Microrregioes_2020.shp
+rm -f -- ../geojson/BR_UF_2020.geojson
+ogr2ogr ../geojson/BR_UF_2020.geojson ../shapefiles/BR_UF_2020.shp
 cd -
