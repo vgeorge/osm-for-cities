@@ -9,8 +9,8 @@ import db from "../../utils/db.js";
 
 export default async function extractSelectedTags() {
   const osmiumFilters = await (
-    await db("dataset_types").select("osmiumFilter")
-  ).map((f) => f.osmiumFilter);
+    await db("dataset_types").select("osmium_filter")
+  ).map((f) => f.osmium_filter);
   await fs.ensureDir(osmPath);
   await exec("osmium", [
     "tags-filter",
