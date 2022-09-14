@@ -5,14 +5,14 @@ Creates a git repository of daily updates for OpenStreetMap extracts.
 
 ## Getting started
 
+Download the latest [OSM history PBF file](https://planet.osm.org/pbf/full-history) (preferably via [torrent](https://planet.osm.org/pbf/full-history/history-latest.osm.pbf.torrent)) to `./data/history` folder under the name `history-latest.osh.pbf`.
+
 Install dependencies:
 
 - [Node](http://nodejs.org/) (see [.nvmrc](./.nvmrc)) (To manage multiple node versions we recommend [nvm](https://github.com/creationix/nvm))
 - [Yarn](https://yarnpkg.com/) package manager
 
-### Install Application Dependencies
-
-If you use [`nvm`](https://github.com/creationix/nvm), activate the desired Node version:
+Activate required Node version:
 
 ```sh
 nvm install
@@ -24,23 +24,36 @@ Install Node modules:
 yarn
 ```
 
-### Setup OSM access
+Start history replication task:
 
-This project relies on [Geofabrik extracts](https://download.geofabrik.de) to generate datasets, an OpenStreetMap account is needed. Username and password can be passed as environment variables `OSM_USERNAME` and `OSM_PASSWORD` or by add an `.env` at root repository directory based on [.env.example](.env.example).
-
-## Download boundaries
-
-```bash
-yarn download-boundaries
+```sh
+yarn etl replicate-history
 ```
 
-## Serve content locally
+Start docker containers:
 
-```bash
+```sh
+docker-compose up
+```
+
+Migrate the database:
+
+```sh
+yarn migrate
+```
+
+Start daily-analysis:
+
+```sh
+yarn daily-analysis --recursive
+```
+
+Start web server:
+
+```sh
 yarn serve
 ```
 
-This will start a server at <http://localhost:2000>.
 ## License
 
 [MIT](LICENSE)
