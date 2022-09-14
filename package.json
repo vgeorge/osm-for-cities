@@ -35,7 +35,6 @@
     "http-server": "^14.0.0",
     "node-fetch": "^2.6.2",
     "p-limit": "^4.0.0",
-    "puppeteer": "^10.4.0",
     "simple-git": "^3.12.0"
   }
 }
