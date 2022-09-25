@@ -5,6 +5,6 @@ data/br/areas
 data/br/git
 data/br/osm
 data/br/osmium
-data/history
+data/history-pbf
 # data/br
 docker/postgres-data

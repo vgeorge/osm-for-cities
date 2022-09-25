@@ -1,32 +1,34 @@
 import fs from "fs-extra";
-import { osmHistoryPath } from "../../config/paths.js";
-import exec from "../../utils/exec.js";
-import logger from "../../utils/logger.js";
+import { historyPbfPath } from "../../config/paths.js";
+import execa from "../../utils/execa.js";
 import * as path from "path";
-import { program } from "commander/esm.mjs";
 
 const latestHistoryFilePath = path.join(
-  osmHistoryPath,
-  "history-latest.osh.pbfa"
+  historyPbfPath,
+  "history-latest.osm.pbf"
 );
 
-const latestHistoryMeta = path.join(osmHistoryPath, "history-latest.json");
+const latestHistoryMeta = path.join(
+  historyPbfPath,
+  "history-latest.osm.pbf.json"
+);
 
 export default async function replicateHistory() {
   if (!(await fs.pathExists(latestHistoryFilePath))) {
-    program.error(`Latest history file not found at ${latestHistoryFilePath}`);
+    throw `Latest history file not found.`;
   }
 
   // Get timestamp from history file and update meta
   if (!(await fs.pathExists(latestHistoryMeta))) {
-    logger(`Latest history file not found at ${latestHistoryFilePath}`);
-    const { stdout } = await exec("osmium", [
+    const { stdout: lastTimestamp } = await execa("osmium", [
       "fileinfo",
       "-e",
       "-g",
       "data.timestamp.last",
       latestHistoryFilePath,
     ]);
+
+    await fs.writeJSON(latestHistoryMeta, { lastTimestamp });
   }
 
   // Download up to X daily diff files
@@ -34,5 +36,4 @@ export default async function replicateHistory() {
   // Apply daily diff files
 
   // Repeat until no new daily diff
-
 }

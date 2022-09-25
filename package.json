@@ -4,9 +4,8 @@
   "description": "Track OSM datasets history with git",
   "scripts": {
     "serve": "http-server data -p 2000",
-    "etl": "node etl/cli.js",
-    "download-boundaries": "./src/br/areas/download.sh && yarn ml build-polys",
-    "lint": "eslint etl migrations src utils",
+    "cli": "node cli/index.js",
+    "lint": "eslint cli migrations src utils",
     "migrate": "knex migrate:latest"
   },
   "author": "",
@@ -14,13 +13,13 @@
   "type": "module",
   "dependencies": {
     "cli-progress": "^3.11.2",
+    "commander": "^9.4.0",
     "knex": "^2.2.0",
     "osmtogeojson": "^3.0.0-beta.4",
     "pg": "^8.7.3"
   },
   "devDependencies": {
     "@fast-csv/parse": "^4.3.6",
-    "commander": "^8.3.0",
     "date-fns": "^2.25.0",
     "dotenv": "^10.0.0",
     "eslint": "^8.22.0",

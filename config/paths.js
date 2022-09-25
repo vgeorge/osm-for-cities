@@ -3,8 +3,10 @@ import * as path from "path";
 const basePath = path.resolve();
 
 
+
 export const dataPath = path.join(basePath, "data");
-export const osmHistoryPath = path.join(dataPath, "history");
+export const historyPbfPath =
+  process.env.HISTORY_PBF_PATH || path.join(dataPath, "history-pbf");
 
 // Data files
 // export const municipalitiesCsvFile = path.resolve(
