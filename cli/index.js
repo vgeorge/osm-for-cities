@@ -6,7 +6,7 @@ import replicateHistory from "./actions/replicate-history-pbf.js";
 const pkg = await fs.readJson("./package.json");
 
 program
-  .description("Mapas Livres CLI")
+  .description("OSM Git History")
   .version(pkg.version)
   .configureOutput({
     writeOut: (str) => process.stdout.write(`[OUT] ${str}`),
