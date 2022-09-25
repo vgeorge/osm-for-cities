@@ -13,18 +13,13 @@ program
     writeErr: (str) => process.stdout.write(`[ERR] ${str}`),
   });
 
-// Catch errors and write error message
-const runAction = (action) => async () => {
-  try {
-    await action();
-  } catch (error) {
-    program.error(error);
-  }
-};
-
 program
   .command("replicate-history-pbf")
   .description("Start daily replication of OSM history PBF file")
-  .action(runAction(replicateHistory));
+  .action(() => replicateHistory(program));
 
 program.parse();
+
+process.on("unhandledRejection", function () {
+  program.error("Unexpected error.");
+});

@@ -13,9 +13,9 @@ const latestHistoryMeta = path.join(
   "history-latest.osm.pbf.json"
 );
 
-export default async function replicateHistory() {
+export default async function replicateHistory(program) {
   if (!(await fs.pathExists(latestHistoryFilePath))) {
-    throw `Latest history file not found.`;
+    program.error(`Latest history file not found.`);
   }
 
   // Get timestamp from history file and update meta
