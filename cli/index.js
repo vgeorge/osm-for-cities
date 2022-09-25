@@ -9,13 +9,12 @@ program
   .description("OSM Git History")
   .version(pkg.version)
   .configureOutput({
-    writeOut: (str) => process.stdout.write(`[OUT] ${str}`),
     writeErr: (str) => process.stdout.write(`[ERR] ${str}`),
   });
 
 program
   .command("replicate-history-pbf")
-  .description("Start daily replication of OSM history PBF file")
+  .description("Replicate history PBF file to the current day")
   .action(() => replicateHistory(program));
 
 program.parse();
