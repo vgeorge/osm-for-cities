@@ -4,6 +4,7 @@ import execa from "../../utils/execa.js";
 import * as path from "path";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { downloadFile } from "../utils/download.js";
+import logger from "../../utils/logger.js";
 
 const latestHistoryFilePath = path.join(
   historyPbfPath,
@@ -17,71 +18,92 @@ const latestHistoryMeta = path.join(
 
 const fistDailyChangefileTimestamp = parseISO("2012-09-13T00:00:00Z");
 
+async function updateHistoryFileMeta(historyFilePath) {
+  logger("Reading history file timestamp...");
+  const { stdout } = await execa("osmium", [
+    "fileinfo",
+    "-e",
+    "-g",
+    "data.timestamp.last",
+    historyFilePath,
+  ]);
+
+  const historyFileTimestamp = parseISO(stdout);
+
+  await fs.writeJSON(`${historyFilePath}.json`, {
+    timestamp: historyFileTimestamp,
+  });
+}
+
 export default async function replicateHistory(program) {
   try {
     if (!(await fs.pathExists(latestHistoryFilePath))) {
       program.error(`Latest history file not found.`);
     }
 
-    let historyFileTimestamp;
-
     // Get timestamp from history file and update meta
     if (!(await fs.pathExists(latestHistoryMeta))) {
-      const cmdOutput = await execa("osmium", [
-        "fileinfo",
-        "-e",
-        "-g",
-        "data.timestamp.last",
-        latestHistoryFilePath,
-      ]);
-
-      historyFileTimestamp = parseISO(cmdOutput);
-    } else {
-      const historyMetafile = await fs.readJSON(latestHistoryMeta);
-      historyFileTimestamp = parseISO(historyMetafile.timestamp);
+      await updateHistoryFileMeta(latestHistoryFilePath);
     }
+
+    const historyFileMeta = await fs.readJSON(latestHistoryMeta);
+    let historyFileTimestamp = parseISO(historyFileMeta.timestamp);
 
     // Calculate next day sequence number from current timestamp
     const nextDaySequenceNumber = (
       differenceInCalendarDays(
         historyFileTimestamp,
         fistDailyChangefileTimestamp
-      ) + 1
+      ) + 2
     )
       .toString()
       .padStart(9, "0");
 
-    const dailychangeFile = path.join(
+    const dailyChangeFile = path.join(
       historyPbfPath,
       `${nextDaySequenceNumber}.osc.gz`
     );
 
-    // Download changefile
-    await downloadFile(
-      `https://planet.osm.org/replication/day/${nextDaySequenceNumber.slice(
-        0,
-        3
-      )}/${nextDaySequenceNumber.slice(3, 6)}/${nextDaySequenceNumber.slice(
-        6
-      )}.osc.gz`,
-      dailychangeFile
-    );
+    logger(`Downloading day changefile ${nextDaySequenceNumber}...`);
 
+    // Download changefile
+    try {
+      await downloadFile(
+        `https://planet.osm.org/replication/day/${nextDaySequenceNumber.slice(
+          0,
+          3
+        )}/${nextDaySequenceNumber.slice(3, 6)}/${nextDaySequenceNumber.slice(
+          6
+        )}.osc.gz`,
+        dailyChangeFile
+      );
+    } catch (error) {
+      logger("No new OSM change file was found to update the history.");
+      return;
+    }
+
+    const updatedHistoryFilePath = path.join(historyPbfPath, "new.osh.pbf");
+
+    logger(`Applying changes...`);
     await execa("osmium", [
       "apply-changes",
       `--output=${path.join(historyPbfPath, "new.osh.pbf")}`,
       latestHistoryFilePath,
-      dailychangeFile,
+      dailyChangeFile,
     ]);
 
-    // await fs.writeJSON(latestHistoryMeta, { timestamp: historyFileTimestamp });
+    logger(`Replacing current file...`);
+    await fs.move(updatedHistoryFilePath, latestHistoryFilePath, {
+      overwrite: true,
+    });
 
-    // Download up to X daily diff files
+    await updateHistoryFileMeta(latestHistoryFilePath);
+    logger(`Finished!`);
 
-    // Apply daily diff files
+    await fs.remove(dailyChangeFile);
 
-    // Repeat until no new daily diff
+    await replicateHistory();
   } catch (error) {
-    console.log(error);
+    logger(error);
   }
 }

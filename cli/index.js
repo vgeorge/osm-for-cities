@@ -2,6 +2,7 @@ import "dotenv/config";
 import fs from "fs-extra";
 import { program } from "commander";
 import replicateHistory from "./actions/replicate-history-pbf.js";
+import logger from "../utils/logger.js";
 
 const pkg = await fs.readJson("./package.json");
 
@@ -19,6 +20,7 @@ program
 
 program.parse();
 
-process.on("unhandledRejection", function () {
+process.on("unhandledRejection", function (error) {
+  logger(error)
   program.error("Unexpected error.");
 });
