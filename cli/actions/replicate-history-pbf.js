@@ -78,7 +78,7 @@ export default async function replicateHistory(program) {
         dailyChangeFile
       );
     } catch (error) {
-      logger("No new OSM change file was found to update the history.");
+      logger("Changefile is not available.");
       return;
     }
 
