@@ -1,4 +1,3 @@
-import execa from "execa";
 import fs from "fs-extra";
 import * as csv from "@fast-csv/parse";
 import { datasetsCsvFile, municipalitiesCsvFile } from "../br/config/paths.js";
@@ -15,19 +14,6 @@ export function logger(message) {
  */
 export function round(value, decimals = 2) {
   return Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals);
-}
-
-/**
- * Wrapper function to log execa process to stdout
- * @returns
- */
-export async function execWithLog(cmd, args, options) {
-  const execProcess = execa(cmd, args);
-  if (!options || !options.silent) {
-    execProcess.stdout.pipe(process.stdout);
-    execProcess.stderr.pipe(process.stdout);
-  }
-  return execProcess;
 }
 
 /**
