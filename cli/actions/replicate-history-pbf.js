@@ -4,7 +4,7 @@ import execa from "../../utils/execa.js";
 import * as path from "path";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { downloadFile } from "../utils/download.js";
-import logger from "../../utils/logger.js";
+import logger, { time, timeEnd } from "../../utils/logger.js";
 
 const latestHistoryFilePath = path.join(
   historyPbfPath,
@@ -20,6 +20,7 @@ const fistDailyChangefileTimestamp = parseISO("2012-09-13T00:00:00Z");
 
 async function updateHistoryFileMeta(historyFilePath) {
   logger("Reading history file timestamp...");
+  time("Duration of timestamp update");
   const { stdout } = await execa("osmium", [
     "fileinfo",
     "-e",
@@ -33,10 +34,12 @@ async function updateHistoryFileMeta(historyFilePath) {
   await fs.writeJSON(`${historyFilePath}.json`, {
     timestamp: historyFileTimestamp,
   });
+  timeEnd("Duration of timestamp update");
 }
 
 export default async function replicateHistory(program) {
   try {
+    time("Daily update total duration");
     if (!(await fs.pathExists(latestHistoryFilePath))) {
       program.error(`Latest history file not found.`);
     }
@@ -55,7 +58,7 @@ export default async function replicateHistory(program) {
     );
 
     if (historyFileAgeInDays < 1) {
-      logger('History file is updated.');
+      logger("History file is updated.");
       return;
     }
 
@@ -78,6 +81,7 @@ export default async function replicateHistory(program) {
 
     // Download changefile
     try {
+      time("Duration of daily changefile download");
       await downloadFile(
         `https://planet.osm.org/replication/day/${nextDaySequenceNumber.slice(
           0,
@@ -87,6 +91,7 @@ export default async function replicateHistory(program) {
         )}.osc.gz`,
         dailyChangeFile
       );
+      timeEnd("Duration of daily changefile download");
     } catch (error) {
       logger("Changefile is not available.");
       return;
@@ -95,12 +100,14 @@ export default async function replicateHistory(program) {
     const updatedHistoryFilePath = path.join(historyPbfPath, "new.osh.pbf");
 
     logger(`Applying changes...`);
+    time("Duration of daily change apply operation");
     await execa("osmium", [
       "apply-changes",
       `--output=${path.join(historyPbfPath, "new.osh.pbf")}`,
       latestHistoryFilePath,
       dailyChangeFile,
     ]);
+    timeEnd("Duration of daily change apply operation");
 
     logger(`Replacing current file...`);
     await fs.move(updatedHistoryFilePath, latestHistoryFilePath, {
@@ -112,6 +119,7 @@ export default async function replicateHistory(program) {
 
     await fs.remove(dailyChangeFile);
 
+    timeEnd("Daily update total duration");
     await replicateHistory();
   } catch (error) {
     logger(error);
