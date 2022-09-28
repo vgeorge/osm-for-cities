@@ -6,7 +6,7 @@ export const downloadFile = async function (url, dest) {
     if (response.status !== 200) {
       throw `Could not download ${url}`;
     } else {
-      response.arrayBuffer();
+      return response.arrayBuffer();
     }
   });
   await fs.writeFile(dest, Buffer.from(arrayBuffer));

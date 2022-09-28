@@ -49,6 +49,16 @@ export default async function replicateHistory(program) {
     const historyFileMeta = await fs.readJSON(latestHistoryMeta);
     let historyFileTimestamp = parseISO(historyFileMeta.timestamp);
 
+    const historyFileAgeInDays = differenceInCalendarDays(
+      Date.now(),
+      historyFileTimestamp
+    );
+
+    if (historyFileAgeInDays < 1) {
+      logger('History file is updated.');
+      return;
+    }
+
     // Calculate next day sequence number from current timestamp
     const nextDaySequenceNumber = (
       differenceInCalendarDays(
