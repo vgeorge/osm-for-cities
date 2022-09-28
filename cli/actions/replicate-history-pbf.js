@@ -19,7 +19,7 @@ const latestHistoryMeta = path.join(
 const fistDailyChangefileTimestamp = parseISO("2012-09-13T00:00:00Z");
 
 async function updateHistoryFileMeta(historyFilePath) {
-  logger("Reading history file timestamp...");
+  logger("Updating history file timestamp in meta JSON file...");
   time("Duration of timestamp update");
   const { stdout } = await execa("osmium", [
     "fileinfo",
