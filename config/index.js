@@ -2,9 +2,8 @@ import * as path from "path";
 
 const basePath = path.resolve();
 
-
-
-export const dataPath = path.join(basePath, "data");
+export const dataPath =
+  process.env.OGH_DATA_PATH || path.join(basePath, "..", "ogh-data");
 export const historyPbfPath =
   process.env.HISTORY_PBF_PATH || path.join(dataPath, "history-pbf");
 
@@ -16,7 +15,14 @@ export const historyPbfPath =
 
 // Base directories
 // export const dataPath = path.join(basePath, "data", "br");
-// export const gitPath = path.join(dataPath, "git");
+export const countriesGitHistoryPath =
+  process.env.COUNTRIES_GIT_HISTORY_PATH ||
+  path.join(dataPath, "countries-git-history");
+
+export const countriesExtractsPath = path.join(
+  dataPath,
+  "countries-extracts"
+);
 
 // // Areas
 // export const areasPath = path.join(dataPath, "areas");

@@ -1,5 +1,5 @@
 import fs from "fs-extra";
-import { historyPbfPath } from "../../config/paths.js";
+import { historyPbfPath } from "../../config/index.js";
 import execa from "../../utils/execa.js";
 import * as path from "path";
 import { differenceInCalendarDays, parseISO } from "date-fns";
