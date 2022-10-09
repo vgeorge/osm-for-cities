@@ -7,4 +7,4 @@ data/br/osm
 data/br/osmium
 data/history-pbf
 # data/br
-docker/postgres-data
+docker-data
