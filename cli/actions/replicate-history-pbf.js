@@ -1,15 +1,10 @@
 import fs from "fs-extra";
-import { historyPbfPath } from "../../config/index.js";
+import { historyPbfPath, latestHistoryFilePath } from "../../config/index.js";
 import execa from "../../utils/execa.js";
 import * as path from "path";
 import { differenceInCalendarDays, parseISO } from "date-fns";
 import { downloadFile } from "../utils/download.js";
 import logger, { time, timeEnd } from "../../utils/logger.js";
-
-const latestHistoryFilePath = path.join(
-  historyPbfPath,
-  "history-latest.osh.pbf"
-);
 
 const latestHistoryMeta = path.join(
   historyPbfPath,
