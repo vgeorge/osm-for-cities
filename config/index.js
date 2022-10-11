@@ -4,8 +4,23 @@ const basePath = path.resolve();
 
 export const dataPath =
   process.env.OGH_DATA_PATH || path.join(basePath, "..", "ogh-data");
+
+/**
+ * HISTORY PBF
+ */
+
 export const historyPbfPath =
   process.env.HISTORY_PBF_PATH || path.join(dataPath, "history-pbf");
+
+export const latestHistoryFilePath = path.join(
+  historyPbfPath,
+  "history-latest.osh.pbf"
+);
+
+export const selectedHistoryFilePath = path.join(
+  historyPbfPath,
+  "history-latest-selected.osh.pbf"
+);
 
 // Data files
 // export const municipalitiesCsvFile = path.resolve(
@@ -19,10 +34,7 @@ export const countriesGitHistoryPath =
   process.env.COUNTRIES_GIT_HISTORY_PATH ||
   path.join(dataPath, "countries-git-history");
 
-export const countriesExtractsPath = path.join(
-  dataPath,
-  "countries-extracts"
-);
+export const countriesExtractsPath = path.join(dataPath, "countries-extracts");
 
 // // Areas
 // export const areasPath = path.join(dataPath, "areas");
