@@ -36,30 +36,30 @@ export const countriesGitHistoryPath =
 
 export const countriesExtractsPath = path.join(dataPath, "countries-extracts");
 
-// // Areas
-// export const areasPath = path.join(dataPath, "areas");
-// export const areasPolysPath = path.join(areasPath, "poly");
-// export const areasUfsPolyPath = path.join(areasPolysPath, "ufs");
-// export const areasMicroregionsPolyPath = path.join(
-//   areasPolysPath,
-//   "microregions"
-// );
-// export const areasMunicipalitiesPolyPath = path.join(
-//   areasPolysPath,
-//   "municipalities"
-// );
+// Areas
+export const brPolyfilesPath = path.join(dataPath, "polyfiles", "br");
+export const brUfsPolyfilesPath = path.join(brPolyfilesPath, "ufs");
+export const brMicroregionsPolyfilesPath = path.join(
+  brPolyfilesPath,
+  "microregions"
+);
+export const brMunicipalitiesPolyfilesPath = path.join(
+  brPolyfilesPath,
+  "municipalities"
+);
 
 // // Osmium
-// export const osmiumPath = path.join(dataPath, "osmium");
-// export const osmiumUfConfigFile = path.join(osmiumPath, "ufs.conf");
-// export const osmiumMicroregionConfigPath = path.join(
-//   osmiumPath,
-//   "microregions"
-// );
-// export const osmiumMunicipalitiesConfigPath = path.join(
-//   osmiumPath,
-//   "municipalities"
-// );
+export const osmiumConfigPath = path.join(dataPath, "osmium-config");
+export const brOsmiumConfigPath = path.join(osmiumConfigPath, "br");
+export const brUfsOsmiumConfigFile = path.join(brOsmiumConfigPath, "ufs.conf");
+export const brMicroregionsConfigPath = path.join(
+  brOsmiumConfigPath,
+  "microregions"
+);
+export const brMunicipalitiesConfigPath = path.join(
+  brOsmiumConfigPath,
+  "municipalities"
+);
 
 // // OSM Data
 // export const osmPath = path.join(dataPath, "osm");
@@ -72,17 +72,17 @@ export const countriesExtractsPath = path.join(dataPath, "countries-extracts");
 //   osmPath,
 //   "brazil-current-day.osm.pbf"
 // );
-// export const osmCurrentDayPath = path.join(osmPath, "current-day");
-// export const osmCurrentDayUfsPath = path.join(osmCurrentDayPath, "ufs");
-// export const osmCurrentDayMicroregionsPath = path.join(
-//   osmCurrentDayPath,
-//   "microregions"
-// );
-// export const osmCurrentDayMunicipalitiesPath = path.join(
-//   osmCurrentDayPath,
-//   "municipalities"
-// );
-// export const osmCurrentDayDatasetsPath = path.join(
-//   osmCurrentDayPath,
-//   "datasets"
-// );
+export const brCurrentDayPbfPath = path.join(dataPath, "current-day-pbf", "br");
+export const brCurrentDayUfsPath = path.join(brCurrentDayPbfPath, "ufs");
+export const brCurrentDayMicroregionsPath = path.join(
+  brCurrentDayPbfPath,
+  "microregions"
+);
+export const brCurrentDayMunicipalitiesPath = path.join(
+  brCurrentDayPbfPath,
+  "municipalities"
+);
+export const brCurrentDayDatasetsPath = path.join(
+  brCurrentDayPbfPath,
+  "datasets"
+);

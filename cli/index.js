@@ -5,6 +5,7 @@ import replicateHistory from "./actions/replicate-history-pbf.js";
 import ingestDailyExtract from "./actions/ingest-daily-extract/index.js";
 import extractSelectedTags from "./actions/extract-selected-tags.js";
 import logger from "../utils/logger.js";
+import buildOsmiumConfig from "./actions/generate-osmium-config/br.js";
 
 const pkg = await fs.readJson("./package.json");
 
@@ -19,6 +20,11 @@ program
   .command("replicate-history-pbf")
   .description("Replicate history PBF file to the current day")
   .action(() => replicateHistory(program));
+
+program
+  .command("generate-osmium-config")
+  .description("Generate configuration files for Osmium")
+  .action(buildOsmiumConfig);
 
 program
   .command("extract-selected-tags")

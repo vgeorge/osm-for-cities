@@ -9,6 +9,8 @@ Create a local folder outside the repository tree to keep git history repositori
 
 Download the latest [OSM history PBF file](https://planet.osm.org/pbf/full-history) (preferably via [torrent](https://planet.osm.org/pbf/full-history/history-latest.osm.pbf.torrent)) to `{OGH_DATA_PATH}/history-pbf` folder and make sure it is named `history-latest.osh.pbf`.
 
+Download [polyfiles.zip](https://www.dropbox.com/s/nvutp2fcg75fcc6/polyfiles.zip?dl=0) and expand it into `OGH_DATA_PATH` folder. These are the polyfiles used by Osmium to extract countries, regions and sub-regions.
+
 Install dependencies:
 
 - [Node](http://nodejs.org/) (see [.nvmrc](./.nvmrc)) (To manage multiple node versions we recommend [nvm](https://github.com/creationix/nvm))
@@ -39,10 +41,17 @@ Migrate the database:
 yarn migrate
 ```
 
-Run daily updates to the current day:
+Generate Osmium configuration files:
 
 ```sh
-yarn cli daily-update --recursive
+yarn cli build-osmium-config
+```
+
+
+Ingest daily extracts to the current day:
+
+```sh
+yarn cli ingest-daily-extract --recursive
 ```
 
 Start web server:
