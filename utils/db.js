@@ -8,7 +8,7 @@ export async function getDatasetTypes() {
 }
 
 export async function getBrMunicipalities() {
-  return db("areas").select().where("countryIso", "BRA").limit(10);
+  return db("areas").select().where("countryIso", "BRA");
 }
 
 export async function closeDb() {

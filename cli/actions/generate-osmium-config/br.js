@@ -17,7 +17,6 @@ import {
 import { closeDb, getBrMunicipalities } from "../../../utils/db.js";
 import logger from "../../../utils/logger.js";
 
-
 /**
  * Osmium config files require absolute paths. These scripts will generate
  * them based on the location of polyfiles and PBF files

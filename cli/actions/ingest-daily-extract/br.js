@@ -1,48 +1,39 @@
 import fs from "fs-extra";
 import simpleGit from "simple-git";
 import path from "path";
-import { countriesExtractsPath, countriesGitHistoryPath } from "../../../config/index.js";
+import {
+  brCurrentDayDatasetsPath,
+  brCurrentDayMicroregionsPath,
+  brCurrentDayMunicipalitiesPath,
+  brCurrentDayUfsPath,
+  brMicroregionsConfigPath,
+  brMunicipalitiesConfigPath,
+  brUfsOsmiumConfigFile,
+  countriesExtractsPath,
+  countriesGitHistoryPath,
+} from "../../../config/index.js";
 const gitHistoryPath = path.join(countriesGitHistoryPath, "br");
 
-// import {
-//   gitHistoryPath,
-//   // osmSelectedTagsFile,
-//   // osmiumUfConfigFile,
-//   // osmCurrentDayFile,
-//   // osmCurrentDayUfsPath,
-//   // osmiumMicroregionConfigPath,
-//   // osmCurrentDayMicroregionsPath,
-//   // osmiumMunicipalitiesConfigPath,
-//   // osmCurrentDayMunicipalitiesPath,
-//   // osmCurrentDayDatasetsPath,
-// } from "../../../config/paths.js";
+const GIT_HISTORY_START_DATE = "2010-01-01Z";
 
-import { parseISO, addDays, differenceInMilliseconds } from "date-fns";
+import { parseISO, addDays } from "date-fns";
 import logger from "../../../utils/logger.js";
-// import pbfIsEmpty from "../../../utils/pbf-is-empty.js";
+import pbfIsEmpty from "../../../utils/pbf-is-empty.js";
 import execa from "execa";
 import { execaToStdout } from "../../../utils/execa.js";
-// import pLimit from "p-limit";
-// import db from "../../../utils/db.js";
-// import cliProgress from "cli-progress";
+import pLimit from "p-limit";
+import {
+  closeDb,
+  getBrMunicipalities,
+  getDatasetTypes,
+} from "../../../utils/db.js";
+import cliProgress from "cli-progress";
 
-// async function getDatasetTypes() {
-//   return db("dataset_types").select();
-// }
-
-// async function getBrMunicipalities() {
-//   return db("areas").select().where("countryIso", "BRA");
-// }
-
-// const limit = pLimit(20);
+const limit = pLimit(20);
 
 // Currently only Brazil is supported
-const countryPath = path.join(countriesExtractsPath, 'br');
+const countryPath = path.join(countriesExtractsPath, "br");
 
-const historyFilePath = path.join(
-  countryPath,
-  "history-latest.osh.pbf"
-);
 const selectedHistoryFilePath = path.join(
   countryPath,
   "history-latest-selected.osh.pbf"
@@ -50,30 +41,18 @@ const selectedHistoryFilePath = path.join(
 
 const osmCurrentDayFilePath = path.join(countryPath, "day-extract.osm.pbf");
 
-
-
-// const statsFile = path.join(gitHistoryPath, "stats.json");
-const initialDate = "2010-01-01Z";
-
-// const trxProvider = db.transactionProvider();
-
-export default async function ingestDailyBrExtract() {
-
-  // const trxProvider = db.transactionProvider();
-  // const trx = await trxProvider();
-
-  // const start = Date.now();
-
-  // Init repository path
+export default async function ingestDailyBrExtract(options) {
+  // Init repository path, if it doesn't exist
   await fs.ensureDir(gitHistoryPath);
 
   // Initialize current date pointer
-  let currentDay = parseISO(initialDate);
+  let currentDay = parseISO(GIT_HISTORY_START_DATE);
 
+  // Create git client
   const git = await simpleGit({ baseDir: gitHistoryPath });
 
+  // If git history folder exist, get latest date
   if (await fs.pathExists(path.join(gitHistoryPath, ".git"))) {
-    // If git repository is initialized
     try {
       // Get last commit date
       const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
@@ -84,16 +63,19 @@ export default async function ingestDailyBrExtract() {
       // Increment pointer
       currentDay = addDays(currentDay, 1);
     } catch (error) {
-      logger("Could not find last commit date, using default.");
+      logger(
+        `Could not find last commit date, using ${GIT_HISTORY_START_DATE}.`
+      );
     }
   } else {
-    // Initialize git
+    // Or just initialize git repository
     await git.init();
   }
 
+  // Get current day timestamp
   const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
 
-  const filteringStart = Date.now();
+  // Extract OSM data from history file at the current date
   logger(`Filtering: ${currentDayISO}`);
   await execaToStdout("osmium", [
     "time-filter",
@@ -103,290 +85,261 @@ export default async function ingestDailyBrExtract() {
     "-o",
     osmCurrentDayFilePath,
   ]);
-  const filteringDurationMs = differenceInMilliseconds(
-    Date.now(),
-    filteringStart
-  );
 
-  if (await pbfIsEmpty(osmCurrentDayFile)) {
+  if (await pbfIsEmpty(osmCurrentDayFilePath)) {
     logger(`No data found, skipping ${currentDayISO}`);
     return;
   }
 
-  // // Clear UF path and split country file
-  // logger(`Splitting UFs...`);
-  // const splitUfStart = Date.now();
-  // await fs.remove(osmCurrentDayUfsPath);
-  // await fs.ensureDir(osmCurrentDayUfsPath);
-  // await execa(`osmium`, [
-  //   `extract`,
-  //   `-c`,
-  //   osmiumUfConfigFile,
-  //   osmCurrentDayFile,
-  //   `--overwrite`,
-  // ]);
-  // const splitUfDurationMs = differenceInMilliseconds(Date.now(), splitUfStart);
+  // Clear UF path and split country file
+  logger(`Splitting UFs...`);
+  await fs.remove(brCurrentDayUfsPath);
+  await fs.ensureDir(brCurrentDayUfsPath);
+  await execa(`osmium`, [
+    `extract`,
+    `-c`,
+    brUfsOsmiumConfigFile,
+    osmCurrentDayFilePath,
+    `--overwrite`,
+  ]);
 
-  // // Extract microregioes
-  // logger("Splitting microregions...");
-  // const splitMicroregionsStart = Date.now();
-  // const osmiumMicroregionsFiles = await fs.readdir(osmiumMicroregionConfigPath);
-  // await fs.emptyDir(osmCurrentDayMicroregionsPath);
-  // await Promise.all(
-  //   osmiumMicroregionsFiles.map((f) => {
-  //     return limit(async () => {
-  //       const ufId = f.split(".")[0];
-  //       await execa(`osmium`, [
-  //         `extract`,
-  //         `-c`,
-  //         path.join(osmiumMicroregionConfigPath, f),
-  //         path.join(osmCurrentDayUfsPath, `${ufId}.osm.pbf`),
-  //         `--overwrite`,
-  //       ]);
-  //     });
-  //   })
-  // );
-  // const splitMicroregionsDurationMs = differenceInMilliseconds(
-  //   Date.now(),
-  //   splitMicroregionsStart
-  // );
+  // Extract microregioes
+  logger("Splitting microregions...");
+  const osmiumMicroregionsFiles = await fs.readdir(brMicroregionsConfigPath);
+  await fs.emptyDir(brCurrentDayMicroregionsPath);
+  await Promise.all(
+    osmiumMicroregionsFiles.map((f) => {
+      return limit(async () => {
+        const ufId = f.split(".")[0];
+        await execa(`osmium`, [
+          `extract`,
+          `-c`,
+          path.join(brMicroregionsConfigPath, f),
+          path.join(brCurrentDayUfsPath, `${ufId}.osm.pbf`),
+          `--overwrite`,
+        ]);
+      });
+    })
+  );
 
-  // // Clear microregion empty files
-  // logger("Clearing empty microregion files...");
-  // await Promise.all(
-  //   (
-  //     await fs.readdir(osmCurrentDayMicroregionsPath)
-  //   ).map(async (f) => {
-  //     const filepath = path.join(osmCurrentDayMicroregionsPath, f);
-  //     return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
-  //   })
-  // );
+  // Clear microregion empty files
+  logger("Clearing empty microregion files...");
+  await Promise.all(
+    (
+      await fs.readdir(brCurrentDayMicroregionsPath)
+    ).map(async (f) => {
+      const filepath = path.join(brCurrentDayMicroregionsPath, f);
+      return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
+    })
+  );
 
   // logger("Splitting municipalities...");
-  // const splitMunicipalitiesStart = Date.now();
-  // const osmiumMunicipalitiesFiles = await fs.readdir(
-  //   osmiumMunicipalitiesConfigPath
-  // );
-  // await fs.remove(osmCurrentDayMunicipalitiesPath);
-  // await fs.ensureDir(osmCurrentDayMunicipalitiesPath);
-  // await Promise.all(
-  //   osmiumMunicipalitiesFiles.map(async (mrConf) => {
-  //     const mrId = mrConf.split(".")[0];
-  //     const sourcePath = path.join(
-  //       osmCurrentDayMicroregionsPath,
-  //       `${mrId}.osm.pbf`
-  //     );
+  const osmiumMunicipalitiesFiles = await fs.readdir(
+    brMunicipalitiesConfigPath
+  );
+  await fs.remove(brCurrentDayMunicipalitiesPath);
+  await fs.ensureDir(brCurrentDayMunicipalitiesPath);
+  await Promise.all(
+    osmiumMunicipalitiesFiles.map(async (mrConf) => {
+      const mrId = mrConf.split(".")[0];
+      const sourcePath = path.join(
+        brCurrentDayMicroregionsPath,
+        `${mrId}.osm.pbf`
+      );
 
-  //     // Bypass empty files
-  //     if (!(await fs.pathExists(sourcePath))) {
-  //       return;
-  //     }
+      // Bypass empty files
+      if (!(await fs.pathExists(sourcePath))) {
+        return;
+      }
 
-  //     // Execute
-  //     return (async () => {
-  //       await execa(`osmium`, [
-  //         `extract`,
-  //         `-c`,
-  //         path.join(osmiumMunicipalitiesConfigPath, mrConf),
-  //         sourcePath,
-  //         `--overwrite`,
-  //       ]);
-  //     })();
-  //   })
-  // );
+      // Execute
+      return (async () => {
+        await execa(`osmium`, [
+          `extract`,
+          `-c`,
+          path.join(brMunicipalitiesConfigPath, mrConf),
+          sourcePath,
+          `--overwrite`,
+        ]);
+      })();
+    })
+  );
 
-  // logger("Clearing empty municipalities files...");
-  // await Promise.all(
-  //   (
-  //     await fs.readdir(osmCurrentDayMunicipalitiesPath)
-  //   ).map(async (f) => {
-  //     const filepath = path.join(osmCurrentDayMunicipalitiesPath, f);
-  //     return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
-  //   })
-  // );
+  logger("Clearing empty municipalities files...");
+  await Promise.all(
+    (
+      await fs.readdir(brCurrentDayMunicipalitiesPath)
+    ).map(async (f) => {
+      const filepath = path.join(brCurrentDayMunicipalitiesPath, f);
+      return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
+    })
+  );
 
-  // /**
-  //  * Split municipalities in datasets
-  //  */
-  // logger(`Updating GeoJSON files...`);
-  // // Clear OSM datasets
-  // await fs.emptyDir(osmCurrentDayDatasetsPath);
+  /**
+   * Split municipalities in datasets
+   */
+  logger(`Updating GeoJSON files...`);
+  // Clear OSM datasets
+  await fs.emptyDir(brCurrentDayDatasetsPath);
 
-  // // Update GeoJSON files
-  // const municipalities = await getBrMunicipalities();
-  // const datasetsTypes = await getDatasetTypes();
+  // Update GeoJSON files
+  const municipalities = await getBrMunicipalities();
+  const datasetsTypes = await getDatasetTypes();
 
-  // const geojsonProgressBar = new cliProgress.SingleBar(
-  //   {},
-  //   cliProgress.Presets.shades_classic
-  // );
-  // geojsonProgressBar.start(municipalities.length, 0);
-  // await Promise.all(
-  //   municipalities.map(async (m) =>
-  //     limit(async () => {
-  //       const {
-  //         ref: municipalityId,
-  //         slug: municipalitySlug,
-  //         meta: { uf: municipalityUf },
-  //       } = m;
+  const geojsonProgressBar = new cliProgress.SingleBar(
+    {},
+    cliProgress.Presets.shades_classic
+  );
+  geojsonProgressBar.start(municipalities.length, 0);
+  await Promise.all(
+    municipalities.map(async (m) =>
+      limit(async () => {
+        const {
+          ref: municipalityId,
+          slug: municipalitySlug,
+          meta: { uf: municipalityUf },
+        } = m;
 
-  //       const municipalityFile = path.join(
-  //         osmCurrentDayMunicipalitiesPath,
-  //         `${municipalityId}.osm.pbf`
-  //       );
+        const municipalityFile = path.join(
+          brCurrentDayMunicipalitiesPath,
+          `${municipalityId}.osm.pbf`
+        );
 
-  //       // Bypass if municipality is empty
-  //       if (!(await fs.pathExists(municipalityFile))) {
-  //         geojsonProgressBar.increment();
-  //         return;
-  //       }
+        // Bypass if municipality is empty
+        if (!(await fs.pathExists(municipalityFile))) {
+          geojsonProgressBar.increment();
+          return;
+        }
 
-  //       // Create target geojson path
-  //       const geojsonPath = path.join(
-  //         gitHistoryPath,
-  //         municipalityUf,
-  //         municipalitySlug
-  //       );
-  //       await fs.ensureDir(geojsonPath);
+        // Create target geojson path
+        const geojsonPath = path.join(
+          gitHistoryPath,
+          municipalityUf,
+          municipalitySlug
+        );
+        await fs.ensureDir(geojsonPath);
 
-  //       // Extract datasets
-  //       await Promise.all(
-  //         datasetsTypes.map(async (datasetType) => {
-  //           const datasetFilePath = path.join(
-  //             osmCurrentDayDatasetsPath,
-  //             `${municipalityId}-${datasetType.slug}.osm.pbf`
-  //           );
+        // Extract datasets
+        await Promise.all(
+          datasetsTypes.map(async (datasetType) => {
+            const datasetFilePath = path.join(
+              brCurrentDayDatasetsPath,
+              `${municipalityId}-${datasetType.slug}.osm.pbf`
+            );
 
-  //           await execa("osmium", [
-  //             "tags-filter",
-  //             municipalityFile,
-  //             "-v",
-  //             "--overwrite",
-  //             datasetType.osmium_filter,
-  //             "-o",
-  //             datasetFilePath,
-  //           ]);
+            await execa("osmium", [
+              "tags-filter",
+              municipalityFile,
+              "-v",
+              "--overwrite",
+              datasetType.osmium_filter,
+              "-o",
+              datasetFilePath,
+            ]);
 
-  //           const stats = {
-  //             featureCount: 0,
-  //           };
+            const stats = {
+              featureCount: 0,
+            };
 
-  //           if (!(await pbfIsEmpty(datasetFilePath))) {
-  //             const geojsonFile = path.join(
-  //               geojsonPath,
-  //               `${datasetType.slug}.geojson`
-  //             );
+            if (!(await pbfIsEmpty(datasetFilePath))) {
+              const geojsonFile = path.join(
+                geojsonPath,
+                `${datasetType.slug}.geojson`
+              );
 
-  //             const { stdout: geojsonString } = await execa(
-  //               `./node_modules/.bin/osmtogeojson ${datasetFilePath}`,
-  //               { shell: true }
-  //             );
+              const { stdout: geojsonString } = await execa(
+                `./node_modules/.bin/osmtogeojson ${datasetFilePath}`,
+                { shell: true }
+              );
 
-  //             const geojson = JSON.parse(geojsonString);
+              const geojson = JSON.parse(geojsonString);
 
-  //             const requiredTags = datasetType.required_tags.split(",");
-  //             const recommendedTags = datasetType.recommended_tags.split(",");
-  //             stats.featureCount = geojson.features.length;
+              const requiredTags = datasetType.required_tags.split(",");
+              const recommendedTags = datasetType.recommended_tags.split(",");
+              stats.featureCount = geojson.features.length;
 
-  //             // Init counters
-  //             let requiredFeatureTagsCount = 0;
-  //             let recommendedFeatureTagsCount = 0;
-  //             stats.requiredTags = {};
-  //             stats.recommendedTags = {};
-  //             requiredTags.forEach((tag) => {
-  //               stats.requiredTags[tag] = 0;
-  //             });
-  //             recommendedTags.forEach((tag) => {
-  //               stats.recommendedTags[tag] = 0;
-  //             });
+              // Init counters
+              let requiredFeatureTagsCount = 0;
+              let recommendedFeatureTagsCount = 0;
+              stats.requiredTags = {};
+              stats.recommendedTags = {};
+              requiredTags.forEach((tag) => {
+                stats.requiredTags[tag] = 0;
+              });
+              recommendedTags.forEach((tag) => {
+                stats.recommendedTags[tag] = 0;
+              });
 
-  //             // Count tags in features
-  //             geojson.features.forEach((feature) => {
-  //               requiredTags.forEach((tag) => {
-  //                 if (feature.properties[tag]) {
-  //                   ++stats.requiredTags[tag];
-  //                   ++requiredFeatureTagsCount;
-  //                 }
-  //               });
-  //               recommendedTags.forEach((tag) => {
-  //                 if (feature.properties[tag]) {
-  //                   ++stats.recommendedTags[tag];
-  //                   ++recommendedFeatureTagsCount;
-  //                 }
-  //               });
-  //             });
+              // Count tags in features
+              geojson.features.forEach((feature) => {
+                requiredTags.forEach((tag) => {
+                  if (feature.properties[tag]) {
+                    ++stats.requiredTags[tag];
+                    ++requiredFeatureTagsCount;
+                  }
+                });
+                recommendedTags.forEach((tag) => {
+                  if (feature.properties[tag]) {
+                    ++stats.recommendedTags[tag];
+                    ++recommendedFeatureTagsCount;
+                  }
+                });
+              });
 
-  //             // Calculate coverage
-  //             stats.requiredTagsCoverage =
-  //               (requiredFeatureTagsCount /
-  //                 (stats.featureCount * requiredTags.length)) *
-  //               100;
-  //             stats.recommendedTagsCoverage =
-  //               (recommendedFeatureTagsCount /
-  //                 (stats.featureCount * recommendedTags.length)) *
-  //               100;
+              // Calculate coverage
+              stats.requiredTagsCoverage =
+                (requiredFeatureTagsCount /
+                  (stats.featureCount * requiredTags.length)) *
+                100;
+              stats.recommendedTagsCoverage =
+                (recommendedFeatureTagsCount /
+                  (stats.featureCount * recommendedTags.length)) *
+                100;
 
-  //             // Write GeoJSON file
-  //             await fs.writeJSON(
-  //               geojsonFile,
-  //               {
-  //                 type: "FeatureCollection",
-  //                 features: geojson.features.map((f) => {
-  //                   // Strip user data
-  //                   // eslint-disable-next-line
-  //                   const { user, uid, ...clearedProperties } = f.properties;
-  //                   return {
-  //                     ...f,
-  //                     properties: clearedProperties,
-  //                   };
-  //                 }),
-  //               },
-  //               { spaces: 2 }
-  //             );
-  //           }
+              // Write GeoJSON file
+              await fs.writeJSON(
+                geojsonFile,
+                {
+                  type: "FeatureCollection",
+                  features: geojson.features.map((f) => {
+                    // Strip user data
+                    // eslint-disable-next-line
+                    const { user, uid, ...clearedProperties } = f.properties;
+                    return {
+                      ...f,
+                      properties: clearedProperties,
+                    };
+                  }),
+                },
+                { spaces: 2 }
+              );
+            }
+          })
+        );
 
-  //           // Add stats to the database
-  //           await trx("dataset_stats").insert({
-  //             area_id: m.id,
-  //             dataset_type_id: datasetType.id,
-  //             time: currentDay,
-  //             feature_count: stats.featureCount,
-  //             required_tags_coverage: stats.requiredTagsCoverage,
-  //             recommended_tags_coverage: stats.recommendedTagsCoverage,
-  //           });
-  //         })
-  //       );
+        geojsonProgressBar.increment();
+      })
+    )
+  );
 
-  //       geojsonProgressBar.increment();
-  //     })
-  //   )
-  // );
+  geojsonProgressBar.stop();
 
-  // geojsonProgressBar.stop();
+  await fs.writeJSON(path.join(gitHistoryPath, "package.json"), {
+    updatedAt: currentDay,
+  });
 
-  // const splitMunicipalitiesDurationMs = differenceInMilliseconds(
-  //   Date.now(),
-  //   splitMunicipalitiesStart
-  // );
+  await git
+    .env({
+      GIT_AUTHOR_NAME: "Mapas Livres",
+      GIT_AUTHOR_EMAIL: "https://github.com/mapaslivres",
+      GIT_COMMITTER_DATE: currentDayISO,
+    })
+    .add(".")
+    .commit(`Status of ${currentDayISO}`);
 
-  // await fs.writeJSON(path.join(gitHistoryPath, "package.json"), {
-  //   updatedAt: currentDay,
-  // });
-
-  // await trx.commit();
-
-  // await git
-  //   .env({
-  //     GIT_AUTHOR_NAME: "Mapas Livres",
-  //     GIT_AUTHOR_EMAIL: "https://github.com/mapaslivres",
-  //     GIT_COMMITTER_DATE: currentDayISO,
-  //   })
-  //   .add(".")
-  //   .commit(`Status of ${currentDayISO}`);
-
-  // if (options && options.recursive) {
-  //   ingestDailyDiff(options);
-  // } else {
-  //   await db.destroy();
-  // }
+  if (options && options.recursive) {
+    ingestDailyBrExtract(options);
+  } else {
+    await closeDb();
+  }
 }

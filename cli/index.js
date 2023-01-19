@@ -33,6 +33,7 @@ program
 
 program
   .command("ingest-daily-extract")
+  .option("-r, --recursive", "Repeat updates to present day", false)
   .description(
     "Ingest a daily extract from history PBF file to the database and git repository"
   )
