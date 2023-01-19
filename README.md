@@ -44,9 +44,8 @@ yarn migrate
 Generate Osmium configuration files:
 
 ```sh
-yarn cli build-osmium-config
+yarn cli generate-osmium-config
 ```
-
 
 Ingest daily extracts to the current day:
 
