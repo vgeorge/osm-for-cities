@@ -1,25 +1,25 @@
 import {
-  osmPath,
-  osmLatestFile,
-  osmSelectedTagsFile,
-} from "../../config/paths.js";
-import fs from "fs-extra";
-import exec from "../../utils/exec.js";
+  latestHistoryFilePath,
+  selectedHistoryFilePath,
+} from "../../config/index.js";
 import db from "../../utils/db.js";
+import { execaToStdout } from "../../utils/execa.js";
 
+/**
+ * This action filters the history file by Osmium tag filters from the database
+ */
 export default async function extractSelectedTags() {
   const osmiumFilters = await (
     await db("dataset_types").select("osmium_filter")
   ).map((f) => f.osmium_filter);
-  await fs.ensureDir(osmPath);
-  await exec("osmium", [
+  await execaToStdout("osmium", [
     "tags-filter",
-    osmLatestFile,
+    latestHistoryFilePath,
     "-v",
     "--overwrite",
     ...osmiumFilters,
     "-o",
-    osmSelectedTagsFile,
+    selectedHistoryFilePath,
   ]);
 
   return db.destroy();

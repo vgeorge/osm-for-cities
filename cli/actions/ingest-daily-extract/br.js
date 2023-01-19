@@ -2,57 +2,57 @@ import fs from "fs-extra";
 import simpleGit from "simple-git";
 import path from "path";
 import {
-  gitPath,
-  osmSelectedTagsFile,
-  osmiumUfConfigFile,
-  osmCurrentDayFile,
-  osmCurrentDayUfsPath,
-  osmiumMicroregionConfigPath,
-  osmCurrentDayMicroregionsPath,
-  osmiumMunicipalitiesConfigPath,
-  osmCurrentDayMunicipalitiesPath,
-  osmCurrentDayDatasetsPath,
-} from "../../config/paths.js";
+  brCurrentDayDatasetsPath,
+  brCurrentDayMicroregionsPath,
+  brCurrentDayMunicipalitiesPath,
+  brCurrentDayUfsPath,
+  brMicroregionsConfigPath,
+  brMunicipalitiesConfigPath,
+  brUfsOsmiumConfigFile,
+  countriesExtractsPath,
+  countriesGitHistoryPath,
+} from "../../../config/index.js";
+const gitHistoryPath = path.join(countriesGitHistoryPath, "br");
 
-import { parseISO, addDays, differenceInMilliseconds } from "date-fns";
-import logger from "../../utils/logger.js";
-import pbfIsEmpty from "../../utils/pbf-is-empty.js";
+const GIT_HISTORY_START_DATE = "2010-01-01Z";
+
+import { parseISO, addDays } from "date-fns";
+import logger from "../../../utils/logger.js";
+import pbfIsEmpty from "../../../utils/pbf-is-empty.js";
 import execa from "execa";
+import { execaToStdout } from "../../../utils/execa.js";
 import pLimit from "p-limit";
-import db from "../../utils/db.js";
+import {
+  closeDb,
+  getBrMunicipalities,
+  getDatasetTypes,
+} from "../../../utils/db.js";
 import cliProgress from "cli-progress";
-
-async function getDatasetTypes() {
-  return db("dataset_types").select();
-}
-
-async function getBrMunicipalities() {
-  return db("areas").select().where("countryIso", "BRA");
-}
 
 const limit = pLimit(20);
 
-const statsFile = path.join(gitPath, "stats.json");
-const initialDate = "2010-01-01Z";
+// Currently only Brazil is supported
+const countryPath = path.join(countriesExtractsPath, "br");
 
-const trxProvider = db.transactionProvider();
+const selectedHistoryFilePath = path.join(
+  countryPath,
+  "history-latest-selected.osh.pbf"
+);
 
-export default async function dailyUpdate(options) {
-  const trxProvider = db.transactionProvider();
-  const trx = await trxProvider();
+const osmCurrentDayFilePath = path.join(countryPath, "day-extract.osm.pbf");
 
-  const start = Date.now();
-
-  // Init repository path
-  await fs.ensureDir(gitPath);
+export default async function ingestDailyBrExtract(options) {
+  // Init repository path, if it doesn't exist
+  await fs.ensureDir(gitHistoryPath);
 
   // Initialize current date pointer
-  let currentDay = parseISO(initialDate);
+  let currentDay = parseISO(GIT_HISTORY_START_DATE);
 
-  const git = await simpleGit({ baseDir: gitPath });
+  // Create git client
+  const git = await simpleGit({ baseDir: gitHistoryPath });
 
-  if (await fs.pathExists(path.join(gitPath, ".git"))) {
-    // If git repository is initialized
+  // If git history folder exist, get latest date
+  if (await fs.pathExists(path.join(gitHistoryPath, ".git"))) {
     try {
       // Get last commit date
       const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
@@ -63,54 +63,50 @@ export default async function dailyUpdate(options) {
       // Increment pointer
       currentDay = addDays(currentDay, 1);
     } catch (error) {
-      logger("Could not find last commit date, using default.");
+      logger(
+        `Could not find last commit date, using ${GIT_HISTORY_START_DATE}.`
+      );
     }
   } else {
-    // Initialize git
+    // Or just initialize git repository
     await git.init();
   }
 
+  // Get current day timestamp
   const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
 
-  const filteringStart = Date.now();
+  // Extract OSM data from history file at the current date
   logger(`Filtering: ${currentDayISO}`);
-  await execa("osmium", [
+  await execaToStdout("osmium", [
     "time-filter",
-    osmSelectedTagsFile,
+    selectedHistoryFilePath,
     currentDayISO,
     "--overwrite",
     "-o",
-    osmCurrentDayFile,
+    osmCurrentDayFilePath,
   ]);
-  const filteringDurationMs = differenceInMilliseconds(
-    Date.now(),
-    filteringStart
-  );
 
-  if (await pbfIsEmpty(osmCurrentDayFile)) {
+  if (await pbfIsEmpty(osmCurrentDayFilePath)) {
     logger(`No data found, skipping ${currentDayISO}`);
     return;
   }
 
   // Clear UF path and split country file
   logger(`Splitting UFs...`);
-  const splitUfStart = Date.now();
-  await fs.remove(osmCurrentDayUfsPath);
-  await fs.ensureDir(osmCurrentDayUfsPath);
+  await fs.remove(brCurrentDayUfsPath);
+  await fs.ensureDir(brCurrentDayUfsPath);
   await execa(`osmium`, [
     `extract`,
     `-c`,
-    osmiumUfConfigFile,
-    osmCurrentDayFile,
+    brUfsOsmiumConfigFile,
+    osmCurrentDayFilePath,
     `--overwrite`,
   ]);
-  const splitUfDurationMs = differenceInMilliseconds(Date.now(), splitUfStart);
 
   // Extract microregioes
   logger("Splitting microregions...");
-  const splitMicroregionsStart = Date.now();
-  const osmiumMicroregionsFiles = await fs.readdir(osmiumMicroregionConfigPath);
-  await fs.emptyDir(osmCurrentDayMicroregionsPath);
+  const osmiumMicroregionsFiles = await fs.readdir(brMicroregionsConfigPath);
+  await fs.emptyDir(brCurrentDayMicroregionsPath);
   await Promise.all(
     osmiumMicroregionsFiles.map((f) => {
       return limit(async () => {
@@ -118,41 +114,36 @@ export default async function dailyUpdate(options) {
         await execa(`osmium`, [
           `extract`,
           `-c`,
-          path.join(osmiumMicroregionConfigPath, f),
-          path.join(osmCurrentDayUfsPath, `${ufId}.osm.pbf`),
+          path.join(brMicroregionsConfigPath, f),
+          path.join(brCurrentDayUfsPath, `${ufId}.osm.pbf`),
           `--overwrite`,
         ]);
       });
     })
-  );
-  const splitMicroregionsDurationMs = differenceInMilliseconds(
-    Date.now(),
-    splitMicroregionsStart
   );
 
   // Clear microregion empty files
   logger("Clearing empty microregion files...");
   await Promise.all(
     (
-      await fs.readdir(osmCurrentDayMicroregionsPath)
+      await fs.readdir(brCurrentDayMicroregionsPath)
     ).map(async (f) => {
-      const filepath = path.join(osmCurrentDayMicroregionsPath, f);
+      const filepath = path.join(brCurrentDayMicroregionsPath, f);
       return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
     })
   );
 
-  logger("Splitting municipalities...");
-  const splitMunicipalitiesStart = Date.now();
+  // logger("Splitting municipalities...");
   const osmiumMunicipalitiesFiles = await fs.readdir(
-    osmiumMunicipalitiesConfigPath
+    brMunicipalitiesConfigPath
   );
-  await fs.remove(osmCurrentDayMunicipalitiesPath);
-  await fs.ensureDir(osmCurrentDayMunicipalitiesPath);
+  await fs.remove(brCurrentDayMunicipalitiesPath);
+  await fs.ensureDir(brCurrentDayMunicipalitiesPath);
   await Promise.all(
     osmiumMunicipalitiesFiles.map(async (mrConf) => {
       const mrId = mrConf.split(".")[0];
       const sourcePath = path.join(
-        osmCurrentDayMicroregionsPath,
+        brCurrentDayMicroregionsPath,
         `${mrId}.osm.pbf`
       );
 
@@ -166,7 +157,7 @@ export default async function dailyUpdate(options) {
         await execa(`osmium`, [
           `extract`,
           `-c`,
-          path.join(osmiumMunicipalitiesConfigPath, mrConf),
+          path.join(brMunicipalitiesConfigPath, mrConf),
           sourcePath,
           `--overwrite`,
         ]);
@@ -177,9 +168,9 @@ export default async function dailyUpdate(options) {
   logger("Clearing empty municipalities files...");
   await Promise.all(
     (
-      await fs.readdir(osmCurrentDayMunicipalitiesPath)
+      await fs.readdir(brCurrentDayMunicipalitiesPath)
     ).map(async (f) => {
-      const filepath = path.join(osmCurrentDayMunicipalitiesPath, f);
+      const filepath = path.join(brCurrentDayMunicipalitiesPath, f);
       return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
     })
   );
@@ -189,7 +180,7 @@ export default async function dailyUpdate(options) {
    */
   logger(`Updating GeoJSON files...`);
   // Clear OSM datasets
-  await fs.emptyDir(osmCurrentDayDatasetsPath);
+  await fs.emptyDir(brCurrentDayDatasetsPath);
 
   // Update GeoJSON files
   const municipalities = await getBrMunicipalities();
@@ -210,7 +201,7 @@ export default async function dailyUpdate(options) {
         } = m;
 
         const municipalityFile = path.join(
-          osmCurrentDayMunicipalitiesPath,
+          brCurrentDayMunicipalitiesPath,
           `${municipalityId}.osm.pbf`
         );
 
@@ -222,7 +213,7 @@ export default async function dailyUpdate(options) {
 
         // Create target geojson path
         const geojsonPath = path.join(
-          gitPath,
+          gitHistoryPath,
           municipalityUf,
           municipalitySlug
         );
@@ -232,7 +223,7 @@ export default async function dailyUpdate(options) {
         await Promise.all(
           datasetsTypes.map(async (datasetType) => {
             const datasetFilePath = path.join(
-              osmCurrentDayDatasetsPath,
+              brCurrentDayDatasetsPath,
               `${municipalityId}-${datasetType.slug}.osm.pbf`
             );
 
@@ -323,16 +314,6 @@ export default async function dailyUpdate(options) {
                 { spaces: 2 }
               );
             }
-
-            // Add stats to the database
-            await trx("dataset_stats").insert({
-              area_id: m.id,
-              dataset_type_id: datasetType.id,
-              time: currentDay,
-              feature_count: stats.featureCount,
-              required_tags_coverage: stats.requiredTagsCoverage,
-              recommended_tags_coverage: stats.recommendedTagsCoverage,
-            });
           })
         );
 
@@ -343,16 +324,9 @@ export default async function dailyUpdate(options) {
 
   geojsonProgressBar.stop();
 
-  const splitMunicipalitiesDurationMs = differenceInMilliseconds(
-    Date.now(),
-    splitMunicipalitiesStart
-  );
-
-  await fs.writeJSON(path.join(gitPath, "package.json"), {
+  await fs.writeJSON(path.join(gitHistoryPath, "package.json"), {
     updatedAt: currentDay,
   });
-
-  await trx.commit();
 
   await git
     .env({
@@ -364,8 +338,8 @@ export default async function dailyUpdate(options) {
     .commit(`Status of ${currentDayISO}`);
 
   if (options && options.recursive) {
-    dailyUpdate(options);
+    ingestDailyBrExtract(options);
   } else {
-    await db.destroy();
+    await closeDb();
   }
 }
