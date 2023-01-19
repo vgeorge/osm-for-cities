@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "http-server data -p 2000",
     "cli": "node cli/index.js",
-    "lint": "eslint cli migrations src utils",
+    "lint": "eslint cli migrations utils",
     "migrate": "knex migrate:latest"
   },
   "author": "",
