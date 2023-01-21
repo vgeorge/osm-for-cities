@@ -1,13 +1,5 @@
 
-# OSM git history
-
-A platform for distributing current and past OpenStreetMap data extracts based on git.
-
-This repository includes the following components of OGH:
-
-- `/cli`: command line interface to manage the OSM data git repository
-- `/web`: Next.js server for the platform website
-- `/db`: PostgreSQL server configuration
+# OGH - Command line interface
 
 ## Getting started
 

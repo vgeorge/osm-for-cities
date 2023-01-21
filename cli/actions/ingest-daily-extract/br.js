@@ -22,11 +22,7 @@ import pbfIsEmpty from "../../../utils/pbf-is-empty.js";
 import execa from "execa";
 import { execaToStdout } from "../../../utils/execa.js";
 import pLimit from "p-limit";
-import {
-  closeDb,
-  getBrMunicipalities,
-  getDatasetTypes,
-} from "../../../utils/db.js";
+import { getBrMunicipalities, getDatasetTypes } from "../../../utils/db.js";
 import cliProgress from "cli-progress";
 
 const limit = pLimit(20);
@@ -41,7 +37,7 @@ const selectedHistoryFilePath = path.join(
 
 const osmCurrentDayFilePath = path.join(countryPath, "day-extract.osm.pbf");
 
-export default async function ingestDailyBrExtract(options) {
+export default async function ingestDailyBrExtract() {
   // Init repository path, if it doesn't exist
   await fs.ensureDir(gitHistoryPath);
 
@@ -328,6 +324,7 @@ export default async function ingestDailyBrExtract(options) {
     updatedAt: currentDay,
   });
 
+  // Commit
   await git
     .env({
       GIT_AUTHOR_NAME: "Mapas Livres",
