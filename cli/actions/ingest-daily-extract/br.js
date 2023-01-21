@@ -336,10 +336,4 @@ export default async function ingestDailyBrExtract(options) {
     })
     .add(".")
     .commit(`Status of ${currentDayISO}`);
-
-  if (options && options.recursive) {
-    ingestDailyBrExtract(options);
-  } else {
-    await closeDb();
-  }
 }
