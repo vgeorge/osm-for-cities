@@ -3,6 +3,11 @@
 
 A platform for distributing current and past OpenStreetMap data extracts based on git.
 
+## Requirements
+
+- osmium v1.14.0
+- Docker
+
 ## Getting started
 
 Create a local folder outside the repository tree to keep git history repositories of countries (and other files). By default, a sibling folder in the repository tree named `ogh-data` will be used (`../ogh-data`). A custom path can be set usilng `OGH_DATA_PATH` environment variable.
@@ -51,12 +56,6 @@ Ingest daily extracts to the current day:
 
 ```sh
 yarn cli ingest-daily-extract --recursive
-```
-
-Start web server:
-
-```sh
-yarn serve
 ```
 
 ## License
