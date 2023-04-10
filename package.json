@@ -1,6 +1,6 @@
 {
   "name": "osm-git-history",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Track OSM datasets history with git",
   "scripts": {
     "serve": "http-server data -p 2000",
