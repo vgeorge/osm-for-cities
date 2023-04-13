@@ -1,8 +1,30 @@
 import * as path from "path";
+import loadCsv from "../utils/load-csv.js";
 
 const basePath = path.resolve();
 
-export const tmpDir = process.env.TMP_DIR || path.join("/", "tmp");
+/**
+ * URL of history file, use a small history file for development
+ */
+export const fullHistoryFileUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf"
+    : "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0";
+
+/**
+ * PRESETS
+ */
+
+// Async function to load presets from CSV file
+export const getPresets = async () =>
+  await loadCsv(path.join(basePath, "config", "presets.csv"));
+
+/**
+ * PATHS
+ */
+
+export const tmpDir =
+  process.env.TMP_DIR || path.join("/", "tmp", "osm-git-history");
 
 export const dataPath =
   process.env.OGH_DATA_PATH || path.join(basePath, "..", "ogh-data");
