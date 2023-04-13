@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fetch-full-history
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+            - name: scratch
+              emptyDir:
+                sizeLimit: 200Gi
+            # - name: output
+            #   persistentVolumeClaim:
+            #     claimName: ogh-data
+          containers:
+            - name: ogh-container
+              image: ogh-runner
+              args: ["/bin/sh", "-c", "echo Hello from my container"]
+          # volumeMounts:
+          #   - name: scratch
+          #     mountPath: /scratch
+          #   - name: output
+          #     mountPath: /output
+          restartPolicy: OnFailure

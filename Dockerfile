@@ -12,4 +12,3 @@ WORKDIR $HOME/app
 
 RUN yarn install
 
-CMD [ "sh", "-c", "while sleep 1000; do :; done"]
