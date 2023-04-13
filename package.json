@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "main": "cli/index.js",
   "dependencies": {
     "cli-progress": "^3.11.2",
     "commander": "^9.4.0",

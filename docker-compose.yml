@@ -1,14 +1,16 @@
 version: "3"
 
 services:
-  database:
-    image: timescale/timescaledb:latest-pg14
-    restart: 'always'
-    environment:
-      - POSTGRES_USER=docker
-      - POSTGRES_PASSWORD=docker
-      - PGDATA=/opt/postgres/data
-    ports:
-      - "5433:5432"
+  runner:
+    platform: linux/amd64
+    build: .
     volumes:
-      - ./docker-data/postgres:/opt/postgres/data
+      - ./docker-data/runner:/home/runner
+      - app-data:/home/runner/app
+volumes:
+  app-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: .
+      o: bind

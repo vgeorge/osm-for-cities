@@ -6,6 +6,7 @@ import ingestDailyExtract from "./actions/ingest-daily-extract/index.js";
 import extractSelectedTags from "./actions/extract-selected-tags.js";
 import logger from "../utils/logger.js";
 import buildOsmiumConfig from "./actions/generate-osmium-config/br.js";
+import { refreshPresetHistoryFile } from "./services/refresh-preset-history-file.js";
 
 const pkg = await fs.readJson("./package.json");
 
@@ -15,6 +16,13 @@ program
   .configureOutput({
     writeErr: (str) => process.stdout.write(`[ERR] ${str}`),
   });
+
+program
+  .command("refresh-presets-history-file")
+  .description(
+    "Download latest history file and filter it by Osmium tag filters"
+  )
+  .action(() => refreshPresetHistoryFile(program));
 
 program
   .command("replicate-history-pbf")

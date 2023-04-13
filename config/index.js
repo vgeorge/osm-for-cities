@@ -2,6 +2,8 @@ import * as path from "path";
 
 const basePath = path.resolve();
 
+export const tmpDir = process.env.TMP_DIR || path.join("/", "tmp");
+
 export const dataPath =
   process.env.OGH_DATA_PATH || path.join(basePath, "..", "ogh-data");
 
