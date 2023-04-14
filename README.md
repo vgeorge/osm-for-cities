@@ -1,5 +1,4 @@
-
-# OSM git history
+# OSM Git History
 
 A platform for distributing current and past OpenStreetMap data extracts based on git.
 

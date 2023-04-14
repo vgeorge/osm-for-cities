@@ -4,6 +4,7 @@ import {
   getPresets,
   selectedHistoryFilePath,
   fullHistoryFileUrl,
+  historyPbfPath,
 } from "../../config/index.js";
 import { ensureDir } from "fs-extra";
 import * as path from "path";
@@ -18,6 +19,7 @@ const presetsHistoryTmpFile = path.join(tmpDir, "presets-history.osh.pbf");
  */
 export async function fetchFullHistory() {
   await ensureDir(tmpDir);
+  await ensureDir(historyPbfPath);
 
   // Download latest history file to local volume with curl
   await execaToStdout("curl", [

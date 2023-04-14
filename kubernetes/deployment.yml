@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ogh-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ogh-app
+  template:
+    metadata:
+      labels:
+        app: ogh-app
+    spec:
+      containers:
+        - name: gitea
+          image: gitea/gitea:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: USER_UID
+              value: "1000"
+            - name: USER_GID
+              value: "1000"
+          volumeMounts:
+            - name: gitea-data
+              mountPath: /data
+      volumes:
+        - name: gitea-data
+          persistentVolumeClaim:
+            claimName: ogh-gitea-volume
