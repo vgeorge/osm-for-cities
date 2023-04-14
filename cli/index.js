@@ -6,7 +6,7 @@ import ingestDailyExtract from "./actions/ingest-daily-extract/index.js";
 import extractSelectedTags from "./actions/extract-selected-tags.js";
 import logger from "../utils/logger.js";
 import buildOsmiumConfig from "./actions/generate-osmium-config/br.js";
-import { fetchFullHistory } from "./services/fetch-full-history.js";
+import { fetchFullHistory } from "../runner/services/fetch-full-history.js";
 
 const pkg = await fs.readJson("./package.json");
 

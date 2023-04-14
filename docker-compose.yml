@@ -1,16 +1,22 @@
 version: "3"
-
+networks:
+  gitea:
+    external: false
 services:
-  runner:
-    platform: linux/amd64
-    build: .
+  server:
+    image: gitea/gitea:1.19.0
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    networks:
+      - gitea
     volumes:
-      - ./docker-data/runner:/home/runner
-      - app-data:/home/runner/app
-volumes:
-  app-data:
-    driver: local
-    driver_opts:
-      type: none
-      device: .
-      o: bind
+      - ./docker-data/gitea/data:/data
+      - ./docker-data/gitea/ssh:/data/git/.ssh
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "127.0.0.1:2222:22"
