@@ -1,7 +1,5 @@
 import fetch from "node-fetch";
-
-const giteaHostUrl = process.env.OGH_GITEA_HOST_URL;
-const giteaApiKey = process.env.OGH_GITEA_API_KEY;
+import { GITEA_API_KEY, GITEA_HOST_URL } from "../../config/index.js";
 
 class GiteaClient {
   constructor() {
@@ -12,13 +10,13 @@ class GiteaClient {
     };
 
     // Add token if available
-    if (giteaApiKey) {
-      this.defaultOptions.headers.Authorization = `token ${giteaApiKey}`;
+    if (GITEA_API_KEY) {
+      this.defaultOptions.headers.Authorization = `token ${GITEA_API_KEY}`;
     }
   }
 
   getUrl(subpath) {
-    return `${giteaHostUrl}/api/v1/${subpath}`;
+    return `${GITEA_HOST_URL}/api/v1/${subpath}`;
   }
 
   async fetch(method, path, data, format = "json") {

@@ -1,20 +1,24 @@
-import { gitOrg, gitRepo } from "./config.js";
 import GiteaClient from "../../helpers/gitea-client.js";
 import logger from "../../../utils/logger.js";
+
+export const GIT_ORGANIZATION = "cities-of";
+export const GIT_REPOSITORY_NAME = "brazil";
 
 const giteaClient = new GiteaClient();
 
 export const run = async () => {};
 
 export const setup = async () => {
-  // Initialize organization
+  // Initialize organization in Gitea
   try {
-    const { status: orgStatus } = await giteaClient.get(`orgs/${gitOrg}`);
+    const { status: orgStatus } = await giteaClient.get(
+      `orgs/${GIT_ORGANIZATION}`
+    );
 
     if (orgStatus === 404) {
       // Create organization if it does not exist
       const { status: orgCreationStatus } = await giteaClient.post("orgs", {
-        username: gitOrg,
+        username: GIT_ORGANIZATION,
         visibility: "public",
       });
 
@@ -22,24 +26,24 @@ export const setup = async () => {
         throw "Could not create organization.";
       }
     } else {
-      logger(`Organization '${gitOrg}' exists.`);
+      logger(`Organization '${GIT_ORGANIZATION}' exists.`);
     }
   } catch (error) {
     logger(error);
     return;
   }
 
-  // Initialize repository
+  // Initialize repository in Gitea
   try {
     const { status: repoStatus } = await giteaClient.get(
-      `repos/${gitOrg}/${gitRepo}`
+      `repos/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`
     );
     // Get repository status
     if (repoStatus === 404) {
       const { status: repoCreationStatus } = await giteaClient.post(
-        `orgs/${gitOrg}/repos`,
+        `orgs/${GIT_ORGANIZATION}/repos`,
         {
-          name: gitRepo,
+          name: GIT_REPOSITORY_NAME,
           private: false,
         }
       );
@@ -48,7 +52,7 @@ export const setup = async () => {
         throw "Could not create organization.";
       }
     } else {
-      logger(`Repository '${gitOrg}/${gitRepo}' exists.`);
+      logger(`Repository '${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}' exists.`);
     }
   } catch (error) {
     logger(error);

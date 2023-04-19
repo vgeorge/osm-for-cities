@@ -1,16 +1,20 @@
 import { execaToStdout } from "../../utils/execa.js";
 import {
-  tmpDir,
+  TMP_DIR,
+  HISTORY_PBF_PATH,
+  FULL_HISTORY_FILE_URL,
   getPresets,
-  selectedHistoryFilePath,
-  fullHistoryFileUrl,
-  historyPbfPath,
+  PRESETS_HISTORY_PBF_FILE,
 } from "../../config/index.js";
 import { ensureDir } from "fs-extra";
 import * as path from "path";
 
-const fullHistoryTmpFile = path.join(tmpDir, "history-latest.osh.pbf");
-const presetsHistoryTmpFile = path.join(tmpDir, "presets-history.osh.pbf");
+// Local constants
+const FULL_HISTORY_TMP_FILE = path.join(TMP_DIR, "history-latest.osh.pbf");
+const PRESET_HISTORY_PBF_TMP_FILE = path.join(
+  TMP_DIR,
+  "presets-history.osh.pbf"
+);
 
 /**
  * Refreshes the presets history PBF file. This task will download the latest
@@ -18,8 +22,8 @@ const presetsHistoryTmpFile = path.join(tmpDir, "presets-history.osh.pbf");
  * preset history PBF file.
  */
 export async function fetchFullHistory() {
-  await ensureDir(tmpDir);
-  await ensureDir(historyPbfPath);
+  await ensureDir(TMP_DIR);
+  await ensureDir(HISTORY_PBF_PATH);
 
   // Download latest history file to local volume with curl
   await execaToStdout("curl", [
@@ -27,8 +31,8 @@ export async function fetchFullHistory() {
     "-C", // Continue download if interrupted
     "-", // Continue download if interrupted
     "-o",
-    fullHistoryTmpFile,
-    fullHistoryFileUrl,
+    FULL_HISTORY_TMP_FILE,
+    FULL_HISTORY_FILE_URL,
   ]);
 
   const presets = await getPresets();
@@ -37,14 +41,17 @@ export async function fetchFullHistory() {
   // Filter history file by presets
   await execaToStdout("osmium", [
     "tags-filter",
-    fullHistoryTmpFile,
+    FULL_HISTORY_TMP_FILE,
     "-v",
     "--overwrite",
     ...osmiumFilters,
     "-o",
-    presetsHistoryTmpFile,
+    PRESET_HISTORY_PBF_TMP_FILE,
   ]);
 
   // Move presets history file to shared volume
-  await execaToStdout("mv", [presetsHistoryTmpFile, selectedHistoryFilePath]);
+  await execaToStdout("mv", [
+    PRESET_HISTORY_PBF_TMP_FILE,
+    PRESETS_HISTORY_PBF_FILE,
+  ]);
 }
