@@ -1,13 +1,22 @@
 import * as path from "path";
-import loadCsv from "../utils/load-csv.js";
+import loadCsv from "../runner/helpers/load-csv.js";
 
 const basePath = path.resolve();
+
+/**
+ * Path to the runner app
+ */
+export const RUNNER_APP_DIR = path.join(basePath, "runner");
+
+// Default date to start fetching history
+export const GIT_HISTORY_START_DATE = "2010-01-01Z";
 
 /**
  * GITEA SERVER
  */
 export const GITEA_HOST_URL =
   process.env.OGH_GITEA_HOST_URL || "http://localhost:3000";
+export const GITEA_USER = "ogh-user";
 export const GITEA_API_KEY = process.env.OGH_GITEA_API_KEY;
 
 /**

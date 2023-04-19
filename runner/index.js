@@ -24,8 +24,12 @@ program
 program
   .command("setup-cities-of-brazil")
   .description("Setup cities of Brazil workflow")
-  // .action(() => citiesOfBrazil.setup(program));
   .action(() => citiesOfBrazil.setup(program));
+
+program
+  .command("update-cities-of-brazil")
+  .description("Update cities of Brazil")
+  .action(() => citiesOfBrazil.update(program));
 
 // program
 //   .command("ingest-cities-of-brazil")

@@ -1,4 +1,4 @@
-import { execaToStdout } from "../../utils/execa.js";
+import { execaToStdout } from "./execa.js";
 
 /**
  *
