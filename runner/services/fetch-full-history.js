@@ -8,6 +8,7 @@ import {
 } from "../../config/index.js";
 import { ensureDir } from "fs-extra";
 import * as path from "path";
+import { curlDownload } from "../helpers/curl-download.js";
 
 // Local constants
 const FULL_HISTORY_TMP_FILE = path.join(TMP_DIR, "history-latest.osh.pbf");
@@ -26,14 +27,7 @@ export async function fetchFullHistory() {
   await ensureDir(HISTORY_PBF_PATH);
 
   // Download latest history file to local volume with curl
-  await execaToStdout("curl", [
-    "-L", // Follow redirects
-    "-C", // Continue download if interrupted
-    "-", // Continue download if interrupted
-    "-o",
-    FULL_HISTORY_TMP_FILE,
-    FULL_HISTORY_FILE_URL,
-  ]);
+  await curlDownload(FULL_HISTORY_FILE_URL, FULL_HISTORY_TMP_FILE);
 
   const presets = await getPresets();
   const osmiumFilters = presets.map((p) => p.osmium_filter);
