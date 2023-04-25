@@ -1,18 +1,14 @@
 {
   "name": "osm-git-history",
   "version": "0.1.0",
-  "description": "Track OSM datasets history with git",
+  "description": "Observe the history of OpenStreetMap datasets",
   "scripts": {
-    "serve": "http-server data -p 2000",
-    "cli": "node cli/index.js",
     "runner": "node runner/index.js",
-    "lint": "eslint cli migrations utils",
-    "migrate": "knex migrate:latest"
+    "lint": "eslint runner"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Vitor George <vitor.george@gmail.com>",
+  "license": "MIT",
   "type": "module",
-  "main": "cli/index.js",
   "dependencies": {
     "cli-progress": "^3.11.2",
     "commander": "^9.4.0",
