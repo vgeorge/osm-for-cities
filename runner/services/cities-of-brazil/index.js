@@ -35,6 +35,13 @@ const giteaClient = new GiteaClient();
 const GIT_ORGANIZATION = "cities-of";
 const GIT_REPOSITORY_NAME = "brazil";
 
+// Build repository URL
+let repositoryUrl = new URL(GITEA_HOST_URL);
+repositoryUrl.username = GITEA_USER;
+repositoryUrl.password = GITEA_API_KEY;
+repositoryUrl.pathname = `/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`;
+repositoryUrl = repositoryUrl.toString();
+
 // Service directories
 export const SERVICE_APP_DIR = path.join(
   RUNNER_APP_DIR,
@@ -95,10 +102,22 @@ export const update = async () => {
 
   // If git history folder exists, get latest date
   if (await fs.pathExists(path.join(SERVICE_GIT_DIR, ".git"))) {
-    await git.pull();
+    const remoteBranches = await git.listRemote([
+      "--heads",
+      repositoryUrl,
+      "main",
+    ]);
 
+    // If remote branch doesn't exist, push local branch
+    if (!remoteBranches || !remoteBranches.includes("main")) {
+      logger(`Git remote looks empty, pushing local branch.`);
+      await git.push("origin", "main");
+    } else {
+      await git.pull("origin", "main");
+    }
+
+    // Get last commit date
     try {
-      // Get last commit date
       const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
 
       // Convert ISO string to date
@@ -115,13 +134,8 @@ export const update = async () => {
     // Or just initialize git repository
     await git.init();
 
-    const repositoryUrl = new URL(GITEA_HOST_URL);
-    repositoryUrl.username = GITEA_USER;
-    repositoryUrl.password = GITEA_API_KEY;
-    repositoryUrl.pathname = `/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`;
-
     // Add remote origin
-    await git.addRemote("origin", `${repositoryUrl.toString()}`);
+    await git.addRemote("origin", `${repositoryUrl}`);
   }
 
   // Get current day timestamp
@@ -129,7 +143,7 @@ export const update = async () => {
 
   // Extract OSM data from history file at the current date
   logger(`Filtering: ${currentDayISO}`);
-  timeFilter(PRESETS_HISTORY_PBF_FILE, currentDayISO, CURRENT_DAY_FILE);
+  await timeFilter(PRESETS_HISTORY_PBF_FILE, currentDayISO, CURRENT_DAY_FILE);
 
   if (await pbfIsEmpty(CURRENT_DAY_FILE)) {
     logger(`No data found, skipping ${currentDayISO}`);
@@ -355,7 +369,7 @@ export const update = async () => {
     .add(".")
     .commit(`Status of ${currentDayISO}`);
 
-  await git.push("origin", "master", { "--set-upstream": null });
+  await git.push("origin", "main", { "--set-upstream": null });
 };
 
 export const setup = async () => {

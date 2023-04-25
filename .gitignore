@@ -10,3 +10,4 @@ data/history-pbf
 docker-data
 runner-data
 app-data
+.DS_Store
