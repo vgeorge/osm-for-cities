@@ -1,4 +1,4 @@
-import { execaToStdout } from "../../utils/execa.js";
+import { execaToStdout } from "../helpers/execa.js";
 import {
   TMP_DIR,
   HISTORY_PBF_PATH,

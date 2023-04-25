@@ -2,7 +2,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import cliProgress from "cli-progress";
 import GiteaClient from "../../helpers/gitea-client.js";
-import logger from "../../../utils/logger.js";
+import logger from "../../helpers/logger.js";
 import { curlDownload } from "../../helpers/curl-download.js";
 import { unzip } from "../../helpers/unzip.js";
 import { ensureDir } from "fs-extra";

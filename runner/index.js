@@ -1,7 +1,7 @@
 import "dotenv/config";
 import fs from "fs-extra";
 import { program } from "commander";
-import logger from "../utils/logger.js";
+import logger from "./helpers/logger.js";
 import { fetchFullHistory } from "../runner/services/fetch-full-history.js";
 import * as citiesOfBrazil from "../runner/services/cities-of-brazil/index.js";
 
