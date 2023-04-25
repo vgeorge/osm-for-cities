@@ -29,15 +29,8 @@ program
 program
   .command("update-cities-of-brazil")
   .description("Update cities of Brazil")
-  .action(() => citiesOfBrazil.update(program));
-
-// program
-//   .command("ingest-cities-of-brazil")
-//   .option("-r, --recursive", "Repeat updates to present day", false)
-//   .description(
-//     "Ingest a daily extract from history PBF file to the database and git repository"
-//   )
-//   .action(() => citiesOfBrazil.ingest(program));
+  .option("-r, --recursive", "Repeat updates to present day", false)
+  .action((options) => citiesOfBrazil.update(options));
 
 program.parse();
 

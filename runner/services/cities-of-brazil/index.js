@@ -89,7 +89,7 @@ const OSMIUM_CONFIG_LEVEL_1_FILE = path.join(OSMIUM_CONFIG_DIR, "level-1.conf");
 const OSMIUM_CONFIG_LEVEL_2_DIR = path.join(OSMIUM_CONFIG_DIR, "level-2");
 const OSMIUM_CONFIG_LEVEL_3_DIR = path.join(OSMIUM_CONFIG_DIR, "level-3");
 
-export const update = async () => {
+export const update = async (options) => {
   // Init repository path, if it doesn't exist
   await fs.ensureDir(SERVICE_GIT_DIR);
   await fs.ensureDir(CURRENT_DAY_DIR);
@@ -370,6 +370,11 @@ export const update = async () => {
     .commit(`Status of ${currentDayISO}`);
 
   await git.push("origin", "main", { "--set-upstream": null });
+
+  // Run update again if it was called recursively
+  if (options && options.recursive) {
+    update(options);
+  }
 };
 
 export const setup = async () => {
