@@ -17,7 +17,7 @@ export const GIT_HISTORY_START_DATE = "2010-01-01Z";
 export const GITEA_HOST_URL =
   process.env.OGH_GITEA_HOST_URL || "http://localhost:3000";
 export const GITEA_USER = "ogh-user";
-export const GITEA_API_KEY = process.env.OGH_GITEA_API_KEY;
+export const GITEA_ACCESS_TOKEN = process.env.GITEA_ACCESS_TOKEN;
 
 /**
  * HISTORY PBF

@@ -1,5 +1,10 @@
 import fetch from "node-fetch";
-import { GITEA_API_KEY, GITEA_HOST_URL } from "../../config/index.js";
+import { GITEA_ACCESS_TOKEN, GITEA_HOST_URL } from "../../config/index.js";
+
+// Runner must have an access token defined
+if (!GITEA_ACCESS_TOKEN) {
+  throw new Error("GITEA_ACCESS_TOKEN is not defined");
+}
 
 class GiteaClient {
   constructor() {
@@ -10,8 +15,8 @@ class GiteaClient {
     };
 
     // Add token if available
-    if (GITEA_API_KEY) {
-      this.defaultOptions.headers.Authorization = `token ${GITEA_API_KEY}`;
+    if (GITEA_ACCESS_TOKEN) {
+      this.defaultOptions.headers.Authorization = `token ${GITEA_ACCESS_TOKEN}`;
     }
   }
 
