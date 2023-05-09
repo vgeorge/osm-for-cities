@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Observe the history of OpenStreetMap datasets",
   "scripts": {
-    "runner": "node runner/index.js",
-    "lint": "eslint runner"
+    "cli": "node cli/index.js",
+    "lint": "eslint cli"
   },
   "author": "Vitor George <vitor.george@gmail.com>",
   "license": "MIT",

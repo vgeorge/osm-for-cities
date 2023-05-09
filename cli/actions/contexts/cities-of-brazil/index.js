@@ -1,29 +1,33 @@
 import * as path from "path";
 import fs from "fs-extra";
 import cliProgress from "cli-progress";
-import GiteaClient from "../../helpers/gitea-client.js";
-import logger from "../../helpers/logger.js";
-import { curlDownload } from "../../helpers/curl-download.js";
-import { unzip } from "../../helpers/unzip.js";
 import { ensureDir } from "fs-extra";
+import { addDays, parseISO } from "date-fns";
+import simpleGit from "simple-git";
+import pLimit from "p-limit";
+import execa from "execa";
+
+// Config
 import {
-  GITEA_API_KEY,
+  GITEA_ACCESS_TOKEN,
   GITEA_HOST_URL,
   GITEA_USER,
   GIT_HISTORY_START_DATE,
   PRESETS_HISTORY_PBF_FILE,
   RUNNER_APP_DIR,
-  SERVICES_DATA_PATH,
+  CONTEXTS_DATA_PATH,
   TMP_DIR,
-} from "../../../config/index.js";
-import { addDays, parseISO } from "date-fns";
-import simpleGit from "simple-git";
-import { extract, tagsFilter, timeFilter } from "../../helpers/osmium.js";
-import pbfIsEmpty from "../../helpers/pbf-is-empty.js";
+  getPresets,
+} from "../../../../config/index.js";
+
+// Helpers
+import GiteaClient from "../../../helpers/gitea-client.js";
+import logger from "../../../helpers/logger.js";
+import { curlDownload } from "../../../helpers/curl-download.js";
+import { unzip } from "../../../helpers/unzip.js";
+import { extract, tagsFilter, timeFilter } from "../../../helpers/osmium.js";
+import pbfIsEmpty from "../../../helpers/pbf-is-empty.js";
 import { getCities } from "./helpers.js";
-import pLimit from "p-limit";
-import { getPresets } from "../../../config/index.js";
-import execa from "execa";
 
 // Set concurrency limit
 const limit = pLimit(20);
@@ -38,18 +42,19 @@ const GIT_REPOSITORY_NAME = "brazil";
 // Build repository URL
 let repositoryUrl = new URL(GITEA_HOST_URL);
 repositoryUrl.username = GITEA_USER;
-repositoryUrl.password = GITEA_API_KEY;
+repositoryUrl.password = GITEA_ACCESS_TOKEN;
 repositoryUrl.pathname = `/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`;
 repositoryUrl = repositoryUrl.toString();
 
 // Service directories
-export const SERVICE_APP_DIR = path.join(
+export const CONTEXT_APP_DIR = path.join(
   RUNNER_APP_DIR,
-  "services",
+  "actions",
+  "contexts",
   "cities-of-brazil"
 );
-const SERVICE_TMP_DIR = path.join(TMP_DIR, "services", "brazil");
-const SERVICE_DATA_DIR = path.join(SERVICES_DATA_PATH, "brazil");
+const SERVICE_TMP_DIR = path.join(TMP_DIR, "contexts", "brazil");
+const SERVICE_DATA_DIR = path.join(CONTEXTS_DATA_PATH, "brazil");
 const SERVICE_GIT_DIR = path.join(SERVICE_DATA_DIR, "git");
 
 // Polyfiles
@@ -414,16 +419,13 @@ export const setup = async () => {
     );
     // Get repository status
     if (repoStatus === 404) {
-      const { status: repoCreationStatus } = await giteaClient.post(
-        `orgs/${GIT_ORGANIZATION}/repos`,
-        {
-          name: GIT_REPOSITORY_NAME,
-          private: false,
-        }
-      );
+      const { status: repoCreationStatus } = await giteaClient.post({
+        name: GIT_REPOSITORY_NAME,
+        private: false,
+      });
 
       if (repoCreationStatus !== 201) {
-        throw "Could not create organization.";
+        throw "Could not create repository.";
       }
     } else {
       logger(`Repository '${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}' exists.`);

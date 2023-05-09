@@ -1,9 +1,9 @@
 import * as path from "path";
-import loadCsv from "../../helpers/load-csv.js";
-import { SERVICE_APP_DIR } from "./index.js";
+import loadCsv from "../../../helpers/load-csv.js";
+import { CONTEXT_APP_DIR } from "./index.js";
 
 export async function getCities() {
-  const cities = await loadCsv(path.resolve(SERVICE_APP_DIR, "cities.csv"));
+  const cities = await loadCsv(path.resolve(CONTEXT_APP_DIR, "cities.csv"));
 
   return cities.map((c) => ({
     name: c.name,

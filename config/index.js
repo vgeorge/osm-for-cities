@@ -1,12 +1,12 @@
 import * as path from "path";
-import loadCsv from "../runner/helpers/load-csv.js";
+import loadCsv from "../cli/helpers/load-csv.js";
 
 const basePath = path.resolve();
 
 /**
  * Path to the runner app
  */
-export const RUNNER_APP_DIR = path.join(basePath, "runner");
+export const RUNNER_APP_DIR = path.join(basePath, "cli");
 
 // Default date to start fetching history
 export const GIT_HISTORY_START_DATE = "2010-01-01Z";
@@ -14,10 +14,14 @@ export const GIT_HISTORY_START_DATE = "2010-01-01Z";
 /**
  * GITEA SERVER
  */
-export const GITEA_HOST_URL =
-  process.env.OGH_GITEA_HOST_URL || "http://localhost:3000";
-export const GITEA_USER = "ogh-user";
+
+export const GITEA_USER = process.env.GITEA_USER || "runner";
 export const GITEA_ACCESS_TOKEN = process.env.GITEA_ACCESS_TOKEN;
+export const GITEA_HOSTNAME = process.env.GITEA_HOSTNAME || "localhost";
+export const GITEA_PORT = process.env.GITEA_HOSTNAME || 3000;
+export const GITEA_HOST_URL =
+  process.env.GITEA_HOST_URL ||
+  `http://${GITEA_USER}:${GITEA_ACCESS_TOKEN}@${GITEA_HOSTNAME}:${GITEA_PORT}`;
 
 /**
  * HISTORY PBF
@@ -39,15 +43,15 @@ export const getPresets = async () =>
 
 export const TMP_DIR =
   process.env.TMP_DIR || path.join("/", "tmp", "osm-git-history");
-export const SERVICES_DATA_PATH =
-  process.env.OGH_SERVICES_DATA_PATH ||
+export const CONTEXTS_DATA_PATH =
+  process.env.OGH_CONTEXTS_DATA_PATH ||
   path.join(basePath, "app-data", "services");
 
 /**
  * HISTORY PBF
  */
 export const HISTORY_PBF_PATH =
-  process.env.HISTORY_PBF_PATH || path.join(SERVICES_DATA_PATH, "history-pbf");
+  process.env.HISTORY_PBF_PATH || path.join(CONTEXTS_DATA_PATH, "history-pbf");
 
 export const PRESETS_HISTORY_PBF_FILE = path.join(
   HISTORY_PBF_PATH,

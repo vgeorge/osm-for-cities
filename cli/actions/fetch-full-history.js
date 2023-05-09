@@ -19,8 +19,8 @@ const PRESET_HISTORY_PBF_TMP_FILE = path.join(
 
 /**
  * Refreshes the presets history PBF file. This task will download the latest
- * history file, filter it by the Osmium tag filters, and then save it to the
- * preset history PBF file.
+ * history file, filter using Osmium tag filters from configuration files, and
+ * then save it to the preset history PBF file.
  */
 export async function fetchFullHistory() {
   await ensureDir(TMP_DIR);
