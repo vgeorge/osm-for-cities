@@ -40,7 +40,7 @@ def generate_save_poly(coords_: list, file_path_: str, filename_: str):
     try:
         poly = [filename_]
         for i, boundary in enumerate(coords_):
-            poly = [filename_, f"area-{i + 1}"]
+            poly.append(f"area-{i + 1}")
             for lat, lng in boundary:
                 poly.append(f"\t{lat}\t{lng}")
             poly.append("END")
@@ -88,7 +88,7 @@ def merge_data(iso_code: str, iso_data: dict):
                 lambda x: x if x.geom_type == "MultiPolygon" else MultiPolygon([x])
             )
             # superior adm
-            iterate_upper = levels_order[index + 1: -1]
+            iterate_upper = levels_order[index + 1 : -1]
             if iterate_upper:
                 df["polygeom"] = df["geometry"]
                 # reproject centroid
@@ -125,7 +125,13 @@ def merge_data(iso_code: str, iso_data: dict):
 
 @click.command("Generate poly files")
 @click.option("--data_path", help="Data output path", type=str, default="./data")
-@click.option("--level_bbox", help="Level create bbox poly file", type=str, multiple=True, required=False)
+@click.option(
+    "--level_bbox",
+    help="Level create bbox poly file",
+    type=str,
+    multiple=True,
+    required=False,
+)
 def run(data_path, level_bbox):
     files = get_files(data_path)
     level_bbox = [i.upper().strip() for i in level_bbox]
@@ -149,7 +155,9 @@ def run(data_path, level_bbox):
     )
 
     for country_data in tqdm(countries_data, desc="Generate poly files"):
-        country_data.apply(lambda x: process_poly_files(x, data_path, level_bbox), axis=1)
+        country_data.apply(
+            lambda x: process_poly_files(x, data_path, level_bbox), axis=1
+        )
 
 
 if __name__ == "__main__":
