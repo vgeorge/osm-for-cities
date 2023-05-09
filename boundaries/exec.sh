@@ -8,5 +8,9 @@ mkdir -p ${data_path}
 
 $IMAGE_DOCKER python scripts/admin_boundaries.py \
         --iso_countries=USA \
-        --iso_countries=PER \
         --data_path=${data_path}
+
+$IMAGE_DOCKER python scripts/generate_poly.py \
+        --data_path=${data_path} \
+        --level_bbox=ADM0 \
+        --level_bbox=ADM1
