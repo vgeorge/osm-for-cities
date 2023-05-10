@@ -1,7 +1,7 @@
 {
-  "name": "osm-git-history",
+  "name": "osm-for-cities",
   "version": "0.1.0",
-  "description": "Observe the history of OpenStreetMap datasets",
+  "description": "A platform for distributing OpenStreetMap data presets for cities",
   "scripts": {
     "cli": "node cli/index.js",
     "lint": "eslint cli"

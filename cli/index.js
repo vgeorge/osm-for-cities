@@ -12,7 +12,7 @@ const contexts = await fs.readdir("./cli/contexts");
 /* eslint-disable no-console */
 
 program
-  .description("OSM Git History")
+  .description("OSM for Cities")
   .version(pkg.version)
   .configureOutput({
     writeErr: (str) => process.stdout.write(`[ERR] ${str}`),

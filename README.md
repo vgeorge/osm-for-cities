@@ -1,6 +1,6 @@
-# OSM Git History
+# OSM for Cities
 
-A platform for distributing current and past OpenStreetMap data extracts based on git.
+A platform for distributing OpenStreetMap data presets for cities.
 
 ## Requirements
 
