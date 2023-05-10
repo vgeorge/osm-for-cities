@@ -6,7 +6,7 @@ const basePath = path.resolve();
 /**
  * Path to the runner app
  */
-export const RUNNER_APP_DIR = path.join(basePath, "cli");
+export const CLI_APP_DIR = path.join(basePath, "cli");
 
 // Default date to start fetching history
 export const GIT_HISTORY_START_DATE = "2010-01-01Z";
@@ -44,8 +44,7 @@ export const getPresets = async () =>
 export const TMP_DIR =
   process.env.TMP_DIR || path.join("/", "tmp", "osm-git-history");
 export const CONTEXTS_DATA_PATH =
-  process.env.OGH_CONTEXTS_DATA_PATH ||
-  path.join(basePath, "app-data", "services");
+  process.env.OGH_CONTEXTS_DATA_PATH || path.join(basePath, "app-data", "cli");
 
 /**
  * HISTORY PBF

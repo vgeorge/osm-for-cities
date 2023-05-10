@@ -14,7 +14,7 @@ import {
   GITEA_USER,
   GIT_HISTORY_START_DATE,
   PRESETS_HISTORY_PBF_FILE,
-  RUNNER_APP_DIR,
+  CLI_APP_DIR,
   CONTEXTS_DATA_PATH,
   TMP_DIR,
   getPresets,
@@ -46,20 +46,20 @@ repositoryUrl.password = GITEA_ACCESS_TOKEN;
 repositoryUrl.pathname = `/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`;
 repositoryUrl = repositoryUrl.toString();
 
-// Service directories
+// CLI directories
 export const CONTEXT_APP_DIR = path.join(
-  RUNNER_APP_DIR,
+  CLI_APP_DIR,
   "contexts",
   "cities-of-brazil"
 );
-const SERVICE_TMP_DIR = path.join(TMP_DIR, "contexts", "brazil");
-const SERVICE_DATA_DIR = path.join(CONTEXTS_DATA_PATH, "brazil");
-const SERVICE_GIT_DIR = path.join(SERVICE_DATA_DIR, "git");
+const CLI_TMP_DIR = path.join(TMP_DIR, "contexts", "brazil");
+const CLI_DATA_DIR = path.join(CONTEXTS_DATA_PATH, "brazil");
+const CLI_GIT_DIR = path.join(CLI_DATA_DIR, "git");
 
 // Polyfiles
 const POLYFILES_URL =
   "https://www.dropbox.com/s/nvutp2fcg75fcc6/polyfiles.zip?dl=0";
-const POLYFILES_DIR = path.join(SERVICE_DATA_DIR, "polyfiles");
+const POLYFILES_DIR = path.join(CLI_DATA_DIR, "polyfiles");
 const POLYFILES_LEVEL_1_DIR = path.join(
   POLYFILES_DIR,
   "polyfiles",
@@ -80,7 +80,7 @@ const POLYFILES_LEVEL_3_DIR = path.join(
 );
 
 // Day extract file
-const CURRENT_DAY_DIR = path.join(SERVICE_TMP_DIR, "current-day");
+const CURRENT_DAY_DIR = path.join(CLI_TMP_DIR, "current-day");
 const CURRENT_DAY_FILE = path.join(CURRENT_DAY_DIR, "current-day.osm.pbf");
 const CURRENT_DAY_LEVEL_1_DIR = path.join(CURRENT_DAY_DIR, "level-1");
 const CURRENT_DAY_LEVEL_2_DIR = path.join(CURRENT_DAY_DIR, "level-2");
@@ -88,24 +88,24 @@ const CURRENT_DAY_LEVEL_3_DIR = path.join(CURRENT_DAY_DIR, "level-3");
 const CURRENT_DAY_PRESETS_DIR = path.join(CURRENT_DAY_DIR, "presets");
 
 // Osmium config files
-const OSMIUM_CONFIG_DIR = path.join(SERVICE_DATA_DIR, "osmium-config");
+const OSMIUM_CONFIG_DIR = path.join(CLI_DATA_DIR, "osmium-config");
 const OSMIUM_CONFIG_LEVEL_1_FILE = path.join(OSMIUM_CONFIG_DIR, "level-1.conf");
 const OSMIUM_CONFIG_LEVEL_2_DIR = path.join(OSMIUM_CONFIG_DIR, "level-2");
 const OSMIUM_CONFIG_LEVEL_3_DIR = path.join(OSMIUM_CONFIG_DIR, "level-3");
 
 export const update = async (options) => {
   // Init repository path, if it doesn't exist
-  await fs.ensureDir(SERVICE_GIT_DIR);
+  await fs.ensureDir(CLI_GIT_DIR);
   await fs.ensureDir(CURRENT_DAY_DIR);
 
   // Initialize current date pointer
   let currentDay = parseISO(GIT_HISTORY_START_DATE);
 
   // Create git client
-  const git = await simpleGit({ baseDir: SERVICE_GIT_DIR });
+  const git = await simpleGit({ baseDir: CLI_GIT_DIR });
 
   // If git history folder exists, get latest date
-  if (await fs.pathExists(path.join(SERVICE_GIT_DIR, ".git"))) {
+  if (await fs.pathExists(path.join(CLI_GIT_DIR, ".git"))) {
     const remoteBranches = await git.listRemote([
       "--heads",
       repositoryUrl,
@@ -257,7 +257,7 @@ export const update = async (options) => {
 
         // Create target geojson path
         const geojsonPath = path.join(
-          SERVICE_GIT_DIR,
+          CLI_GIT_DIR,
           municipalityUf,
           municipalitySlug
         );
@@ -360,7 +360,7 @@ export const update = async (options) => {
 
   geojsonProgressBar.stop();
 
-  await fs.writeJSON(path.join(SERVICE_GIT_DIR, "package.json"), {
+  await fs.writeJSON(path.join(CLI_GIT_DIR, "package.json"), {
     updatedAt: currentDay,
   });
 
@@ -382,8 +382,8 @@ export const update = async (options) => {
 };
 
 export const setup = async () => {
-  // Initialize directories required for this service
-  await ensureDir(SERVICE_TMP_DIR);
+  // Initialize directories required by the CLI app
+  await ensureDir(CLI_TMP_DIR);
   await ensureDir(POLYFILES_DIR);
   await ensureDir(OSMIUM_CONFIG_DIR);
 
@@ -436,7 +436,7 @@ export const setup = async () => {
 
   // Download boundary polygons
   try {
-    const POLYFILES_TMP_FILE = path.join(SERVICE_TMP_DIR, "polyfiles.zip");
+    const POLYFILES_TMP_FILE = path.join(CLI_TMP_DIR, "polyfiles.zip");
     await curlDownload(POLYFILES_URL, POLYFILES_TMP_FILE);
     await unzip(POLYFILES_TMP_FILE, POLYFILES_DIR);
   } catch (error) {
