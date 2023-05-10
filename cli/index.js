@@ -2,11 +2,11 @@ import "dotenv/config";
 import fs from "fs-extra";
 import { program } from "commander";
 import logger from "./helpers/logger.js";
-import { fetchFullHistory } from "./actions/fetch-full-history.js";
-import { updatePresetsHistory } from "./actions/update-presets-history.js";
+import { fetchFullHistory } from "./fetch-full-history.js";
+import { updatePresetsHistory } from "./update-presets-history.js";
 
 const pkg = await fs.readJson("./package.json");
-const contexts = await fs.readdir("./cli/actions/contexts");
+const contexts = await fs.readdir("./cli/contexts");
 
 // disable no-console rule in this file
 /* eslint-disable no-console */
@@ -37,7 +37,7 @@ program
   .command("list-contexts")
   .description("List available contexts")
   .action(async () => {
-    const contexts = await fs.readdir("./cli/actions/contexts");
+    const contexts = await fs.readdir("./cli/contexts");
 
     // Print available contexts
     console.log("Available contexts: ");
@@ -49,7 +49,7 @@ program
 program
   .command("context")
   .argument("<name>", "Context name", (contextName) => {
-    // Check if context exists, it should be a folder in ./cli/actions/contexts
+    // Check if context exists, it should be a folder in ./cli/contexts
     if (!contexts.includes(contextName)) {
       program.error(
         `Context not found, run 'list-contexts' command to see available contexts.`
@@ -70,7 +70,7 @@ program
   )
   .action(async (contextName, actionType) => {
     // Execute the action
-    const context = await import(`./actions/contexts/${contextName}/index.js`);
+    const context = await import(`./contexts/${contextName}/index.js`);
     await context[actionType]();
   });
 

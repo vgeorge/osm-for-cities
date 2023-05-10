@@ -18,15 +18,15 @@ import {
   CONTEXTS_DATA_PATH,
   TMP_DIR,
   getPresets,
-} from "../../../../config/index.js";
+} from "../../../config/index.js";
 
 // Helpers
-import GiteaClient from "../../../helpers/gitea-client.js";
-import logger from "../../../helpers/logger.js";
-import { curlDownload } from "../../../helpers/curl-download.js";
-import { unzip } from "../../../helpers/unzip.js";
-import { extract, tagsFilter, timeFilter } from "../../../helpers/osmium.js";
-import pbfIsEmpty from "../../../helpers/pbf-is-empty.js";
+import GiteaClient from "../../helpers/gitea-client.js";
+import logger from "../../helpers/logger.js";
+import { curlDownload } from "../../helpers/curl-download.js";
+import { unzip } from "../../helpers/unzip.js";
+import { extract, tagsFilter, timeFilter } from "../../helpers/osmium.js";
+import pbfIsEmpty from "../../helpers/pbf-is-empty.js";
 import { getCities } from "./helpers.js";
 
 // Set concurrency limit
@@ -49,7 +49,6 @@ repositoryUrl = repositoryUrl.toString();
 // Service directories
 export const CONTEXT_APP_DIR = path.join(
   RUNNER_APP_DIR,
-  "actions",
   "contexts",
   "cities-of-brazil"
 );

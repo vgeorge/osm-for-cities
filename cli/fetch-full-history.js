@@ -1,14 +1,14 @@
-import { execaToStdout } from "../helpers/execa.js";
+import { execaToStdout } from "./helpers/execa.js";
 import {
   TMP_DIR,
   HISTORY_PBF_PATH,
   FULL_HISTORY_FILE_URL,
   getPresets,
   PRESETS_HISTORY_PBF_FILE,
-} from "../../config/index.js";
+} from "../config/index.js";
 import { ensureDir } from "fs-extra";
 import * as path from "path";
-import { curlDownload } from "../helpers/curl-download.js";
+import { curlDownload } from "./helpers/curl-download.js";
 
 // Local constants
 const FULL_HISTORY_TMP_FILE = path.join(TMP_DIR, "history-latest.osh.pbf");

@@ -1,5 +1,5 @@
 import * as path from "path";
-import loadCsv from "../../../helpers/load-csv.js";
+import loadCsv from "../../helpers/load-csv.js";
 import { CONTEXT_APP_DIR } from "./index.js";
 
 export async function getCities() {
