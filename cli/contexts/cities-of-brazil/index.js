@@ -418,12 +418,15 @@ export const setup = async () => {
     );
     // Get repository status
     if (repoStatus === 404) {
-      const { status: repoCreationStatus } = await giteaClient.post({
-        name: GIT_REPOSITORY_NAME,
-        private: false,
-      });
+      const repositoryCreationResponse = await giteaClient.post(
+        `orgs/${GIT_ORGANIZATION}/repos`,
+        {
+          name: GIT_REPOSITORY_NAME,
+          private: false,
+        }
+      );
 
-      if (repoCreationStatus !== 201) {
+      if (repositoryCreationResponse.status !== 201) {
         throw "Could not create repository.";
       }
     } else {

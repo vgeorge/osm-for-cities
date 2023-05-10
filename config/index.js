@@ -17,11 +17,8 @@ export const GIT_HISTORY_START_DATE = "2010-01-01Z";
 
 export const GITEA_USER = process.env.GITEA_USER || "runner";
 export const GITEA_ACCESS_TOKEN = process.env.GITEA_ACCESS_TOKEN;
-export const GITEA_HOSTNAME = process.env.GITEA_HOSTNAME || "localhost";
-export const GITEA_PORT = process.env.GITEA_HOSTNAME || 3000;
 export const GITEA_HOST_URL =
-  process.env.GITEA_HOST_URL ||
-  `http://${GITEA_USER}:${GITEA_ACCESS_TOKEN}@${GITEA_HOSTNAME}:${GITEA_PORT}`;
+  process.env.GITEA_HOST_URL || `http://localhost:3000`;
 
 /**
  * HISTORY PBF
