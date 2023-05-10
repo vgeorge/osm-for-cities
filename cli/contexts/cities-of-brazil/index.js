@@ -239,7 +239,6 @@ export const update = async (options) => {
       limit(async () => {
         const {
           ref: municipalityId,
-          uf: municipalityUf,
           uf_code: municipalityUfCode,
           slug_name: municipalitySlug,
         } = m;
