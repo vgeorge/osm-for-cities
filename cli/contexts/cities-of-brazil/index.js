@@ -224,7 +224,6 @@ export const update = async (options) => {
   await fs.emptyDir(CURRENT_DAY_PRESETS_DIR);
 
   // Update GeoJSON files
-  // const municipalities = await getBrMunicipalities();
   const citiesArray = await getCities();
 
   // const datasetsTypes = await getDatasetTypes();
@@ -240,8 +239,9 @@ export const update = async (options) => {
       limit(async () => {
         const {
           ref: municipalityId,
-          slug: municipalitySlug,
-          meta: { uf: municipalityUf },
+          uf: municipalityUf,
+          uf_code: municipalityUfCode,
+          slug_name: municipalitySlug,
         } = m;
 
         const level3File = path.join(
@@ -258,7 +258,7 @@ export const update = async (options) => {
         // Create target geojson path
         const geojsonPath = path.join(
           CLI_GIT_DIR,
-          municipalityUf,
+          municipalityUfCode,
           municipalitySlug
         );
         await fs.ensureDir(geojsonPath);
@@ -525,9 +525,9 @@ export const setup = async () => {
    */
   const citiesArray = await getCities();
 
-  let citiesConfig = citiesArray.reduce((acc, { meta }) => {
-    const mnId = meta.municipio;
-    const mrId = meta.microregion;
+  let citiesConfig = citiesArray.reduce((acc, { municipio, microregion }) => {
+    const mnId = municipio;
+    const mrId = microregion;
     acc[mrId] = (acc[mrId] || []).concat({
       output: `${mnId}.osm.pbf`,
       polygon: {
