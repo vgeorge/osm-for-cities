@@ -1,97 +1,42 @@
 import * as path from "path";
 import fs from "fs-extra";
 import cliProgress from "cli-progress";
-import { ensureDir } from "fs-extra";
 import { addDays, parseISO } from "date-fns";
 import simpleGit from "simple-git";
 import pLimit from "p-limit";
 import execa from "execa";
 
-// Config
+// Helpers
+import logger from "../../../helpers/logger.js";
+import { extract, tagsFilter, timeFilter } from "../../../helpers/osmium.js";
+import pbfIsEmpty from "../../../helpers/pbf-is-empty.js";
+import { getCities } from "../helpers.js";
+
+// CLI config
 import {
-  GITEA_ACCESS_TOKEN,
-  GITEA_HOST_URL,
   GITEA_USER,
   GIT_HISTORY_START_DATE,
   PRESETS_HISTORY_PBF_FILE,
-  CLI_APP_DIR,
-  CONTEXTS_DATA_PATH,
-  TMP_DIR,
   getPresets,
-} from "../../../config/index.js";
+} from "../../../../config/index.js";
 
-// Helpers
-import GiteaClient from "../../helpers/gitea-client.js";
-import logger from "../../helpers/logger.js";
-import { curlDownload } from "../../helpers/curl-download.js";
-import { unzip } from "../../helpers/unzip.js";
-import { extract, tagsFilter, timeFilter } from "../../helpers/osmium.js";
-import pbfIsEmpty from "../../helpers/pbf-is-empty.js";
-import { getCities } from "./helpers.js";
+// Context config
+import {
+  CLI_GIT_DIR,
+  CURRENT_DAY_DIR,
+  CURRENT_DAY_FILE,
+  CURRENT_DAY_LEVEL_1_DIR,
+  CURRENT_DAY_LEVEL_2_DIR,
+  CURRENT_DAY_LEVEL_3_DIR,
+  CURRENT_DAY_PRESETS_DIR,
+  GIT_REPOSITORY_URL,
+  OSMIUM_CONFIG_LEVEL_1_FILE,
+  OSMIUM_CONFIG_LEVEL_2_DIR,
+  OSMIUM_CONFIG_LEVEL_3_DIR,
+} from "../config.js";
 
 // Set concurrency limit
 const limit = pLimit(20);
-
-// Create Gitea client
-const giteaClient = new GiteaClient();
-
-// Target organization and repository
-const GIT_ORGANIZATION = "cities-of";
-const GIT_REPOSITORY_NAME = "brazil";
-
-// Build repository URL
-let repositoryUrl = new URL(GITEA_HOST_URL);
-repositoryUrl.username = GITEA_USER;
-repositoryUrl.password = GITEA_ACCESS_TOKEN;
-repositoryUrl.pathname = `/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`;
-repositoryUrl = repositoryUrl.toString();
-
-// CLI directories
-export const CONTEXT_APP_DIR = path.join(
-  CLI_APP_DIR,
-  "contexts",
-  "cities-of-brazil"
-);
-const CLI_TMP_DIR = path.join(TMP_DIR, "contexts", "brazil");
-const CLI_DATA_DIR = path.join(CONTEXTS_DATA_PATH, "brazil");
-const CLI_GIT_DIR = path.join(CLI_DATA_DIR, "git");
-
-// Polyfiles
-const POLYFILES_URL =
-  "https://www.dropbox.com/s/nvutp2fcg75fcc6/polyfiles.zip?dl=0";
-const POLYFILES_DIR = path.join(CLI_DATA_DIR, "polyfiles");
-const POLYFILES_LEVEL_1_DIR = path.join(
-  POLYFILES_DIR,
-  "polyfiles",
-  "br",
-  "ufs"
-);
-const POLYFILES_LEVEL_2_DIR = path.join(
-  POLYFILES_DIR,
-  "polyfiles",
-  "br",
-  "microregions"
-);
-const POLYFILES_LEVEL_3_DIR = path.join(
-  POLYFILES_DIR,
-  "polyfiles",
-  "br",
-  "municipalities"
-);
-
-// Day extract file
-const CURRENT_DAY_DIR = path.join(CLI_TMP_DIR, "current-day");
-const CURRENT_DAY_FILE = path.join(CURRENT_DAY_DIR, "current-day.osm.pbf");
-const CURRENT_DAY_LEVEL_1_DIR = path.join(CURRENT_DAY_DIR, "level-1");
-const CURRENT_DAY_LEVEL_2_DIR = path.join(CURRENT_DAY_DIR, "level-2");
-const CURRENT_DAY_LEVEL_3_DIR = path.join(CURRENT_DAY_DIR, "level-3");
-const CURRENT_DAY_PRESETS_DIR = path.join(CURRENT_DAY_DIR, "presets");
-
-// Osmium config files
-const OSMIUM_CONFIG_DIR = path.join(CLI_DATA_DIR, "osmium-config");
-const OSMIUM_CONFIG_LEVEL_1_FILE = path.join(OSMIUM_CONFIG_DIR, "level-1.conf");
-const OSMIUM_CONFIG_LEVEL_2_DIR = path.join(OSMIUM_CONFIG_DIR, "level-2");
-const OSMIUM_CONFIG_LEVEL_3_DIR = path.join(OSMIUM_CONFIG_DIR, "level-3");
 
 export const update = async (options) => {
   // Init repository path, if it doesn't exist
@@ -108,7 +53,7 @@ export const update = async (options) => {
   if (await fs.pathExists(path.join(CLI_GIT_DIR, ".git"))) {
     const remoteBranches = await git.listRemote([
       "--heads",
-      repositoryUrl,
+      GIT_REPOSITORY_URL,
       "main",
     ]);
 
@@ -139,7 +84,7 @@ export const update = async (options) => {
     await git.init();
 
     // Add remote origin
-    await git.addRemote("origin", `${repositoryUrl}`);
+    await git.addRemote("origin", `${GIT_REPOSITORY_URL}`);
   }
 
   // Get current day timestamp
@@ -226,7 +171,6 @@ export const update = async (options) => {
   // Update GeoJSON files
   const citiesArray = await getCities();
 
-  // const datasetsTypes = await getDatasetTypes();
   const presets = await getPresets();
 
   const geojsonProgressBar = new cliProgress.SingleBar(
@@ -380,185 +324,4 @@ export const update = async (options) => {
   }
 };
 
-export const setup = async () => {
-  // Initialize directories required by the CLI app
-  await ensureDir(CLI_TMP_DIR);
-  await ensureDir(POLYFILES_DIR);
-  await ensureDir(OSMIUM_CONFIG_DIR);
-
-  // Initialize organization in Gitea
-  try {
-    const { status: orgStatus } = await giteaClient.get(
-      `orgs/${GIT_ORGANIZATION}`
-    );
-
-    if (orgStatus === 404) {
-      // Create organization if it does not exist
-      const { status: orgCreationStatus } = await giteaClient.post("orgs", {
-        username: GIT_ORGANIZATION,
-        visibility: "public",
-      });
-
-      if (orgCreationStatus !== 201) {
-        throw "Could not create organization.";
-      }
-    } else {
-      logger(`Organization '${GIT_ORGANIZATION}' exists.`);
-    }
-  } catch (error) {
-    logger(error);
-    return;
-  }
-
-  // Initialize repository in Gitea
-  try {
-    const { status: repoStatus } = await giteaClient.get(
-      `repos/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`
-    );
-    // Get repository status
-    if (repoStatus === 404) {
-      const repositoryCreationResponse = await giteaClient.post(
-        `orgs/${GIT_ORGANIZATION}/repos`,
-        {
-          name: GIT_REPOSITORY_NAME,
-          private: false,
-        }
-      );
-
-      if (repositoryCreationResponse.status !== 201) {
-        throw "Could not create repository.";
-      }
-    } else {
-      logger(`Repository '${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}' exists.`);
-    }
-  } catch (error) {
-    logger(error);
-    return;
-  }
-
-  // Download boundary polygons
-  try {
-    const POLYFILES_TMP_FILE = path.join(CLI_TMP_DIR, "polyfiles.zip");
-    await curlDownload(POLYFILES_URL, POLYFILES_TMP_FILE);
-    await unzip(POLYFILES_TMP_FILE, POLYFILES_DIR);
-  } catch (error) {
-    logger("Could not download boundary polygons.");
-    return;
-  }
-
-  /**
-   * GENERATE LEVEL 1 OSMIUM CONFIG FILES
-   */
-  logger(`Writing Osmium config files for Brazil at ${OSMIUM_CONFIG_DIR}`);
-
-  // Generate config for level 1 boundaries
-  const extracts = (await fs.readdir(POLYFILES_LEVEL_1_DIR))
-    .filter((f) => f.endsWith(".poly"))
-    .map((f) => {
-      const id = f.split(".")[0];
-      return {
-        output: `${id}.osm.pbf`,
-        polygon: {
-          file_name: path.join(POLYFILES_LEVEL_1_DIR, f),
-          file_type: "poly",
-        },
-      };
-    });
-
-  // Write configuration file
-  await fs.writeJSON(
-    OSMIUM_CONFIG_LEVEL_1_FILE,
-    {
-      directory: CURRENT_DAY_LEVEL_1_DIR,
-      extracts,
-    },
-    { spaces: 2 }
-  );
-
-  /**
-   * GENERATE LEVEL 2 OSMIUM CONFIG FILES
-   */
-  const microregioes = (await fs.readdir(POLYFILES_LEVEL_2_DIR))
-    .filter((f) => f.endsWith(".poly"))
-    .reduce((acc, mr) => {
-      const ufId = mr.substr(0, 2);
-      const mrIf = mr.split(".")[0];
-      acc[ufId] = (acc[ufId] || []).concat({
-        output: `${mrIf}.osm.pbf`,
-        polygon: {
-          file_name: path.join(POLYFILES_LEVEL_2_DIR, mr),
-          file_type: "poly",
-        },
-      });
-      return acc;
-    }, {});
-
-  // Create Osmium config files directory
-  await fs.ensureDir(OSMIUM_CONFIG_LEVEL_2_DIR);
-
-  let files = [];
-
-  // For each UF, write conf file
-  const ufs = Object.keys(microregioes);
-  for (let i = 0; i < ufs.length; i++) {
-    const uf = ufs[i];
-
-    const confPath = path.join(OSMIUM_CONFIG_LEVEL_2_DIR, `${uf}.conf`);
-    files.push({
-      confPath,
-      sourcePath: path.join(CURRENT_DAY_LEVEL_1_DIR, `${uf}.osm.pbf`),
-    });
-
-    await fs.writeJSON(
-      confPath,
-      {
-        directory: CURRENT_DAY_LEVEL_2_DIR,
-        extracts: microregioes[uf],
-      },
-      { spaces: 2 }
-    );
-  }
-
-  /**
-   * GENERATE LEVEL 3 OSMIUM CONFIG FILES
-   */
-  const citiesArray = await getCities();
-
-  let citiesConfig = citiesArray.reduce((acc, { municipio, microregion }) => {
-    const mnId = municipio;
-    const mrId = microregion;
-    acc[mrId] = (acc[mrId] || []).concat({
-      output: `${mnId}.osm.pbf`,
-      polygon: {
-        file_name: `${path.join(POLYFILES_LEVEL_3_DIR, mnId)}.poly`,
-        file_type: "poly",
-      },
-    });
-    return acc;
-  }, {});
-
-  // Create Osmium config files directory
-  await fs.ensureDir(OSMIUM_CONFIG_LEVEL_3_DIR);
-
-  // For each microregion, write conf file
-  const citiesIds = Object.keys(citiesConfig);
-  for (let i = 0; i < citiesIds.length; i++) {
-    const cityId = citiesIds[i];
-
-    const confPath = path.join(OSMIUM_CONFIG_LEVEL_3_DIR, `${cityId}.conf`);
-
-    files.push({
-      confPath,
-      sourcePath: path.join(CURRENT_DAY_LEVEL_2_DIR, `${cityId}.osm.pbf`),
-    });
-
-    await fs.writeJSON(
-      confPath,
-      {
-        directory: CURRENT_DAY_LEVEL_3_DIR,
-        extracts: citiesConfig[cityId],
-      },
-      { spaces: 2 }
-    );
-  }
-};
+export default update;

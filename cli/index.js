@@ -70,8 +70,10 @@ program
   )
   .action(async (contextName, actionType) => {
     // Execute the action
-    const context = await import(`./contexts/${contextName}/index.js`);
-    await context[actionType]();
+    const context = await import(
+      `./contexts/${contextName}/actions/${actionType}.js`
+    );
+    await context.default();
   });
 
 // Handle errors
