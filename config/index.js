@@ -41,7 +41,7 @@ export const getPresets = async () =>
 export const TMP_DIR =
   process.env.TMP_DIR || path.join("/", "tmp", "osm-git-history");
 export const CONTEXTS_DATA_PATH =
-  process.env.OGH_CONTEXTS_DATA_PATH || path.join(basePath, "app-data", "cli");
+  process.env.OFC_CONTEXTS_DATA_PATH || path.join(basePath, "app-data", "cli");
 
 /**
  * HISTORY PBF

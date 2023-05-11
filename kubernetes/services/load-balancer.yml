@@ -4,7 +4,7 @@ metadata:
   name: gitea
 spec:
   selector:
-    app: ogh-app
+    app: ofc-app
   ports:
     - name: http
       port: 3000

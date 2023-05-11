@@ -9,19 +9,19 @@ spec:
       template:
         spec:
           containers:
-            - name: ogh-container
-              image: localhost:5000/ogh-runner:v2
+            - name: ofc-container
+              image: localhost:5000/ofc-runner:v2
               args: ["/bin/sh", "-c", "yarn cli fetch-full-history"]
               volumeMounts:
                 - name: tmp
                   mountPath: /tmp
                 - name: output
-                  mountPath: /home/runner/ogh-data
+                  mountPath: /home/runner/ofc-data
           volumes:
             - name: tmp
               emptyDir:
                 sizeLimit: 1Gi
             - name: output
               persistentVolumeClaim:
-                claimName: ogh-runner-volume
+                claimName: ofc-runner-volume
           restartPolicy: Never

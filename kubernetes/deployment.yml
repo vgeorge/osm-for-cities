@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ogh-deployment
+  name: ofc-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ogh-app
+      app: ofc-app
   template:
     metadata:
       labels:
-        app: ogh-app
+        app: ofc-app
     spec:
       containers:
         - name: gitea
@@ -28,4 +28,4 @@ spec:
       volumes:
         - name: gitea-data
           persistentVolumeClaim:
-            claimName: ogh-gitea-volume
+            claimName: ofc-gitea-volume
