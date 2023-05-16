@@ -10,3 +10,11 @@ variable "region" {
   default     = "us-east-1"
 }
 
+variable "tags" {
+  type = map(string)
+  default = {
+    Project = "Labs"
+    Owner   = "Vito/Rub21"
+    Client  = "osm-for-cities"
+  }
+}

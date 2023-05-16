@@ -13,15 +13,17 @@ module "kubernetes_addons" {
     timeout                  = "600"
     additional_iam_policies  = []
     service_account_role_arn = ""
-    tags                     = {}
+    # tags                     = {}
+    tags = var.tags
   }
 
   enable_aws_efs_csi_driver = true
-  aws_efs_csi_driver_helm_config = {
-    version = "2.2.6"
-    # namespace  = "kube-system"
-  }
-
+  # aws_efs_csi_driver_helm_config = {
+  #   version   = "2.2.6"
+  #   namespace = "kube-system"
+  # }
+  enable_cluster_autoscaler = true
+  tags                      = var.tags
 }
 
 provider "helm" {

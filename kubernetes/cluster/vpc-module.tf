@@ -2,10 +2,10 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.19.0"
 
-  name = "vpc-${var.stack_name}"
+  name = "${var.stack_name}-vpc"
   cidr = "10.0.0.0/16"
 
-  azs             = ["us-east-1a", "us-east-1b"]
+  azs             = ["${var.region}a", "${var.region}b"]
   private_subnets = ["10.0.0.0/19", "10.0.32.0/19"]
   public_subnets  = ["10.0.64.0/19", "10.0.96.0/19"]
 
@@ -17,12 +17,13 @@ module "vpc" {
   one_nat_gateway_per_az = false
 
   public_subnet_tags = {
-    "kubernetes.io/role/elb"            = 1
+    "kubernetes.io/role/elb"                          = 1
     "kubernetes.io/cluster/cluster-${var.stack_name}" = "owned"
   }
 
   private_subnet_tags = {
-    "kubernetes.io/role/internal-elb"  = 1
-    "kubernetes.io/cluster/cluster-${var.stack_name}"= "owned"
+    "kubernetes.io/role/internal-elb"                 = 1
+    "kubernetes.io/cluster/cluster-${var.stack_name}" = "owned"
   }
+  tags = var.tags
 }
