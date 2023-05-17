@@ -8,29 +8,35 @@ module "eks_blueprints" {
   private_subnet_ids = module.vpc.private_subnets
 
   managed_node_groups = {
-    role = {
+    web_nodes = {
       capacity_type   = "ON_DEMAND"
-      node_group_name = "${var.stack_name}-nodes"
+      node_group_name = "nodes-${var.stack_name}-web"
+      instance_types  = ["t2.small"]
+      desired_size    = "1"
+      max_size        = "2"
+      min_size        = "1",
+      k8s_labels = {
+        nodegroup_type = "web"
+      },
+      additional_tags = {
+        Name = "${var.stack_name}-web"
+      }
+    },
+    data_processing_nodes = {
+      capacity_type   = "ON_DEMAND"
+      node_group_name = "nodes-${var.stack_name}-data-processing"
       instance_types  = ["t3.small"]
       desired_size    = "1"
       max_size        = "2"
-      min_size        = "1"
+      min_size        = "1",
+      k8s_labels = {
+        nodegroup_type = "data_processing"
+      },
+      additional_tags = {
+        Name = "${var.stack_name}-data_processing"
+      }
     }
-    # tags = merge(var.tags, {
-    #   Name : "${var.stack_name}-node"
-    # })
   }
+
   tags = var.tags
-}
-
-provider "kubernetes" {
-  host                   = module.eks_blueprints.eks_cluster_endpoint
-  cluster_ca_certificate = base64decode(module.eks_blueprints.eks_cluster_certificate_authority_data)
-
-  exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
-    command     = "aws"
-    # This requires the awscli to be installed locally where Terraform is executed
-    args = ["eks", "get-token", "--cluster-name", module.eks_blueprints.eks_cluster_id]
-  }
 }
