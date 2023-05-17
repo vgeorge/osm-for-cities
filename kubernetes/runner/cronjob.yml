@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fetch-full-history
+spec:
+  schedule: "*/2 * * * *" # Every Sunday at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: ofc-container
+              image: developmentseed/osmseed-taginfo:1.0.0-dev.h51a2eed
+              args: ["/bin/sh", "-c", " echo start; sleep 30; echo end;"]
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                - name: output
+                  mountPath: /home/runner/ofc-data
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+            - name: output
+              persistentVolumeClaim:
+                claimName: ofc-runner-volume
+          restartPolicy: Never

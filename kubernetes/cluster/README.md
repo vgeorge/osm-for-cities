@@ -28,3 +28,11 @@ mapUsers:
   userarn: arn:aws:iam::123456789012:user/argos
   username: argos
 ```
+
+
+### Start the apps
+
+```sh
+kubectl apply -f ./runner --recursive
+kubectl apply -f ./gitea-app --recursive
+```
