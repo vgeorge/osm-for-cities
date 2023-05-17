@@ -25,6 +25,6 @@ mapUsers:
 ----
 - groups:
   - system:masters
-  userarn: arn:aws:iam::670119057264:user/argos
+  userarn: arn:aws:iam::123456789012:user/argos
   username: argos
 ```

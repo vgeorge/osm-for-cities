@@ -6,14 +6,14 @@ module "kubernetes_addons" {
   # EKS Add-ons
   enable_amazon_eks_aws_ebs_csi_driver = true
   amazon_eks_aws_ebs_csi_driver_config = {
-    addon_name        = "aws-ebs-csi-driver"
-    service_account   = "ebs-csi-controller-sa"
-    resolve_conflicts = "OVERWRITE"
-    namespace         = "kube-system"
-    timeout           = "600"
-    # additional_iam_policies = []
-    # service_account_role_arn = ""
-    tags = var.tags
+    addon_name               = "aws-ebs-csi-driver"
+    service_account          = "ebs-csi-controller-sa"
+    resolve_conflicts        = "OVERWRITE"
+    namespace                = "kube-system"
+    timeout                  = "600"
+    additional_iam_policies  = []
+    service_account_role_arn = ""
+    tags                     = var.tags
   }
 
   enable_aws_efs_csi_driver = true

@@ -18,12 +18,12 @@ module "vpc" {
 
   public_subnet_tags = {
     "kubernetes.io/role/elb"                          = 1
-    "kubernetes.io/cluster/cluster-${var.stack_name}" = "owned"
+    "kubernetes.io/cluster/${var.stack_name}-cluster" = "owned"
   }
 
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb"                 = 1
-    "kubernetes.io/cluster/cluster-${var.stack_name}" = "owned"
+    "kubernetes.io/cluster/${var.stack_name}-cluster" = "owned"
   }
   tags = var.tags
 }
