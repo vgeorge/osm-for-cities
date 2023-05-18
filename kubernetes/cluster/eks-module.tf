@@ -11,7 +11,7 @@ module "eks_blueprints" {
     web_nodes = {
       capacity_type   = "ON_DEMAND"
       node_group_name = "nodes-${var.stack_name}-web"
-      instance_types  = ["t2.small"]
+      instance_types  = ["t3.small"]
       desired_size    = "1"
       max_size        = "2"
       min_size        = "1",
@@ -25,7 +25,7 @@ module "eks_blueprints" {
     data_processing_nodes = {
       capacity_type   = "ON_DEMAND"
       node_group_name = "nodes-${var.stack_name}-data-processing"
-      instance_types  = ["t3.small"]
+      instance_types  = ["t3.large"]
       desired_size    = "1"
       max_size        = "2"
       min_size        = "1",

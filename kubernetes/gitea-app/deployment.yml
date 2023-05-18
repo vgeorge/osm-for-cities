@@ -23,9 +23,11 @@ spec:
             - name: USER_GID
               value: "1000"
           volumeMounts:
-            - name: gitea-data
+            - name: runner-ebs-volume
               mountPath: /data
       volumes:
-        - name: gitea-data
+        - name: runner-ebs-volume
           persistentVolumeClaim:
-            claimName: ofc-gitea-volume
+            claimName:  ofc-runner-efs-volume-claim
+      nodeSelector:
+        nodegroup_type: web

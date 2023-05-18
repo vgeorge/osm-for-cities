@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ofc-runner-volume
+  name: ofc-runner-ebs-volume-clain
 spec:
   accessModes: ["ReadWriteOnce"]
   storageClassName: "gp2"

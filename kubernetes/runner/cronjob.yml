@@ -3,7 +3,11 @@ kind: CronJob
 metadata:
   name: fetch-full-history
 spec:
-  schedule: "*/2 * * * *" # Every Sunday at midnight
+  schedule: "*/10 * * * *" # Every Sunday at midnight
+  startingDeadlineSeconds: 100
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
@@ -11,17 +15,21 @@ spec:
           containers:
             - name: ofc-container
               image: developmentseed/osmseed-taginfo:1.0.0-dev.h51a2eed
-              args: ["/bin/sh", "-c", " echo start; sleep 30; echo end;"]
+              args: ["/bin/sh", "-c", " echo start; sleep 300000; echo end;"]
               volumeMounts:
-                - name: tmp
+                - name: runner-ebs-volume
                   mountPath: /tmp
-                - name: output
+                - name: runner-efs-volume
                   mountPath: /home/runner/ofc-data
           volumes:
-            - name: tmp
-              emptyDir:
-                sizeLimit: 1Gi
-            - name: output
+            - name: runner-ebs-volume
               persistentVolumeClaim:
-                claimName: ofc-runner-volume
-          restartPolicy: Never
+                claimName: ofc-runner-ebs-volume-clain
+            - name: runner-efs-volume
+              persistentVolumeClaim:
+                claimName: ofc-runner-efs-volume-claim
+          restartPolicy: Never #OnFailure
+          nodeSelector:
+            nodegroup_type: data_processing
+
+

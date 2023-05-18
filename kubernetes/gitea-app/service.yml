@@ -4,10 +4,6 @@ metadata:
   name: gitea-service
   namespace: default
 spec:
-  # ports:
-  #   - name: http
-  #     port: 3000
-  #     targetPort: 3000
   ports:
     - port: 3000
       protocol: TCP
