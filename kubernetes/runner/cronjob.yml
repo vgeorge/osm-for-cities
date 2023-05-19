@@ -15,7 +15,7 @@ spec:
           containers:
             - name: ofc-container
               image: developmentseed/osmseed-taginfo:1.0.0-dev.h51a2eed
-              args: ["/bin/sh", "-c", " echo start; sleep 300000; echo end;"]
+              args: ["/bin/sh", "-c", "yarn cli fetch-full-history"]
               volumeMounts:
                 - name: runner-ebs-volume
                   mountPath: /tmp

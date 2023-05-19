@@ -23,10 +23,10 @@ spec:
             - name: USER_GID
               value: "1000"
           volumeMounts:
-            - name: runner-ebs-volume
+            - name: runner-efs-volume
               mountPath: /data
       volumes:
-        - name: runner-ebs-volume
+        - name: runner-efs-volume
           persistentVolumeClaim:
             claimName:  ofc-runner-efs-volume-claim
       nodeSelector:

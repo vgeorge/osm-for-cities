@@ -11,4 +11,3 @@ COPY ./ $HOME/app
 WORKDIR $HOME/app
 
 RUN yarn install
-
