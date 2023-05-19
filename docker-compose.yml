@@ -25,4 +25,10 @@ services:
     build:
           context: ./
           dockerfile: Dockerfile
-
+    volumes:
+      - ./data:/tmp
+    command: >
+      /bin/bash -c "
+        echo 'Set cron job for backing up DB, every 4 minutes';
+        yarn cli fetch-full-history
+        ""
