@@ -1,2 +1,5 @@
 docker-data
 data
+kubernetes
+node_modules
+yarn.lock

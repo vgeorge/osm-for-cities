@@ -21,7 +21,7 @@ services:
       - "3000:3000"
       - "127.0.0.1:2222:22"
   runner:
-    image: devseed/ofc-runner:v1
+    image: developmentseed/osm-for-cities-runner:v1
     build:
           context: ./
           dockerfile: Dockerfile
