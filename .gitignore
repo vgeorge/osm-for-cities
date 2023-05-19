@@ -8,3 +8,6 @@ data/br/osmium
 data/history-pbf
 # data/br
 docker-data
+runner-data
+app-data
+.DS_Store

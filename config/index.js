@@ -1,88 +1,55 @@
 import * as path from "path";
+import loadCsv from "../cli/helpers/load-csv.js";
 
 const basePath = path.resolve();
 
-export const dataPath =
-  process.env.OGH_DATA_PATH || path.join(basePath, "..", "ogh-data");
+/**
+ * Path to the runner app
+ */
+export const CLI_APP_DIR = path.join(basePath, "cli");
+
+// Default date to start fetching history
+export const GIT_HISTORY_START_DATE = "2010-01-01Z";
+
+/**
+ * GITEA SERVER
+ */
+
+export const GITEA_USER = process.env.GITEA_USER || "runner";
+export const GITEA_ACCESS_TOKEN = process.env.GITEA_ACCESS_TOKEN;
+export const GITEA_HOST_URL =
+  process.env.GITEA_HOST_URL || `http://localhost:3000`;
 
 /**
  * HISTORY PBF
  */
+export const FULL_HISTORY_FILE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf"
+    : "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0";
 
-export const historyPbfPath =
-  process.env.HISTORY_PBF_PATH || path.join(dataPath, "history-pbf");
+/**
+ * OSM PRESETS
+ */
+export const getPresets = async () =>
+  await loadCsv(path.join(basePath, "config", "presets.csv"));
 
-export const latestHistoryFilePath = path.join(
-  historyPbfPath,
-  "history-latest.osh.pbf"
-);
+/**
+ * DATA PATHS
+ */
 
-export const selectedHistoryFilePath = path.join(
-  historyPbfPath,
-  "history-latest-selected.osh.pbf"
-);
+export const TMP_DIR =
+  process.env.TMP_DIR || path.join("/", "tmp", "osm-git-history");
+export const CONTEXTS_DATA_PATH =
+  process.env.OFC_CONTEXTS_DATA_PATH || path.join(basePath, "app-data", "cli");
 
-// Data files
-// export const municipalitiesCsvFile = path.resolve(
-//   "./data/br/municipalities.csv"
-// );
-// export const datasetsCsvFile = path.resolve("./data/br/datasets.csv");
+/**
+ * HISTORY PBF
+ */
+export const HISTORY_PBF_PATH =
+  process.env.HISTORY_PBF_PATH || path.join(CONTEXTS_DATA_PATH, "history-pbf");
 
-// Base directories
-// export const dataPath = path.join(basePath, "data", "br");
-export const countriesGitHistoryPath =
-  process.env.COUNTRIES_GIT_HISTORY_PATH ||
-  path.join(dataPath, "countries-git-history");
-
-export const countriesExtractsPath = path.join(dataPath, "countries-extracts");
-
-// Areas
-export const brPolyfilesPath = path.join(dataPath, "polyfiles", "br");
-export const brUfsPolyfilesPath = path.join(brPolyfilesPath, "ufs");
-export const brMicroregionsPolyfilesPath = path.join(
-  brPolyfilesPath,
-  "microregions"
-);
-export const brMunicipalitiesPolyfilesPath = path.join(
-  brPolyfilesPath,
-  "municipalities"
-);
-
-// // Osmium
-export const osmiumConfigPath = path.join(dataPath, "osmium-config");
-export const brOsmiumConfigPath = path.join(osmiumConfigPath, "br");
-export const brUfsOsmiumConfigFile = path.join(brOsmiumConfigPath, "ufs.conf");
-export const brMicroregionsConfigPath = path.join(
-  brOsmiumConfigPath,
-  "microregions"
-);
-export const brMunicipalitiesConfigPath = path.join(
-  brOsmiumConfigPath,
-  "municipalities"
-);
-
-// // OSM Data
-// export const osmPath = path.join(dataPath, "osm");
-// export const osmLatestFile = path.join(osmPath, "brazil-internal.osh.pbf");
-// export const osmSelectedTagsFile = path.join(
-//   osmPath,
-//   "brazil-selected-tags.osh.pbf"
-// );
-// export const osmCurrentDayFile = path.join(
-//   osmPath,
-//   "brazil-current-day.osm.pbf"
-// );
-export const brCurrentDayPbfPath = path.join(dataPath, "current-day-pbf", "br");
-export const brCurrentDayUfsPath = path.join(brCurrentDayPbfPath, "ufs");
-export const brCurrentDayMicroregionsPath = path.join(
-  brCurrentDayPbfPath,
-  "microregions"
-);
-export const brCurrentDayMunicipalitiesPath = path.join(
-  brCurrentDayPbfPath,
-  "municipalities"
-);
-export const brCurrentDayDatasetsPath = path.join(
-  brCurrentDayPbfPath,
-  "datasets"
+export const PRESETS_HISTORY_PBF_FILE = path.join(
+  HISTORY_PBF_PATH,
+  "presets-history.osh.pbf"
 );

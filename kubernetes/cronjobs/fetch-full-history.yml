@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fetch-full-history
+spec:
+  schedule: "0 0 * * 0" # Every Sunday at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: ofc-container
+              image: localhost:5000/ofc-runner:v2
+              args: ["/bin/sh", "-c", "yarn cli fetch-full-history"]
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                - name: output
+                  mountPath: /home/runner/ofc-data
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 1Gi
+            - name: output
+              persistentVolumeClaim:
+                claimName: ofc-runner-volume
+          restartPolicy: Never

@@ -11,5 +11,3 @@ export async function execaToStdout(cmd, args, options) {
   }
   return execProcess;
 }
-
-export default execa;
