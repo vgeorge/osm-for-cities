@@ -15,6 +15,7 @@ import { getCities } from "../helpers.js";
 // CLI config
 import {
   GITEA_USER,
+  GITEA_EMAIL,
   GIT_HISTORY_START_DATE,
   PRESETS_HISTORY_PBF_FILE,
   getPresets,
@@ -307,16 +308,21 @@ export const update = async (options) => {
     updatedAt: currentDay,
   });
 
+  console.log(CLI_GIT_DIR)
+
   // Commit
   await git
+    .add(".");
+  await git.addConfig("user.name", GITEA_USER)
+  await git.addConfig("user.email", GITEA_EMAIL);
+  await git.listConfig()
+  await git
     .env({
-      GIT_AUTHOR_NAME: GITEA_USER,
-      GIT_COMMITTER_DATE: currentDayISO,
+      GIT_COMMITTER_DATE: currentDayISO
     })
-    .add(".")
     .commit(`Status of ${currentDayISO}`);
 
-  await git.push("origin", "main", { "--set-upstream": null });
+  await git.push("origin", "master", { "--set-upstream": null });
 
   // Run update again if it was called recursively
   if (options && options.recursive) {

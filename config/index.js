@@ -16,6 +16,7 @@ export const GIT_HISTORY_START_DATE = "2010-01-01Z";
  */
 
 export const GITEA_USER = process.env.GITEA_USER || "runner";
+export const GITEA_EMAIL = process.env.GITEA_EMAIL || "runner@osmforcities@org";
 export const GITEA_ACCESS_TOKEN = process.env.GITEA_ACCESS_TOKEN;
 export const GITEA_HOST_URL =
   process.env.GITEA_HOST_URL || `http://localhost:3000`;

@@ -31,11 +31,10 @@ services:
     command: >
       /bin/bash -c "
         echo 'Start processing';
-        sleep 10;
         yarn cli fetch-full-history
         yarn cli context cities-of-brazil setup
         yarn cli context cities-of-brazil update
-        # yarn cli update-presets-history
+        #yarn cli update-presets-history
         "
     env_file:
       - ./.env
