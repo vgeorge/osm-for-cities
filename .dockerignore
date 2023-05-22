@@ -3,3 +3,4 @@ data
 kubernetes
 node_modules
 yarn.lock
+app-data
