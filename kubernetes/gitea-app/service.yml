@@ -9,4 +9,4 @@ spec:
       protocol: TCP
   type: ClusterIP
   selector:
-    app:  ofc-app
+    app:  ofc-gitea-app

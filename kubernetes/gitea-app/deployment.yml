@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ofc-deployment
+  name: ofc-gitea
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ofc-app
+      app: ofc-gitea-app
   template:
     metadata:
       labels:
-        app: ofc-app
+        app: ofc-gitea-app
     spec:
       containers:
         - name: gitea
@@ -23,11 +23,11 @@ spec:
             - name: USER_GID
               value: "1000"
           volumeMounts:
-            - name: runner-efs-volume
+            - name: gitea-ebs-volume
               mountPath: /data
       volumes:
-        - name: runner-efs-volume
+        - name: gitea-ebs-volume
           persistentVolumeClaim:
-            claimName:  ofc-runner-efs-volume-claim
+            claimName:  ofc-gitea-ebs-volume-clain
       nodeSelector:
         nodegroup_type: web
