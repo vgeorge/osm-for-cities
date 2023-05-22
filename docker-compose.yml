@@ -29,6 +29,11 @@ services:
       - ./data:/tmp
     command: >
       /bin/bash -c "
-        echo 'Set cron job for backing up DB, every 4 minutes';
+        echo 'Start processing';
+        yarn cli context cities-of-brazil setup
         yarn cli fetch-full-history
-        ""
+        yarn cli update-presets-history
+        yarn cli context cities-of-brazil update
+        "
+    env_file:
+      - ./.env

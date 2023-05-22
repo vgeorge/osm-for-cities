@@ -3,7 +3,7 @@ FROM node:16-bullseye-slim
 
 # Update the package manager and install some packages
 RUN apt-get update && \
-  apt-get install -y curl git osmium-tool
+  apt-get install -y curl git osmium-tool unzip
 
 ENV HOME=/home/runner
 WORKDIR $HOME
