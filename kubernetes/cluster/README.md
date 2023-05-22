@@ -6,6 +6,7 @@ This is a Terraform template that allows you to create a cluster in EKS. eks_blu
 
 ```sh
 terraform init
+# terraform init -migrate-state
 terraform plan
 terraform apply -auto-approve
 ```

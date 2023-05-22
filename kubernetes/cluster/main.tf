@@ -26,3 +26,11 @@ provider "helm" {
     }
   }
 }
+
+terraform {
+  backend "s3" {
+    bucket = "osm-for-cities-terraform-backup"
+    key    = "dev/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
