@@ -20,33 +20,33 @@ services:
     ports:
       - "3000:3000"
       - "127.0.0.1:2222:22"
-  runner_settup:
+  runner_setup:
     image: developmentseed/osm-for-cities-runner:v1
     build:
           context: ./
           dockerfile: Dockerfile
     volumes:
-      - ./app-data:/home/runner/app/app-data
+      - ./data:/home/runner/app/app-data
       # - ./:/home/runner/app
     command: >
       /bin/bash -c "
-      echo 'Start setting up...';
-      set -x
-      yarn cli fetch-full-history
-      yarn cli update-presets-history --recursive
-      yarn cli context cities-of-brazil setup
-      set +x
+        yarn cli fetch-full-history
+        echo 'Start setting up...';
+        set -x
+        yarn cli fetch-full-history
+        yarn cli update-presets-history --recursive
+        yarn cli context cities-of-brazil setup
+        set +x
         "
     env_file:
       - ./.env
   runner_updates:
     image: developmentseed/osm-for-cities-runner:v1
-    # build:
-    #       context: ./
-    #       dockerfile: Dockerfile
+    build:
+          context: ./
+          dockerfile: Dockerfile
     volumes:
-      - ./app-data:/home/runner/app/app-data
-      # - ./:/home/runner/app
+      - ./data:/home/runner/app/app-data
     command: >
       /bin/bash -c "
         echo 'Start updating...';
