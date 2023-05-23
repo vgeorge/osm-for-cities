@@ -1,5 +1,5 @@
 # Use an official Ubuntu minimal image as a parent image
-FROM node:16-bullseye-slim
+FROM --platform=linux/amd64 node:16-bullseye-slim
 
 # Update the package manager and install some packages
 RUN apt-get update && \

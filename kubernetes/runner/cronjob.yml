@@ -1,10 +1,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: fetch-full-history
+  name: ofc-runner
 spec:
-  schedule: "*/10 * * * *" # Every Sunday at midnight
-  startingDeadlineSeconds: 100
+  schedule: "*/2 * * * *" # Every Sunday at midnight
+  startingDeadlineSeconds: 10
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2
   concurrencyPolicy: Forbid
@@ -13,18 +13,52 @@ spec:
       template:
         spec:
           containers:
-            - name: ofc-container
-              image: developmentseed/osmseed-taginfo:1.0.0-dev.h51a2eed
-              args: ["/bin/sh", "-c", "yarn cli fetch-full-history"]
+            - name: ofc-runner-container
+              image: developmentseed/osm-for-cities-runner:v3
+              command: ["/bin/sh"]
+              args: 
+                - -c
+                - |
+                  echo 'Start processing';
+                  yarn cli fetch-full-history
+                  yarn cli context cities-of-brazil setup
+                  rm -rf /home/runner/app/app-data/cli/brazil/git
+                  yarn cli context cities-of-brazil update
+              env:
+                - name: GITEA_ACCESS_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-secret
+                      key: GITEA_ACCESS_TOKEN
+                - name: GITEA_HOST_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-secret
+                      key: GITEA_HOST_URL
+                - name: GIT_REPOSITORY_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-secret
+                      key: GIT_REPOSITORY_URL
+                - name: TMP_DIR
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-secret
+                      key: TMP_DIR
+                - name: GITEA_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-secret
+                      key: GITEA_USER
+                - name: GITEA_EMAIL
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-secret
+                      key: GITEA_EMAIL
               volumeMounts:
-                - name: runner-ebs-volume
-                  mountPath: /tmp
                 - name: runner-efs-volume
-                  mountPath: /home/runner/ofc-data
+                  mountPath: /home/runner/app/app-data
           volumes:
-            - name: runner-ebs-volume
-              persistentVolumeClaim:
-                claimName: ofc-runner-ebs-volume-clain
             - name: runner-efs-volume
               persistentVolumeClaim:
                 claimName: ofc-runner-efs-volume-claim

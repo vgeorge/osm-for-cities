@@ -308,14 +308,14 @@ export const update = async (options) => {
     updatedAt: currentDay,
   });
 
-  console.log(CLI_GIT_DIR)
+  console.log(CLI_GIT_DIR);
 
   // Commit
   await git
     .add(".");
-  await git.addConfig("user.name", GITEA_USER)
+  await git.addConfig("user.name", GITEA_USER);
   await git.addConfig("user.email", GITEA_EMAIL);
-  await git.listConfig()
+  await git.listConfig();
   await git
     .env({
       GIT_COMMITTER_DATE: currentDayISO

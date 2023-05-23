@@ -26,13 +26,14 @@ services:
           context: ./
           dockerfile: Dockerfile
     volumes:
-      - ./data:/tmp
-      - ./:/home/runner/app
+      - ./data:/home/runner/app/app-data
+      # - ./:/home/runner/app
     command: >
       /bin/bash -c "
         echo 'Start processing';
         yarn cli fetch-full-history
         yarn cli context cities-of-brazil setup
+        rm -rf /home/runner/app/app-data/cli/brazil/git
         yarn cli context cities-of-brazil update
         #yarn cli update-presets-history
         "
