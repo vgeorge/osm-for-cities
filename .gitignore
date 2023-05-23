@@ -43,3 +43,4 @@ terraform.rc
 .terraform
 example-yaml
 data
+package-lock.json

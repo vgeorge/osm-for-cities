@@ -8,7 +8,9 @@ RUN apt-get update && \
 
 ENV HOME=/home/runner
 WORKDIR $HOME
-COPY ./ $HOME/app
-WORKDIR $HOME/app
+COPY ./package.json $HOME/app/
 
+WORKDIR $HOME/app
 RUN yarn install
+
+COPY ./ $HOME/app/

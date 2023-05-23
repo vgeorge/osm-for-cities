@@ -15,17 +15,7 @@ spec:
           containers:
             - name: ofc-runner-update-container
               image: developmentseed/osm-for-cities-runner:v3
-              command: ["/bin/sh"]
-              args: 
-                - -c
-                - |
-                  echo 'Start updating...';
-                  set -x
-                  if [ -f "/home/runner/app/app-data/history-latest.osh.pbf" ]; then
-                      yarn cli update-presets-history --recursive
-                      yarn cli context cities-of-brazil update
-                  fi
-                  set +x
+              command: ["/home/runner/app/update.sh"]
               env:
                 - name: GITEA_ACCESS_TOKEN
                   valueFrom:

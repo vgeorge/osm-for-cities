@@ -4,3 +4,4 @@ kubernetes
 node_modules
 yarn.lock
 app-data
+package-lock.json

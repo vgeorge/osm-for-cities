@@ -26,36 +26,16 @@ services:
           context: ./
           dockerfile: Dockerfile
     volumes:
-      - ./data:/home/runner/app/app-data
+      - ./app-data:/home/runner/app/app-data
       # - ./:/home/runner/app
-    command: >
-      /bin/bash -c "
-        yarn cli fetch-full-history
-        echo 'Start setting up...';
-        set -x
-        yarn cli fetch-full-history
-        yarn cli update-presets-history --recursive
-        yarn cli context cities-of-brazil setup
-        set +x
-        "
+    command: "/home/runner/app/setup.sh"
     env_file:
       - ./.env
-  runner_updates:
+  runner_update:
     image: developmentseed/osm-for-cities-runner:v1
-    build:
-          context: ./
-          dockerfile: Dockerfile
     volumes:
-      - ./data:/home/runner/app/app-data
-    command: >
-      /bin/bash -c "
-        echo 'Start updating...';
-        set -x
-        if [ -f "/home/runner/app/app-data/history-latest.osh.pbf" ]; then
-            yarn cli update-presets-history --recursive
-            yarn cli context cities-of-brazil update
-        fi
-        set +x
-        "
+      - ./app-data:/home/runner/app/app-data
+      # - ./:/home/runner/app
+    command: "/home/runner/app/update.sh"
     env_file:
       - ./.env
