@@ -1,9 +1,9 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: ofc-runner
+  name: ofc-runner-setup
 spec:
-  schedule: "*/2 * * * *" # Every Sunday at midnight
+  schedule: "*/5 * * * *" # Every Sunday at midnight
   startingDeadlineSeconds: 10
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2
@@ -13,17 +13,18 @@ spec:
       template:
         spec:
           containers:
-            - name: ofc-runner-container
+            - name: ofc-runner-setup-container
               image: developmentseed/osm-for-cities-runner:v3
               command: ["/bin/sh"]
               args: 
                 - -c
                 - |
-                  echo 'Start processing';
+                  echo 'Start setting up...';
+                  set -x
                   yarn cli fetch-full-history
+                  yarn cli update-presets-history --recursive
                   yarn cli context cities-of-brazil setup
-                  rm -rf /home/runner/app/app-data/cli/brazil/git
-                  yarn cli context cities-of-brazil update
+                  set +x
               env:
                 - name: GITEA_ACCESS_TOKEN
                   valueFrom:

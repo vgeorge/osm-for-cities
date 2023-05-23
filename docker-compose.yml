@@ -39,3 +39,16 @@ services:
         "
     env_file:
       - ./.env
+  # runner_updates:
+  #   image: developmentseed/osm-for-cities-runner:v1
+  #   build:
+  #         context: ./
+  #         dockerfile: Dockerfile
+  #   volumes:
+  #     - ./data:/home/runner/app/app-data
+  #   command: >
+  #     /bin/bash -c "
+  #       yarn cli update-presets-history
+  #       "
+  #   env_file:
+  #     - ./.env
