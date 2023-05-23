@@ -14,9 +14,20 @@ spec:
         spec:
           containers:
             - name: ofc-runner-setup-container
-              image: developmentseed/osm-for-cities-runner:v3
-              command: ["/home/runner/app/setup.sh"]
+              image: developmentseed/osm-for-cities-runner:v5
+              # command: ["/home/runner/app/setup.sh"]
+              command: ["/bin/sh"]
+              args: 
+                - -c
+                - |
+                  echo 'Start setting up...';
+                  rm -rf /home/runner/app/app-data/*
+                  yarn cli fetch-full-history
+                  yarn cli update-presets-history --recursive
+                  yarn cli context cities-of-brazil setup
               env:
+                - name: NODE_ENV
+                  value: production
                 - name: GITEA_ACCESS_TOKEN
                   valueFrom:
                     secretKeyRef:
