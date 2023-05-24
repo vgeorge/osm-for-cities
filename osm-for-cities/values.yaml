@@ -1,0 +1,69 @@
+ofcVersion: develop-9302179
+environment: development
+cloudProvider: aws
+AWS_SSL_ARN: false
+serviceType: NodePort
+domain: osmforcities.org
+adminEmail: admin@osmforcities.org
+
+# ====================================================
+# Gitea App
+# ====================================================
+gitea:
+  enabled: true
+  image:
+    name: gitea/gitea
+    tag: latest
+  env:
+    POSTGRES_DB: openstreetmap
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: '1234'
+  persistenceDisk:
+    enabled: false
+    mountPath: /var/lib/postgresql/data
+    subPath: postgresql-db
+  nodeSelector:
+    enabled: false
+
+# ====================================================
+# EFS config
+# ====================================================
+efs:
+  enable: false
+  volumeHandle: fs-abc
+
+# ====================================================
+# Runner config
+# ====================================================
+runner:
+  env:
+    GITEA_ACCESS_TOKEN: abc
+    GITEA_HOST_URL: http://k8s-default-ofcgitea-c5264badad-155763430.us-east-1.elb.amazonaws.com
+    GIT_REPOSITORY_URL: http://k8s-default-ofcgitea-c5264badad-155763430.us-east-1.elb.amazonaws.com
+    TMP_DIR: /home/runner/app/app-data/tmp
+    GITEA_USER: runner
+    GITEA_EMAIL: runner@osmforcities.org
+
+# ====================================================
+# Runner setup
+# ====================================================
+runner_setup:
+  enabled: false
+  image:
+    name: developmentseed/osm-for-cities-runner
+    tag: v6
+  schedule: "0 0 * * 0" # Every Sunday at midnight
+  nodeSelector:
+    enabled: false
+
+# ====================================================
+# Runner update
+# ====================================================
+runner_update:
+  enabled: false
+  image:
+    name: developmentseed/osm-for-cities-runner
+    tag: v6
+  schedule: "*/5 * * * *"
+  nodeSelector:
+    enabled: false

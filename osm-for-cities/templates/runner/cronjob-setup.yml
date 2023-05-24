@@ -1,0 +1,64 @@
+{{- if .Values.runner_setup.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-ofc-runner-setup
+  labels:
+    app: {{ template "osm-for-cities.name" . }}
+    component: ofc-runner-setup-job
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  schedule: {{ quote .Values.runner_setup.schedule }}
+  startingDeadlineSeconds: 10
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: ofc-runner-setup-container
+              image: "{{ .Values.runner_setup.image.name }}:{{ .Values.runner_setup.image.tag }}"
+              # command: ["/home/runner/app/setup.sh"]
+              command: ["/bin/sh"]
+              args: 
+                - -c
+                - |
+                  echo 'Start setting up...';
+                  # rm -rf /home/runner/app/app-data/*
+                  yarn cli fetch-full-history
+                  yarn cli update-presets-history --recursive
+                  yarn cli context cities-of-brazil setup
+              env:
+                - name: NODE_ENV
+                  value: {{ .Values.environment}}
+                # - name: GITEA_ACCESS_TOKEN
+                #   valueFrom:
+                #     secretKeyRef:
+                #       name: runner-secret
+                #       key: GITEA_ACCESS_TOKEN
+                - name: GITEA_ACCESS_TOKEN
+                  value: {{ .Values.runner.env.GITEA_ACCESS_TOKEN}}
+                - name: GITEA_HOST_URL
+                  value: {{ .Values.runner.env.GITEA_HOST_URL}}
+                - name: GIT_REPOSITORY_URL
+                  value: {{ .Values.runner.env.GIT_REPOSITORY_URL}}
+                - name: TMP_DIR
+                  value: {{ .Values.runner.env.TMP_DIR}}
+                - name: GITEA_USER
+                  value: {{ .Values.runner.env.GITEA_USER}}
+                - name: GITEA_EMAIL
+                  value: {{ .Values.runner.env.GITEA_EMAIL}}
+              volumeMounts:
+                - name: runner-efs-volume
+                  mountPath: /home/runner/app/app-data
+          volumes:
+            - name: runner-efs-volume
+              persistentVolumeClaim:
+                claimName: {{ .Release.Name }}-ofc-runner-efs-volume
+          restartPolicy: Never #OnFailure
+          nodeSelector:
+            nodegroup_type: data_processing
+{{- end }}
