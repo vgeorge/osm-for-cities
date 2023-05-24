@@ -1,5 +1,6 @@
 import * as path from "path";
 import loadCsv from "../cli/helpers/load-csv.js";
+import { format, subDays } from "date-fns";
 
 const basePath = path.resolve();
 
@@ -8,8 +9,18 @@ const basePath = path.resolve();
  */
 export const CLI_APP_DIR = path.join(basePath, "cli");
 
-// Default date to start fetching history
-export const GIT_HISTORY_START_DATE = "2010-01-01Z";
+/**
+ * The default date for the start of the git history, which can be set via
+ * environment variable. If not set, the default value depends on the
+ * environment:
+ *   - In development: The default value is set to "2010-01-01Z".
+ *   - In production: The default value is set to 30 days from the current date.
+ */
+export const GIT_HISTORY_START_DATE =
+  process.env.GIT_HISTORY_START_DATE ||
+  (process.env.NODE_ENV !== "production"
+    ? "2010-01-01Z"
+    : format(subDays(new Date(), 30), "yyyy-MM-dd") + "Z");
 
 /**
  * GITEA SERVER
