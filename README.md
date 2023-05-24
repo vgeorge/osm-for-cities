@@ -56,3 +56,21 @@ By default this command will download a reduced version of planet file for devel
 ## License
 
 [MIT](LICENSE)
+
+
+## Install application charts
+
+Once you have access to your kubernetes cluster, you can install Gitea and Runner applications using helm. Make sure that you have the correct configuration in `osm-for-cities/values.yaml` file.
+
+```sh
+
+# Install charts
+helm install develop ./osm-for-cities
+
+# Upgrade charts
+helm upgrade develop ./osm-for-cities
+
+# Uninstal charts
+helm uninstall develop
+```
+

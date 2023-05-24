@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: ofc-runner-setup
 spec:
-  schedule: "*/5 * * * *" # Every Sunday at midnight
+  schedule: "0 0 * * 0" # Every Sunday at midnight
   startingDeadlineSeconds: 10
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2
@@ -14,14 +14,14 @@ spec:
         spec:
           containers:
             - name: ofc-runner-setup-container
-              image: developmentseed/osm-for-cities-runner:v5
+              image: developmentseed/osm-for-cities-runner:v6
               # command: ["/home/runner/app/setup.sh"]
               command: ["/bin/sh"]
               args: 
                 - -c
                 - |
                   echo 'Start setting up...';
-                  rm -rf /home/runner/app/app-data/*
+                  # rm -rf /home/runner/app/app-data/*
                   yarn cli fetch-full-history
                   yarn cli update-presets-history --recursive
                   yarn cli context cities-of-brazil setup

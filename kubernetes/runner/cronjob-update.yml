@@ -3,7 +3,8 @@ kind: CronJob
 metadata:
   name: ofc-runner-update
 spec:
-  schedule: "*/2 * * * *" # Every day
+  # schedule: "0 0 * * *" # Every day
+  schedule: "*/5 * * * *"
   startingDeadlineSeconds: 10
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2
@@ -14,13 +15,15 @@ spec:
         spec:
           containers:
             - name: ofc-runner-update-container
-              image: developmentseed/osm-for-cities-runner:v5
+              image: developmentseed/osm-for-cities-runner:v6
               # command: ["/home/runner/app/update.sh"]
               command: ["/bin/sh"]
               args: 
                 - -c
                 - |
                   echo 'Start updating...';
+                  rm -rf /home/runner/app/app-data/cli/brazil/git
+                  yarn cli context cities-of-brazil setup
                   if [ -f "${TMP_DIR}/history-latest.osh.pbf" ]; then
                       yarn cli update-presets-history --recursive
                       yarn cli context cities-of-brazil update
