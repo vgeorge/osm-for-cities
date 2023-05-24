@@ -13,7 +13,7 @@ module "eks_blueprints" {
       node_group_name = "nodes-${var.stack_name}-web"
       instance_types  = ["t3.small"]
       desired_size    = "1"
-      max_size        = "2"
+      max_size        = "1"
       min_size        = "1",
       k8s_labels = {
         nodegroup_type = "web"
@@ -27,7 +27,7 @@ module "eks_blueprints" {
       node_group_name = "nodes-${var.stack_name}-data-processing"
       instance_types  = ["t3.large"]
       desired_size    = "1"
-      max_size        = "2"
+      max_size        = "1"
       min_size        = "1",
       k8s_labels = {
         nodegroup_type = "data_processing"
