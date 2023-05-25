@@ -1,0 +1,10 @@
+charts:
+- name: osm-for-cities
+  imagePrefix: developmentseed/osm-for-cities-
+  # repo:
+  #   git: developmentseed/osm-for-cities-chart
+  #   published: https://osmforcities.org/osm-for-cities-chart
+  images:
+    runner:
+      contextPath: .
+      dockerfilePath: Dockerfile

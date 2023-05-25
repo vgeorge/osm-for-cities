@@ -1,5 +1,5 @@
 {{- if .Values.runner.enabled -}}
-{{- if .Values.runner_update.enabled -}}
+{{- if .Values.runner.update.enabled -}}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -10,7 +10,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  schedule: {{ quote .Values.runner_update.schedule }}
+  schedule: {{ quote .Values.runner.update.schedule }}
   startingDeadlineSeconds: 10
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 2
@@ -20,8 +20,8 @@ spec:
       template:
         spec:
           containers:
-            - name: ofc-runner-update-container
-              image: developmentseed/osm-for-cities-runner:v6
+            - name: {{ .Release.Name }}-ofc-runner-update-container
+              image: "{{ .Values.runner.image.name }}:{{ .Values.runner.image.tag }}"
               # command: ["/home/runner/app/update.sh"]
               command: ["/bin/sh"]
               args: 
@@ -37,11 +37,6 @@ spec:
               env:
                 - name: NODE_ENV
                   value: {{ .Values.environment}}
-                # - name: GITEA_ACCESS_TOKEN
-                #   valueFrom:
-                #     secretKeyRef:
-                #       name: runner-secret
-                #       key: GITEA_ACCESS_TOKEN
                 - name: GITEA_ACCESS_TOKEN
                   value: {{ .Values.runner.env.GITEA_ACCESS_TOKEN}}
                 - name: GITEA_HOST_URL
@@ -62,9 +57,9 @@ spec:
               persistentVolumeClaim:
                 claimName: {{ .Release.Name }}-ofc-runner-efs-volume-claim
           restartPolicy: Never #OnFailure
-          {{- if .Values.runner_update.nodeSelector.enabled }}
+          {{- if .Values.runner.update.nodeSelector.enabled }}
           nodeSelector:
-            {{ .Values.runner_update.nodeSelector.label_key }} : {{ .Values.runner_update.nodeSelector.label_value }}
+            {{ .Values.runner.update.nodeSelector.label_key }} : {{ .Values.runner.update.nodeSelector.label_value }}
           {{- end }}
 {{- end }}
 {{- end }}

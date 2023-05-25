@@ -1,11 +1,13 @@
-ofcVersion: develop-9302179
-
-## Aplication enviroment
+## Enviroment
 environment: development
 
+# Cloud provider
 cloudProvider: aws
+
 AWS_SSL_ARN: false
 serviceType: NodePort
+
+# Domain
 domain: osmforcities.org
 adminEmail: admin@osmforcities.org
 
@@ -23,49 +25,34 @@ gitea:
     label_value: web
 
 # ====================================================
-# EFS config
-# ====================================================
-efs:
-  enable: true
-
-
-# ====================================================
 # Runner config
 # ====================================================
 runner:
   enabled: true
+  image:
+    name: developmentseed/osm-for-cities-runner
+    tag: 0.1.0-0.dev.git.154.hada9acf
   env:
-    GITEA_ACCESS_TOKEN: "{{ GITEA_ACCESS_TOKEN }} "
+    GITEA_ACCESS_TOKEN: "{{ GITEA_ACCESS_TOKEN }}"
     GITEA_HOST_URL: http://k8s-default-developo-2445a359ae-1728892866.us-east-1.elb.amazonaws.com
     TMP_DIR: /home/runner/app/app-data/tmp
     GITEA_USER: runner
     GITEA_EMAIL: runner@osmforcities.org
   efs:
-    volumeHandle: fs-05e2fafbbf674d06f
-# ====================================================
-# Runner setup
-# ====================================================
-runner_setup:
-  enabled: true
-  image:
-    name: developmentseed/osm-for-cities-runner
-    tag: v6
-  # schedule: "0 0 * * 0" # Every Sunday at midnight
-  schedule: "*/60 * * * *"
-  nodeSelector:
+    volumeHandle: fs-05e2fafbbf674d06f # this calue comes from terraform output
+  ## Setup
+  setup:
+    enabled: false
+    schedule: "*/60 * * * *" #"0 0 * * 0"
+    nodeSelector:
+      enabled: true
+      label_key: nodegroup_type
+      label_value: data_processing
+  ## Update
+  update:
     enabled: true
-    label_key: nodegroup_type
-    label_value: data_processing
-# ====================================================
-# Runner update
-# ====================================================
-runner_update:
-  enabled: true
-  image:
-    name: developmentseed/osm-for-cities-runner
-    tag: v6
-  schedule: "*/1 * * * *"
-  nodeSelector:
-    enabled: true
-    label_key: nodegroup_type
-    label_value: data_processing
+    schedule: "*/10 * * * *"
+    nodeSelector:
+      enabled: true
+      label_key: nodegroup_type
+      label_value: data_processing
