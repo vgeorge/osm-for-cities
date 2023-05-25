@@ -29,21 +29,3 @@ mapUsers:
   userarn: arn:aws:iam::123456789012:user/argos
   username: argos
 ```
-
-### Create required secrets to run the pods
-
-```sh
-kubectl create secret genereic runner-secret --fron-literal=GITEA_ACCESS_TOKEN=abc
-kubectl create secret genereic runner-secret --fron-literal=GITEA_HOST_URL=http://...
-kubectl create secret genereic runner-secret --fron-literal=TMP_DIR=/tmp
-kubectl create secret genereic runner-secret --fron-literal=GITEA_USER=runner
-kubectl create secret genereic runner-secret --fron-literal=GITEA_USER=runner@osmforcities@org
-```
-
-
-### Start the apps
-
-```sh
-kubectl apply -f ./runner --recursive
-kubectl apply -f ./gitea-app --recursive
-```
