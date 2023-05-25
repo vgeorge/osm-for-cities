@@ -5,3 +5,12 @@ node_modules
 yarn.lock
 app-data
 package-lock.json
+osm-for-cities
+.env
+.env.example
+chartpress.yaml
+docker-compose.yml
+LICENSE
+README.md
+yarn.lock
+.github
