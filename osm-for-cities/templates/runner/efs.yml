@@ -1,4 +1,4 @@
-{{- if .Values.efs.enabled -}}
+{{- if .Values.runner.enabled -}}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -21,7 +21,7 @@ spec:
   storageClassName: efs-sc
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}
+    volumeHandle: {{ .Values.runner.efs.volumeHandle }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

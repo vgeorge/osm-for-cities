@@ -1,3 +1,4 @@
+{{- if .Values.runner.enabled -}}
 {{- if .Values.runner_setup.enabled -}}
 apiVersion: batch/v1
 kind: CronJob
@@ -44,7 +45,7 @@ spec:
                 - name: GITEA_HOST_URL
                   value: {{ .Values.runner.env.GITEA_HOST_URL}}
                 - name: GIT_REPOSITORY_URL
-                  value: {{ .Values.runner.env.GIT_REPOSITORY_URL}}
+                  value: {{ .Values.runner.env.GITEA_HOST_URL}}
                 - name: TMP_DIR
                   value: {{ .Values.runner.env.TMP_DIR}}
                 - name: GITEA_USER
@@ -57,8 +58,11 @@ spec:
           volumes:
             - name: runner-efs-volume
               persistentVolumeClaim:
-                claimName: {{ .Release.Name }}-ofc-runner-efs-volume
+                claimName: {{ .Release.Name }}-ofc-runner-efs-volume-claim
           restartPolicy: Never #OnFailure
+          {{- if .Values.runner_setup.nodeSelector.enabled }}
           nodeSelector:
-            nodegroup_type: data_processing
+            {{ .Values.runner_setup.nodeSelector.label_key }} : {{ .Values.runner_setup.nodeSelector.label_value }}
+          {{- end }}
+{{- end }}
 {{- end }}

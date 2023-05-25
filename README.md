@@ -68,7 +68,8 @@ Once you have access to your kubernetes cluster, you can install Gitea and Runne
 helm install develop ./osm-for-cities
 
 # Upgrade charts
-helm upgrade develop ./osm-for-cities
+export GITEA_ACCESS_TOKEN=abc
+helm upgrade develop ./osm-for-cities --set runner.env.GITEA_ACCESS_TOKEN=${GITEA_ACCESS_TOKEN}
 
 # Uninstal charts
 helm uninstall develop

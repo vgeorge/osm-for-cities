@@ -35,6 +35,8 @@ spec:
         - name: gitea-ebs-volume
           persistentVolumeClaim:
             claimName:  {{ .Release.Name }}-ofc-gitea-ebs-volume-clain
+      {{- if .Values.gitea.nodeSelector.enabled }}
       nodeSelector:
-        nodegroup_type: web
+        {{ .Values.gitea.nodeSelector.label_key }} : {{ .Values.gitea.nodeSelector.label_value }}
+      {{- end }}
 {{- end }}
