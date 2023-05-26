@@ -44,3 +44,5 @@ terraform.rc
 example-yaml
 data
 package-lock.json
+!variables.prod.tfvars
+!variables.dev.tfvars
