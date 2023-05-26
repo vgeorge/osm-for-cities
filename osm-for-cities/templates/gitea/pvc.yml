@@ -1,4 +1,25 @@
 {{- if .Values.gitea.enabled -}}
+{{- if .Values.gitea.persistenceDisk.enabled -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-ofc-gitea-ebs-volume
+  labels:
+    app: {{ template "osm-for-cities.name" . }}
+    component: ofc-gitea-ebs-volume
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  capacity:
+    storage: {{ .Values.gitea.persistenceDisk.AWS_ElasticBlockStore_size }}
+  awsElasticBlockStore:
+    volumeID: {{ .Values.gitea.persistenceDisk.AWS_ElasticBlockStore_volumeID }}
+    fsType: ext4
+{{- end }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -10,7 +31,11 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   accessModes: ["ReadWriteOnce"]
+  {{- if .Values.gitea.persistenceDisk.enabled -}}
+  storageClassName: ""
+  {{- else }}
   storageClassName: "gp2"
+  {{- end }}
   resources:
     requests:
       storage: 20Gi

@@ -1,5 +1,5 @@
 ## Enviroment
-environment: development
+environment: production
 
 # Cloud provider
 cloudProvider: aws
@@ -19,6 +19,10 @@ gitea:
   image:
     name: gitea/gitea
     tag: latest
+  persistenceDisk:
+    enabled: false
+    AWS_ElasticBlockStore_volumeID: vol-0404b12c401b3f186
+    AWS_ElasticBlockStore_size: 20Gi
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
@@ -31,19 +35,21 @@ runner:
   enabled: true
   image:
     name: developmentseed/osm-for-cities-runner
-    tag: 0.1.0-0.dev.git.154.hada9acf
+    tag: v0.1.0-0.dev.git.159.hffa9bda
   env:
-    GITEA_ACCESS_TOKEN: "{{ GITEA_ACCESS_TOKEN }}"
-    GITEA_HOST_URL: http://k8s-default-developo-2445a359ae-1728892866.us-east-1.elb.amazonaws.com
+    # GITEA_ACCESS_TOKEN: "{{ GITEA_ACCESS_TOKEN }}"
+    GITEA_ACCESS_TOKEN: "abc"
+    GITEA_HOST_URL: http://k8s-default-developo-c674a237c8-2011409063.us-east-1.elb.amazonaws.com
     TMP_DIR: /home/runner/app/app-data/tmp
     GITEA_USER: runner
     GITEA_EMAIL: runner@osmforcities.org
   efs:
-    volumeHandle: fs-05e2fafbbf674d06f # this calue comes from terraform output
+    volumeHandle: fs-032240e3968a5fa76 # this calue comes from terraform output
   ## Setup
   setup:
-    enabled: false
-    schedule: "*/60 * * * *" #"0 0 * * 0"
+    enabled: true
+    # schedule: "*/1 * * * *"
+    schedule: "0 0 * * 0"
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
@@ -51,7 +57,8 @@ runner:
   ## Update
   update:
     enabled: true
-    schedule: "*/10 * * * *"
+    schedule: "*/1 * * * *"
+    # schedule: "0 */6 * * *"
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
