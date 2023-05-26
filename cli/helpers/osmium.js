@@ -28,6 +28,7 @@ export async function timeFilter(historyFile, dateIso, destinationFile) {
 export async function extract(configFile, currentDayFile) {
   await execaToStdout(`osmium`, [
     `extract`,
+    `-v`,
     `-c`,
     configFile,
     currentDayFile,
