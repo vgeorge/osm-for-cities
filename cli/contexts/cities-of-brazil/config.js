@@ -35,6 +35,11 @@ export const CLI_GIT_DIR = path.join(CLI_DATA_DIR, "git");
 export const POLYFILES_URL =
   "https://www.dropbox.com/s/nvutp2fcg75fcc6/polyfiles.zip?dl=0";
 export const POLYFILES_DIR = path.join(CLI_DATA_DIR, "polyfiles");
+export const POLYFILES_LEVEL_0_DIR = path.join(
+  POLYFILES_DIR,
+  "polyfiles",
+  "br"
+);
 export const POLYFILES_LEVEL_1_DIR = path.join(
   POLYFILES_DIR,
   "polyfiles",
@@ -59,6 +64,10 @@ export const CURRENT_DAY_DIR = path.join(CLI_TMP_DIR, "current-day");
 export const CURRENT_DAY_FILE = path.join(
   CURRENT_DAY_DIR,
   "current-day.osm.pbf"
+);
+export const CURRENT_DAY_COUNTRY_FILE = path.join(
+  CURRENT_DAY_DIR,
+  "current-day-country.osm.pbf"
 );
 export const CURRENT_DAY_LEVEL_1_DIR = path.join(CURRENT_DAY_DIR, "level-1");
 export const CURRENT_DAY_LEVEL_2_DIR = path.join(CURRENT_DAY_DIR, "level-2");
