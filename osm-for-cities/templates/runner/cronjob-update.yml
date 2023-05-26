@@ -1,0 +1,65 @@
+{{- if .Values.runner.enabled -}}
+{{- if .Values.runner.update.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-ofc-runner-update
+  labels:
+    app: {{ template "osm-for-cities.name" . }}
+    component: ofc-runner-update-job
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  schedule: {{ quote .Values.runner.update.schedule }}
+  startingDeadlineSeconds: 10
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: {{ .Release.Name }}-ofc-runner-update-container
+              image: "{{ .Values.runner.image.name }}:{{ .Values.runner.image.tag }}"
+              # command: ["/home/runner/app/update.sh"]
+              command: ["/bin/sh"]
+              args: 
+                - -c
+                - |
+                  echo 'Start updating...';
+                  # rm -rf /home/runner/app/app-data/cli/brazil/git
+                  # yarn cli context cities-of-brazil setup
+                  if [ -f "${TMP_DIR}/history-latest.osh.pbf" ]; then
+                      yarn cli update-presets-history --recursive
+                      yarn cli context cities-of-brazil update
+                  fi
+              env:
+                - name: NODE_ENV
+                  value: {{ .Values.environment}}
+                - name: GITEA_ACCESS_TOKEN
+                  value: {{ .Values.runner.env.GITEA_ACCESS_TOKEN}}
+                - name: GITEA_HOST_URL
+                  value: {{ .Values.runner.env.GITEA_HOST_URL}}
+                - name: GIT_REPOSITORY_URL
+                  value: {{ .Values.runner.env.GITEA_HOST_URL}}
+                - name: TMP_DIR
+                  value: {{ .Values.runner.env.TMP_DIR}}
+                - name: GITEA_USER
+                  value: {{ .Values.runner.env.GITEA_USER}}
+                - name: GITEA_EMAIL
+                  value: {{ .Values.runner.env.GITEA_EMAIL}}
+              volumeMounts:
+                - name: runner-efs-volume
+                  mountPath: /home/runner/app/app-data
+          volumes:
+            - name: runner-efs-volume
+              persistentVolumeClaim:
+                claimName: {{ .Release.Name }}-ofc-runner-efs-volume-claim
+          restartPolicy: Never #OnFailure
+          {{- if .Values.runner.update.nodeSelector.enabled }}
+          nodeSelector:
+            {{ .Values.runner.update.nodeSelector.label_key }} : {{ .Values.runner.update.nodeSelector.label_value }}
+          {{- end }}
+{{- end }}
+{{- end }}

@@ -20,3 +20,22 @@ services:
     ports:
       - "3000:3000"
       - "127.0.0.1:2222:22"
+  runner_setup:
+    image: developmentseed/osm-for-cities-runner:v1
+    build:
+          context: ./
+          dockerfile: Dockerfile
+    volumes:
+      - ./app-data:/home/runner/app/app-data
+      # - ./:/home/runner/app
+    command: "/home/runner/app/setup.sh"
+    env_file:
+      - ./.env
+  runner_update:
+    image: developmentseed/osm-for-cities-runner:v1
+    volumes:
+      - ./app-data:/home/runner/app/app-data
+      # - ./:/home/runner/app
+    command: "/home/runner/app/update.sh"
+    env_file:
+      - ./.env

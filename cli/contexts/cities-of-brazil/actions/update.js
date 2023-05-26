@@ -15,6 +15,7 @@ import { getCities } from "../helpers.js";
 // CLI config
 import {
   GITEA_USER,
+  GITEA_EMAIL,
   GIT_HISTORY_START_DATE,
   PRESETS_HISTORY_PBF_FILE,
   getPresets,
@@ -51,20 +52,6 @@ export const update = async (options) => {
 
   // If git history folder exists, get latest date
   if (await fs.pathExists(path.join(CLI_GIT_DIR, ".git"))) {
-    const remoteBranches = await git.listRemote([
-      "--heads",
-      GIT_REPOSITORY_URL,
-      "main",
-    ]);
-
-    // If remote branch doesn't exist, push local branch
-    if (!remoteBranches || !remoteBranches.includes("main")) {
-      logger(`Git remote looks empty, pushing local branch.`);
-      await git.push("origin", "main");
-    } else {
-      await git.pull("origin", "main");
-    }
-
     // Get last commit date
     try {
       const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
@@ -81,7 +68,7 @@ export const update = async (options) => {
     }
   } else {
     // Or just initialize git repository
-    await git.init();
+    await git.raw("-c", "init.defaultbranch=main", "init");
 
     // Add remote origin
     await git.addRemote("origin", `${GIT_REPOSITORY_URL}`);
@@ -308,12 +295,14 @@ export const update = async (options) => {
   });
 
   // Commit
+  await git.add(".");
+  await git.addConfig("user.name", GITEA_USER);
+  await git.addConfig("user.email", GITEA_EMAIL);
+  await git.listConfig();
   await git
     .env({
-      GIT_AUTHOR_NAME: GITEA_USER,
       GIT_COMMITTER_DATE: currentDayISO,
     })
-    .add(".")
     .commit(`Status of ${currentDayISO}`);
 
   await git.push("origin", "main", { "--set-upstream": null });

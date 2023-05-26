@@ -12,6 +12,7 @@ import { curlDownload } from "./helpers/curl-download.js";
 
 // Local constants
 const FULL_HISTORY_TMP_FILE = path.join(TMP_DIR, "history-latest.osh.pbf");
+
 const PRESET_HISTORY_PBF_TMP_FILE = path.join(
   TMP_DIR,
   "presets-history.osh.pbf"
