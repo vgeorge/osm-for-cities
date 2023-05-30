@@ -37,13 +37,13 @@ runner:
     name: developmentseed/osm-for-cities-runner
     tag: v0.1.0-0.dev.git.167.h3c28136
   env:
-    GITEA_ACCESS_TOKEN: "abc"
+    GITEA_ACCESS_TOKEN: "462951946a8880e5ac57589efd3b7d305c817dea"
     GITEA_HOST_URL: "http://k8s-default-developo-c674a237c8-459472354.us-east-1.elb.amazonaws.com"
     TMP_DIR: /home/runner/app/app-data/tmp
     GITEA_USER: runner
     GITEA_EMAIL: runner@osmforcities.org
   efs:
-    volumeHandle: fs-032240e3968a5fa76 # this calue comes from terraform output
+    volumeHandle: fs-032240e3968a5fa76
   ## Setup
   setup:
     enabled: false
@@ -56,8 +56,8 @@ runner:
   ## Update
   update:
     enabled: true
-    schedule: "*/1 * * * *"
-    # schedule: "0 */6 * * *"
+    # schedule: "*/1 * * * *"
+    schedule: "0 */6 * * *"
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
