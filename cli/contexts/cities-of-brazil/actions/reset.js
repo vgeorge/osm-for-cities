@@ -15,9 +15,6 @@ import {
 const giteaClient = new GiteaClient();
 
 export const reset = async () => {
-  // Init repository path, if it doesn't exist
-  await fs.ensureDir(CLI_GIT_DIR);
-
   // Remove repository by gitea
   try {
     const { status } = await giteaClient.delete(
@@ -38,7 +35,6 @@ export const reset = async () => {
     logger(error);
     return;
   }
-
 };
 
 export default reset;
