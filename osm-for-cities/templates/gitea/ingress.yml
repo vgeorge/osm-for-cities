@@ -26,4 +26,14 @@ spec:
                 name: {{ .Release.Name }}-ofc-gitea-service
                 port:
                   number: 3000
+    - host: "osmforcities.org"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-ofc-gitea-service
+                port:
+                  number: 3000
 {{- end }}
