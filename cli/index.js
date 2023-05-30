@@ -59,10 +59,10 @@ program
   })
   .argument(
     "<action>",
-    "Action type, must be 'setup' or 'update'",
+    "Action type, must be 'setup' , 'update' or 'reset'",
     (actionType) => {
       // Check if action is valid
-      if (!["setup", "update"].includes(actionType)) {
+      if (!["setup", "update", "reset"].includes(actionType)) {
         program.error(`Action not found, must be 'setup' or 'update'.`);
       }
       return actionType;
