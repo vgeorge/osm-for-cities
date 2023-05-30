@@ -8,7 +8,11 @@ import execa from "execa";
 
 // Helpers
 import logger from "../../../helpers/logger.js";
-import { extract, tagsFilter, timeFilter } from "../../../helpers/osmium.js";
+import {
+  extractPoly,
+  tagsFilter,
+  timeFilter,
+} from "../../../helpers/osmium.js";
 import pbfIsEmpty from "../../../helpers/pbf-is-empty.js";
 import { getCities } from "../helpers.js";
 
@@ -24,6 +28,7 @@ import {
 // Context config
 import {
   CLI_GIT_DIR,
+  CURRENT_DAY_COUNTRY_FILE,
   CURRENT_DAY_DIR,
   CURRENT_DAY_FILE,
   CURRENT_DAY_LEVEL_1_DIR,
@@ -31,9 +36,10 @@ import {
   CURRENT_DAY_LEVEL_3_DIR,
   CURRENT_DAY_PRESETS_DIR,
   GIT_REPOSITORY_URL,
-  OSMIUM_CONFIG_LEVEL_1_FILE,
-  OSMIUM_CONFIG_LEVEL_2_DIR,
-  OSMIUM_CONFIG_LEVEL_3_DIR,
+  POLYFILES_LEVEL_0_DIR,
+  POLYFILES_LEVEL_1_DIR,
+  POLYFILES_LEVEL_2_DIR,
+  POLYFILES_LEVEL_3_DIR,
 } from "../config.js";
 
 // Set concurrency limit
@@ -86,70 +92,85 @@ export const update = async (options) => {
     return;
   }
 
+  logger(`Extracting country from current day file...`);
+  await extractPoly(
+    path.join(POLYFILES_LEVEL_0_DIR, "brazil.poly"),
+    CURRENT_DAY_FILE,
+    CURRENT_DAY_COUNTRY_FILE
+  );
+
   // Extract level 1 data
   logger(`Extracting level 1 data...`);
   await fs.remove(CURRENT_DAY_LEVEL_1_DIR);
   await fs.ensureDir(CURRENT_DAY_LEVEL_1_DIR);
-  await extract(OSMIUM_CONFIG_LEVEL_1_FILE, CURRENT_DAY_FILE);
 
-  // Extract microregioes
-  logger("Extracting level 2 data...");
-  const level2OsmiumConfigFiles = await fs.readdir(OSMIUM_CONFIG_LEVEL_2_DIR);
-  await fs.emptyDir(CURRENT_DAY_LEVEL_2_DIR);
+  // Get list of polyfiles at level 1
+  const level1Polyfiles = await fs.readdir(POLYFILES_LEVEL_1_DIR);
+
+  // Extract each level 1 polyfile
+  for (let i = 0; i < level1Polyfiles.length; i++) {
+    const polyfileName = level1Polyfiles[i];
+    const level1AreaId = polyfileName.split(".")[0];
+    logger(`Extracting level 1 area with id: ${level1AreaId}...`);
+    await extractPoly(
+      path.join(POLYFILES_LEVEL_1_DIR, polyfileName),
+      CURRENT_DAY_COUNTRY_FILE,
+      path.join(CURRENT_DAY_LEVEL_1_DIR, `${level1AreaId}.osm.pbf`)
+    );
+  }
+
+  // Extract level 2 data
+  logger(`Extracting level 2 data...`);
+  await fs.remove(CURRENT_DAY_LEVEL_2_DIR);
   await fs.ensureDir(CURRENT_DAY_LEVEL_2_DIR);
-  await Promise.all(
-    level2OsmiumConfigFiles.map((f) => {
-      return limit(async () => {
-        const id = f.split(".")[0];
-        await extract(
-          path.join(OSMIUM_CONFIG_LEVEL_2_DIR, f),
-          path.join(CURRENT_DAY_LEVEL_1_DIR, `${id}.osm.pbf`)
-        );
-      });
-    })
-  );
 
-  // Clear microregion empty files
-  logger("Clearing empty level 2 files...");
-  await Promise.all(
-    (
-      await fs.readdir(CURRENT_DAY_LEVEL_2_DIR)
-    ).map(async (f) => {
-      const filepath = path.join(CURRENT_DAY_LEVEL_2_DIR, f);
-      return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
-    })
-  );
+  // Get list of polyfiles at level 2
+  const level2Polyfiles = await fs.readdir(POLYFILES_LEVEL_2_DIR);
 
-  logger("Extracting level 3 files...");
-  const osmiumMunicipalitiesFiles = await fs.readdir(OSMIUM_CONFIG_LEVEL_3_DIR);
+  // Extract each level 2 polyfile
+  for (let i = 0; i < level2Polyfiles.length; i++) {
+    const polyfileName = level2Polyfiles[i];
+
+    // Get first two characters of polyfile name
+    const level1AreaId = polyfileName.slice(0, 2);
+    const level2AreaId = polyfileName.split(".")[0];
+    logger(`Extracting level 2 area with id: ${level2AreaId}...`);
+    await extractPoly(
+      path.join(POLYFILES_LEVEL_2_DIR, polyfileName),
+      path.join(CURRENT_DAY_LEVEL_1_DIR, `${level1AreaId}.osm.pbf`),
+      path.join(CURRENT_DAY_LEVEL_2_DIR, `${level2AreaId}.osm.pbf`)
+    );
+  }
+
+  // Extract level 3 data
+  logger(`Extracting level 3 data...`);
   await fs.remove(CURRENT_DAY_LEVEL_3_DIR);
   await fs.ensureDir(CURRENT_DAY_LEVEL_3_DIR);
-  await Promise.all(
-    osmiumMunicipalitiesFiles.map(async (mrConf) => {
-      const mrId = mrConf.split(".")[0];
-      const sourcePath = path.join(CURRENT_DAY_LEVEL_2_DIR, `${mrId}.osm.pbf`);
 
-      // Bypass empty files
-      if (!(await fs.pathExists(sourcePath))) {
-        return;
-      }
+  // Get list of polyfiles at level 3
+  const level3Polyfiles = await fs.readdir(POLYFILES_LEVEL_3_DIR);
 
-      // Execute
-      return (async () => {
-        extract(path.join(OSMIUM_CONFIG_LEVEL_3_DIR, mrConf), sourcePath);
-      })();
-    })
-  );
+  // Map level 3 areas to level 2 areas
+  const cities = await getCities();
+  const level3ToLevel2 = cities.reduce((acc, city) => {
+    acc[city.municipio] = city.microregion;
+    return acc;
+  }, {});
 
-  logger("Clearing empty level 3 files...");
-  await Promise.all(
-    (
-      await fs.readdir(CURRENT_DAY_LEVEL_3_DIR)
-    ).map(async (f) => {
-      const filepath = path.join(CURRENT_DAY_LEVEL_3_DIR, f);
-      return (await pbfIsEmpty(filepath)) && fs.remove(filepath);
-    })
-  );
+  // Extract each level 3 polyfile
+  for (let i = 0; i < level3Polyfiles.length; i++) {
+    const polyfileName = level3Polyfiles[i];
+
+    // Get first two characters of polyfile name
+    const level3AreaId = polyfileName.split(".")[0];
+    const level2AreaId = level3ToLevel2[level3AreaId];
+    logger(`Extracting level 3 area with id: ${level3AreaId}...`);
+    await extractPoly(
+      path.join(POLYFILES_LEVEL_3_DIR, polyfileName),
+      path.join(CURRENT_DAY_LEVEL_2_DIR, `${level2AreaId}.osm.pbf`),
+      path.join(CURRENT_DAY_LEVEL_3_DIR, `${level3AreaId}.osm.pbf`)
+    );
+  }
 
   logger(`Updating GeoJSON files...`);
   // Clear OSM datasets
@@ -203,10 +224,6 @@ export const update = async (options) => {
 
             await tagsFilter(level3File, preset.osmium_filter, presetFile);
 
-            const stats = {
-              featureCount: 0,
-            };
-
             if (!(await pbfIsEmpty(presetFile))) {
               const geojsonFile = path.join(
                 geojsonPath,
@@ -219,48 +236,6 @@ export const update = async (options) => {
               );
 
               const geojson = JSON.parse(geojsonString);
-
-              const requiredTags = preset.required_tags.split(",");
-              const recommendedTags = preset.recommended_tags.split(",");
-              stats.featureCount = geojson.features.length;
-
-              // Init counters
-              let requiredFeatureTagsCount = 0;
-              let recommendedFeatureTagsCount = 0;
-              stats.requiredTags = {};
-              stats.recommendedTags = {};
-              requiredTags.forEach((tag) => {
-                stats.requiredTags[tag] = 0;
-              });
-              recommendedTags.forEach((tag) => {
-                stats.recommendedTags[tag] = 0;
-              });
-
-              // Count tags in features
-              geojson.features.forEach((feature) => {
-                requiredTags.forEach((tag) => {
-                  if (feature.properties[tag]) {
-                    ++stats.requiredTags[tag];
-                    ++requiredFeatureTagsCount;
-                  }
-                });
-                recommendedTags.forEach((tag) => {
-                  if (feature.properties[tag]) {
-                    ++stats.recommendedTags[tag];
-                    ++recommendedFeatureTagsCount;
-                  }
-                });
-              });
-
-              // Calculate coverage
-              stats.requiredTagsCoverage =
-                (requiredFeatureTagsCount /
-                  (stats.featureCount * requiredTags.length)) *
-                100;
-              stats.recommendedTagsCoverage =
-                (recommendedFeatureTagsCount /
-                  (stats.featureCount * recommendedTags.length)) *
-                100;
 
               // Write GeoJSON file
               await fs.writeJSON(
