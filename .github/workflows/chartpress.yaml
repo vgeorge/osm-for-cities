@@ -11,17 +11,57 @@ jobs:
       with:
         username: ${{ env.DOCKER_USERNAME }}
         password: ${{ env.DOCKER_PASSWORD }}
-
     - name: Setup python
       uses: actions/setup-python@v2
       with:
         python-version: '3.8.3'
-
     - name: Setup git
       run: git config --global user.email "noreply@developmentseed.org" && git config --global user.name "Github Action"
-
     - name: Install Chartpress
       run: |
         pip install -v chartpress && pip install six
     - name: Run Chartpress
       run: chartpress --push
+    - name: Staging/Develop - substitute secrets
+      # if: github.ref != 'refs/heads/develop'
+      uses: bluwy/substitute-string-action@v1
+      with:
+        _input-file: 'osm-for-cities/values.staging.yaml'
+        _format-key: '{{key}}'
+        _output-file: 'osm-for-cities/values.staging.deploy.yaml'
+        GITEA_ACCESS_TOKEN: ${{ env.STAGING_GITEA_ACCESS_TOKEN }}
+
+    - name: Production - substitute secrets
+      if: github.ref != 'refs/heads/main'
+      uses: bluwy/substitute-string-action@v1
+      with:
+        _input-file: 'osm-for-cities/values.production.yaml'
+        _format-key: '{{key}}'
+        _output-file: 'osm-for-cities/values.production.deploy.yaml'
+        GITEA_ACCESS_TOKEN: ${{ env.PRODUCTION_GITEA_ACCESS_TOKEN }}
+
+
+    # - name: AWS Credentials
+    #   # if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+    #   uses: aws-actions/configure-aws-credentials@v1
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: us-east-1
+
+    # - name: Setup Kubectl and Helm Dependencies
+    #   # if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+    #   run: "sudo pip install awscli --ignore-installed six\nsudo curl -L -o /usr/bin/kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/kubectl\nsudo chmod +x /usr/bin/kubectl\nsudo curl -o /usr/bin/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/aws-iam-authenticator\nsudo chmod +x /usr/bin/aws-iam-authenticator\nwget https://get.helm.sh/helm-v3.5.0-linux-amd64.tar.gz -O helm.tar.gz\ntar -xvzf helm.tar.gz\nsudo mv linux-amd64/helm /usr/local/bin/ \nsudo chmod +x /usr/local/bin/helm\n"
+
+    # - name: Update kube-config staging
+    #   # if: github.ref == 'refs/heads/develop'
+    #   run: aws eks --region us-east-1 update-kubeconfig --name dev-ofc-cluster
+
+
+    # # - name: Install helm dependencies for
+    # #   if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+    # #   run: cd ohm && helm dep up
+
+    # - name: Staging - helm deploy
+    #   # if: github.ref == 'refs/heads/staging'
+    #   run: helm upgrade develop --wait ohm/ -f values.staging.yaml -f ohm/values.yaml

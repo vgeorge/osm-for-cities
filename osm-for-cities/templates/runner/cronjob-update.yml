@@ -4,6 +4,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ .Release.Name }}-ofc-runner-update
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "osm-for-cities.name" . }}
     component: ofc-runner-update-job
