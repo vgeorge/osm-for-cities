@@ -29,6 +29,8 @@ spec:
                 - -c
                 - |
                   echo 'Start updating...';
+                  rm -rf /home/runner/app/app-data/cli/cities-of-brazil/git/
+                  yarn cli context cities-of-brazil setup
                   yarn cli update-presets-history --recursive
                   yarn cli context cities-of-brazil update
               env:
