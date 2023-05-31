@@ -1,0 +1,27 @@
+name: Chartpress Publish and Deploy
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v1
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ env.DOCKER_USERNAME }}
+        password: ${{ env.DOCKER_PASSWORD }}
+
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8.3'
+
+    - name: Setup git
+      run: git config --global user.email "noreply@developmentseed.org" && git config --global user.name "Github Action"
+
+    - name: Install Chartpress
+      run: |
+        pip install -v chartpress && pip install six
+    - name: Run Chartpress
+      run: chartpress --push
