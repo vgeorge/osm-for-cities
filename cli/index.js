@@ -48,6 +48,7 @@ program
 
 program
   .command("context")
+  .option("-r, --recursive", "Repeat updates to present day", false)
   .argument("<name>", "Context name", (contextName) => {
     // Check if context exists, it should be a folder in ./cli/contexts
     if (!contexts.includes(contextName)) {
@@ -68,12 +69,12 @@ program
       return actionType;
     }
   )
-  .action(async (contextName, actionType) => {
+  .action(async (contextName, actionType, options) => {
     // Execute the action
     const context = await import(
       `./contexts/${contextName}/actions/${actionType}.js`
     );
-    await context.default();
+    await context.default(options);
   });
 
 // Handle errors
