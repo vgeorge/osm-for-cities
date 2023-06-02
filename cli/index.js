@@ -60,7 +60,7 @@ program
   })
   .argument(
     "<action>",
-    "Action type, must be 'setup' , 'update' or 'reset'",
+    "Action type, must be 'setup' , 'update' , 'reset-git-local' or 'reset-git-remote'",
     (actionType) => {
       const allowedActions = [
         "setup",
