@@ -1,5 +1,5 @@
 ## Namespace
-namespace: default
+namespace: production
 
 ## Enviroment, value for NODE_ENV
 environment: production
@@ -11,7 +11,7 @@ AWS_SSL_ARN: false
 serviceType: NodePort
 
 # Domain
-domain: staging.osmforcities.org
+domain: osmforcities.org
 adminEmail: admin@osmforcities.org
 
 # ====================================================
@@ -24,8 +24,8 @@ gitea:
     tag: latest
   persistenceDisk:
     enabled: true
-    AWS_ElasticBlockStore_volumeID: vol-023a12f7daf1b71ac
-    AWS_ElasticBlockStore_size: 20Gi
+    AWS_ElasticBlockStore_volumeID: vol-06653e356f7398860
+    AWS_ElasticBlockStore_size: 50Gi
   nodeSelector:
     enabled: true
     label_key: nodegroup_type
@@ -35,13 +35,13 @@ gitea:
 # Runner config
 # ====================================================
 runner:
-  enabled: true
+  enabled: false
   image:
     name: developmentseed/osm-for-cities-runner
     # tag: v0.1.0-0.dev.git.167.h3c28136
   env:
     GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
-    GITEA_HOST_URL: https://staging.osmforcities.org
+    GITEA_HOST_URL: https://osmforcities.org
     TMP_DIR: /home/runner/app/app-data/tmp
     GITEA_USER: runner
     GITEA_EMAIL: runner@osmforcities.org

@@ -3,6 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-ofc-gitea
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "osm-for-cities.name" . }}
     component: ofc-gitea

@@ -4,39 +4,44 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: {{ .Release.Name }}-ofc-gitea-ebs-volume
-  labels:
-    app: {{ template "osm-for-cities.name" . }}
-    component: ofc-gitea-ebs-volume
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ""
+  storageClassName: "gp2"
   capacity:
     storage: {{ .Values.gitea.persistenceDisk.AWS_ElasticBlockStore_size }}
   awsElasticBlockStore:
     volumeID: {{ .Values.gitea.persistenceDisk.AWS_ElasticBlockStore_volumeID }}
     fsType: ext4
-{{- end }}
+  persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-ofc-gitea-ebs-volume-clain
-  labels:
-    app: {{ template "osm-for-cities.name" . }}
-    component: ofc-gitea-ebs-volume-clain
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  accessModes: ["ReadWriteOnce"]
-  {{- if .Values.gitea.persistenceDisk.enabled -}}
-  storageClassName: ""
-  {{- else }}
+  accessModes:
+    - ReadWriteOnce
   storageClassName: "gp2"
-  {{- end }}
+  volumeName: {{ .Release.Name }}-ofc-gitea-ebs-volume
+  resources:
+    requests:
+      storage: {{ .Values.gitea.persistenceDisk.AWS_ElasticBlockStore_size }}
+{{- else }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-ofc-gitea-ebs-volume-clain
+  namespace: {{ .Values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "gp2"
   resources:
     requests:
       storage: 20Gi
+{{- end }}
 {{- end }}
