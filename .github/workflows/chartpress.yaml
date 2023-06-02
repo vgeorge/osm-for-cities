@@ -22,17 +22,15 @@ jobs:
         pip install -v chartpress six awscli
     - name: Run Chartpress
       run: chartpress --push
-
     # values staging/develop
     - name: Staging/Develop - substitute secrets
-      if: github.ref != 'refs/heads/main'
+      if: github.ref == 'refs/heads/develop'
       uses: bluwy/substitute-string-action@v1
       with:
         _input-file: 'osm-for-cities/values.yaml'
         _format-key: '{{key}}'
         _output-file: 'osm-for-cities/values.staging.deploy.yaml'
         GITEA_ACCESS_TOKEN: ${{ secrets.STAGING_GITEA_ACCESS_TOKEN }}
-
     # values prod
     - name: Production - substitute secrets
       if: github.ref == 'refs/heads/main'
@@ -65,7 +63,7 @@ jobs:
       run: aws eks --region us-east-1 update-kubeconfig --name dev-ofc-cluster
 
     - name: Staging - helm deploy
-      if: github.ref != 'refs/heads/main'
+      if: github.ref == 'refs/heads/develop'
       run: helm upgrade develop --wait ./osm-for-cities -f ./osm-for-cities/values.staging.deploy.yaml
 
     - name: Production - helm deploy
