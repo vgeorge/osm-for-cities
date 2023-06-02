@@ -28,16 +28,28 @@ terraform apply -var-file=variables.prod.tfvars -backend-config=backend.prod.tf 
 The admin users need to be added to the "configmap/aws-auth" in the "mapUsers" section.
 
 ```sh
+aws sts get-caller-identity
+# kubectl get configmap -n kube-system aws-auth -o yaml
 kubectl describe configmap -n kube-system aws-auth
 kubectl edit configmap -n kube-system aws-auth
 ```
-Add user's ARN:
+Add user's ARN, from: 👇
 
 ```yaml
-mapUsers:
-----
-- groups:
-  - system:masters
-  userarn: arn:aws:iam::123456789012:user/argos
-  username: argos
+  mapUsers: |
+    []
+```
+
+to: 👇
+
+```yaml
+  mapUsers: |
+    - userarn: arn:aws:iam::12345678912:user/ofc-deploy
+      username: ofc-deploy
+      groups:
+        - system:masters
+    - userarn: arn:aws:iam::12345678912:user/Vito
+      username: Vito
+      groups:
+        - system:masters
 ```

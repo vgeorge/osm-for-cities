@@ -13,4 +13,8 @@ COPY ./package.json $HOME/app/
 WORKDIR $HOME/app
 RUN yarn install
 
-COPY ./ $HOME/app/
+# Copy specific application files
+COPY cli $HOME/app/cli/
+COPY config  $HOME/app/config/
+COPY setup.sh  $HOME/app/
+COPY update.sh $HOME/app/ 

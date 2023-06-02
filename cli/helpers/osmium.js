@@ -37,6 +37,24 @@ export async function extract(configFile, currentDayFile) {
 }
 
 /**
+ * Extracts a file by a polyfile.
+ *
+ * @param {string} polyfilePath File path to polyfile file
+ * @param {string} currentDayFile File path to current day file
+ */
+export async function extractPoly(polyfilePath, source, target) {
+  await execaToStdout(`osmium`, [
+    `extract`,
+    `-p`,
+    polyfilePath,
+    source,
+    `-o`,
+    target,
+    `--overwrite`,
+  ]);
+}
+
+/**
  * Executes osmium tags-filter command.
  *
  * @param {string} inputFile File path to input file
