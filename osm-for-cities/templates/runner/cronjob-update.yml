@@ -22,7 +22,6 @@ spec:
         spec:
           containers:
             - name: {{ .Release.Name }}-ofc-runner-update-container
-              # image: "{{ .Values.runner.image.name }}:{{ .Values.runner.image.tag }}"
               image: "{{ .Values.runner.image.name }}:v{{ .Values.runner.image.tag | default .Chart.Version }}"
               # command: ["/home/runner/app/update.sh"]
               command: ["/bin/sh"]
@@ -33,7 +32,7 @@ spec:
                   rm -rf /home/runner/app/app-data/cli/cities-of-brazil/git/
                   yarn cli context cities-of-brazil setup
                   yarn cli update-presets-history --recursive
-                  yarn cli context cities-of-brazil update
+                  yarn cli context cities-of-brazil update --recursive
               env:
                 - name: NODE_ENV
                   value: {{ .Values.environment}}
