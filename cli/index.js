@@ -65,8 +65,8 @@ program
       const allowedActions = [
         "setup",
         "update",
-        "reset-local-git",
-        "reset-remote-git",
+        "reset-git-local",
+        "reset-git-remote",
       ];
       // Check if action is valid
       if (!allowedActions.includes(actionType)) {
