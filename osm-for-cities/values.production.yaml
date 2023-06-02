@@ -38,7 +38,7 @@ runner:
   enabled: false
   image:
     name: developmentseed/osm-for-cities-runner
-    tag: v0.1.0-0.dev.git.167.h3c28136
+    # tag: v0.1.0-0.dev.git.167.h3c28136
   env:
     GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
     GITEA_HOST_URL: https://osmforcities.org

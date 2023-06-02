@@ -22,7 +22,8 @@ spec:
         spec:
           containers:
             - name: {{ .Release.Name }}-ofc-runner-setup-container
-              image: "{{ .Values.runner.image.name }}:{{ .Values.runner.image.tag }}"
+              # image: "{{ .Values.runner.image.name }}:{{ .Values.runner.image.tag }}"
+              image: "{{ .Values.runner.image.name }}:v{{ .Values.runner.image.tag | default .Chart.Version }}"
               # command: ["/home/runner/app/setup.sh"]
               command: ["/bin/sh"]
               args: 

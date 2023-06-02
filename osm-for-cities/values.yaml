@@ -23,8 +23,8 @@ gitea:
     name: gitea/gitea
     tag: latest
   persistenceDisk:
-    enabled: false
-    AWS_ElasticBlockStore_volumeID: vol-0404b12c401b3f186
+    enabled: true
+    AWS_ElasticBlockStore_volumeID: vol-023a12f7daf1b71ac
     AWS_ElasticBlockStore_size: 20Gi
   nodeSelector:
     enabled: true
@@ -35,10 +35,10 @@ gitea:
 # Runner config
 # ====================================================
 runner:
-  enabled: false
+  enabled: true
   image:
     name: developmentseed/osm-for-cities-runner
-    tag: v0.1.0-0.dev.git.167.h3c28136
+    # tag: v0.1.0-0.dev.git.167.h3c28136
   env:
     GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
     GITEA_HOST_URL: https://staging.osmforcities.org

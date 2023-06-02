@@ -9,8 +9,8 @@ jobs:
     - name: Login to DockerHub
       uses: docker/login-action@v1
       with:
-        username: ${{ env.DOCKER_USERNAME }}
-        password: ${{ env.DOCKER_PASSWORD }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
     - name: Setup python
       uses: actions/setup-python@v2
       with:
@@ -31,7 +31,7 @@ jobs:
         _input-file: 'osm-for-cities/values.yaml'
         _format-key: '{{key}}'
         _output-file: 'osm-for-cities/values.staging.deploy.yaml'
-        GITEA_ACCESS_TOKEN: ${{ env.STAGING_GITEA_ACCESS_TOKEN }}
+        GITEA_ACCESS_TOKEN: ${{ secrets.STAGING_GITEA_ACCESS_TOKEN }}
 
     # values prod
     - name: Production - substitute secrets
@@ -41,13 +41,13 @@ jobs:
         _input-file: 'osm-for-cities/values.production.yaml'
         _format-key: '{{key}}'
         _output-file: 'osm-for-cities/values.production.deploy.yaml'
-        GITEA_ACCESS_TOKEN: ${{ env.PRODUCTION_GITEA_ACCESS_TOKEN }}
+        GITEA_ACCESS_TOKEN: ${{ secrets.PRODUCTION_GITEA_ACCESS_TOKEN }}
 
     - name: AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
     - name: Setup Kubectl and Helm Dependencies
@@ -67,3 +67,7 @@ jobs:
     - name: Staging - helm deploy
       if: github.ref != 'refs/heads/main'
       run: helm upgrade develop --wait ./osm-for-cities -f ./osm-for-cities/values.staging.deploy.yaml
+
+    - name: Staging - helm deploy
+      if: github.ref == 'refs/heads/main'
+      run: helm upgrade prod ./osm-for-cities -f ./osm-for-cities/values.production.deploy.yaml --namespace production
