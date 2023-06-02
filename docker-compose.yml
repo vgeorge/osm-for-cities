@@ -9,12 +9,14 @@ services:
     environment:
       - USER_UID=1000
       - USER_GID=1000
+      - GITEA_CUSTOM=/gitea-custom
     restart: always
     networks:
       - gitea
     volumes:
       - ./app-data/docker/gitea/data:/data
       - ./app-data/docker/gitea/ssh:/data/git/.ssh
+      - ./gitea/custom:/gitea-custom
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
@@ -23,8 +25,8 @@ services:
   runner_setup:
     image: developmentseed/osm-for-cities-runner:v1
     build:
-          context: ./
-          dockerfile: Dockerfile
+      context: ./
+      dockerfile: Dockerfile
     volumes:
       - ./app-data:/home/runner/app/app-data
       # - ./:/home/runner/app
