@@ -27,7 +27,7 @@ This command will start a Gitea server and mount data volumes to the directory `
 
 3. [Create a repository](http://localhost:3000/repo/create) named `brazil` (steps 2 and 3 will be removed in the future once the runner is able to create orgs and repositories).
 
-4. [Generate an access token](http://localhost:3000/user/settings/applications) with `write:org` scope.
+4. [Generate an access token](http://localhost:3000/user/settings/applications) with `write:org` and `delete_repo` scope.
 
 5. Copy `.env.example` to `.env` and add the access token to `GITEA_ACCESS_TOKEN` environment variable.
 
