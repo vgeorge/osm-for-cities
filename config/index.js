@@ -49,12 +49,17 @@ export const GITEA_HOST_URL =
   process.env.GITEA_HOST_URL || `http://localhost:3000`;
 
 /**
- * HISTORY PBF
+ * HISTORY PBF URL
  */
 export const FULL_HISTORY_FILE_URL =
   process.env.NODE_ENV === "production"
     ? "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf"
     : "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0";
+
+/**
+ * FULL HISTORY PBF LOCAL FILE
+ */
+export const FULL_HISTORY_FILE = `history-latest-${process.env.NODE_ENV}.osh.pbf`
 
 /**
  * OSM PRESETS
