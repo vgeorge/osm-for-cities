@@ -29,8 +29,9 @@ spec:
                 - -c
                 - |
                   echo 'Start setting up...';
-                  # rm -rf /home/runner/app/app-data/cli/cities-of-brazil/git/
-                  yarn cli fetch-full-history
+                  # yarn cli fetch-full-history
+                  yarn cli context cities-of-brazil reset-git-local
+                  yarn cli context cities-of-brazil reset-git-remote
                   yarn cli context cities-of-brazil setup
               env:
                 - name: NODE_ENV

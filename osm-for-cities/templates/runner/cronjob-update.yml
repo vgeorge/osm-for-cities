@@ -29,9 +29,9 @@ spec:
                 - -c
                 - |
                   echo 'Start updating...';
-                  rm -rf /home/runner/app/app-data/cli/cities-of-brazil/git/
-                  yarn cli context cities-of-brazil setup
-                  yarn cli update-presets-history --recursive
+                  if [ "$NODE_ENV" = "production" ]; then
+                      yarn cli update-presets-history --recursive
+                  fi
                   yarn cli context cities-of-brazil update --recursive
               env:
                 - name: NODE_ENV

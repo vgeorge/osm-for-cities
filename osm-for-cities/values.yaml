@@ -2,7 +2,7 @@
 namespace: default
 
 ## Enviroment, value for NODE_ENV
-environment: production
+environment: development
 
 # Cloud provider
 cloudProvider: aws
@@ -38,7 +38,7 @@ runner:
   enabled: true
   image:
     name: developmentseed/osm-for-cities-runner
-    # tag: v0.1.0-0.dev.git.167.h3c28136
+    # tag: 0.1.0-0.dev.git.196.hb9b3886
   env:
     GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
     GITEA_HOST_URL: https://staging.osmforcities.org
@@ -49,7 +49,7 @@ runner:
     volumeHandle: fs-032240e3968a5fa76
   ## Setup
   setup:
-    enabled: false
+    enabled: true
     # schedule: "*/1 * * * *"
     schedule: "0 0 * * 0"
     nodeSelector:
@@ -59,8 +59,8 @@ runner:
   ## Update
   update:
     enabled: true
-    schedule: "*/1 * * * *"
-    # schedule: "0 0 * * *"
+    # schedule: "*/1 * * * *"
+    schedule: "0 */5 * * *"
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
