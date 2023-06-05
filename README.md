@@ -11,6 +11,10 @@ A platform for distributing OpenStreetMap data presets for cities.
 
 ## Getting started
 
+### Init `.env` file
+
+Copy `.env.example` to `.env`. The example file contains some of the environment variables that can be set to configure the platform.
+
 ### Start the git server
 
 ```sh
@@ -21,15 +25,11 @@ This command will start a Gitea server and mount data volumes to the directory `
 
 ### Setup Gitea
 
-1. Access the server at  <http://localhost:3000>, create an user name `runner` that will be used for updating the git repositories. Save its password on your password manager as it won't be possible to reset it on a development environment.
+1. Access the server at <http://localhost:3000>, create an user name `runner` that will be used for updating the git repositories. Save its password on your password manager as it won't be possible to reset it on a development environment.
 
-2. [Create an organization](http://localhost:3000/org/create) named `cities-of`.
+2. [Generate an access token](http://localhost:3000/user/settings/applications) with `write:org` and `delete_repo` scope.
 
-3. [Create a repository](http://localhost:3000/repo/create) named `brazil` (steps 2 and 3 will be removed in the future once the runner is able to create orgs and repositories).
-
-4. [Generate an access token](http://localhost:3000/user/settings/applications) with `write:org` and `delete_repo` scope.
-
-5. Copy `.env.example` to `.env` and add the access token to `GITEA_ACCESS_TOKEN` environment variable.
+3. Copy token to `GITEA_ACCESS_TOKEN` environment variable in `.env` file
 
 ### Setup command line runner (for development)
 
@@ -57,8 +57,6 @@ By default this command will download a reduced version of planet file for devel
 
 [MIT](LICENSE)
 
-
-
 ## Build docker image
 
 To create the Docker images and publish them to the Docker registry, we will utilize Charpress.
@@ -69,12 +67,11 @@ docker login
 chartpress --push
 ```
 
-Copy the docker images  tag version into your config `osm-for-cities/values.yaml` file.
+Copy the docker images tag version into your config `osm-for-cities/values.yaml` file.
 
 ## Install application charts
 
 Once you have access to your kubernetes cluster, you can install Gitea and Runner applications using helm. Make sure that you have the correct configuration in `osm-for-cities/values.develop.yaml` or `osm-for-cities/values.production.yaml` file.
-
 
 ## Helm install Staging
 
@@ -88,7 +85,8 @@ helm upgrade develop ./osm-for-cities -f ./osm-for-cities/values.yaml
 helm delete develop
 ```
 
-## Helm install production 
+## Helm install production
+
 ```sh
 kubectl create namespace production
 # Install
