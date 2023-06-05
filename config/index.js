@@ -54,7 +54,7 @@ export const GITEA_HOST_URL =
  * HISTORY PBF URL
  */
 export const FULL_HISTORY_FILE_URL =
-  process.env.NODE_ENV === "development"
+  NODE_ENV === "development"
     ? "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf"
     : "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0";
 
