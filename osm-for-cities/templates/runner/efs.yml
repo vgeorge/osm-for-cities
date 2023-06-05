@@ -1,0 +1,44 @@
+{{- if .Values.runner.enabled -}}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-ofc-runner-efs-volume
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "osm-for-cities.name" . }}
+    component: ofc-runner-efs-volume
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  mountOptions:
+    - tls
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.runner.efs.volumeHandle }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-ofc-runner-efs-volume-claim
+  labels:
+    app: {{ template "osm-for-cities.name" . }}
+    component: ofc-runner-efs-volume-claim
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-sc
+  volumeName: {{ .Release.Name }}-ofc-runner-efs-volume
+  resources:
+    requests:
+      storage: 5Gi
+{{- end }}

@@ -1,0 +1,67 @@
+## Namespace
+namespace: production
+
+## Enviroment, value for NODE_ENV
+environment: production
+
+# Cloud provider
+cloudProvider: aws
+
+AWS_SSL_ARN: false
+serviceType: NodePort
+
+# Domain
+domain: osmforcities.org
+adminEmail: admin@osmforcities.org
+
+# ====================================================
+# Gitea App
+# ====================================================
+gitea:
+  enabled: true
+  image:
+    name: gitea/gitea
+    tag: latest
+  persistenceDisk:
+    enabled: true
+    AWS_ElasticBlockStore_volumeID: vol-06653e356f7398860
+    AWS_ElasticBlockStore_size: 50Gi
+  nodeSelector:
+    enabled: true
+    label_key: nodegroup_type
+    label_value: web
+
+# ====================================================
+# Runner config
+# ====================================================
+runner:
+  enabled: true
+  image:
+    name: developmentseed/osm-for-cities-runner
+    # tag: 0.1.0-0.dev.git.196.hb9b3886
+  env:
+    GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
+    GITEA_HOST_URL: https://osmforcities.org
+    TMP_DIR: /home/runner/app/app-data/tmp
+    GITEA_USER: runner
+    GITEA_EMAIL: runner@osmforcities.org
+  efs:
+    volumeHandle: fs-032240e3968a5fa76
+  ## Setup
+  setup:
+    enabled: true
+    # schedule: "*/1 * * * *"
+    schedule: "0 0 1 * *"
+    nodeSelector:
+      enabled: true
+      label_key: nodegroup_type
+      label_value: data_processing
+  ## Update
+  update:
+    enabled: true
+    # schedule: "*/1 * * * *"
+    schedule: "0 0 * * *"
+    nodeSelector:
+      enabled: true
+      label_key: nodegroup_type
+      label_value: data_processing

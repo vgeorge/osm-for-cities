@@ -1,0 +1,19 @@
+{{- if .Values.gitea.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-ofc-gitea-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ template "osm-for-cities.name" . }}
+    component: ofc-gitea-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    app:  {{ .Release.Name }}-ofc-gitea-app
+{{- end }}

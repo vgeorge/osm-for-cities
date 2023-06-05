@@ -1,14 +1,41 @@
 version: "3"
-
+networks:
+  gitea:
+    external: false
 services:
-  database:
-    image: timescale/timescaledb:latest-pg14
-    restart: 'always'
+  server:
+    image: gitea/gitea:1.19.0
+    container_name: gitea
     environment:
-      - POSTGRES_USER=docker
-      - POSTGRES_PASSWORD=docker
-      - PGDATA=/opt/postgres/data
-    ports:
-      - "5433:5432"
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    networks:
+      - gitea
     volumes:
-      - ./docker-data/postgres:/opt/postgres/data
+      - ./app-data/gitea/data:/data
+      - ./app-data/gitea/ssh:/data/git/.ssh
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "127.0.0.1:2222:22"
+  runner_setup:
+    image: developmentseed/osm-for-cities-runner:v1
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./app-data:/home/runner/app/app-data
+      # - ./:/home/runner/app
+    command: "/home/runner/app/setup.sh"
+    env_file:
+      - ./.env
+  runner_update:
+    image: developmentseed/osm-for-cities-runner:v1
+    volumes:
+      - ./app-data:/home/runner/app/app-data
+      # - ./:/home/runner/app
+    command: "/home/runner/app/update.sh"
+    env_file:
+      - ./.env

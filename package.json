@@ -1,22 +1,22 @@
 {
-  "name": "osm-git-history",
+  "name": "osm-for-cities",
   "version": "0.1.0",
-  "description": "Track OSM datasets history with git",
+  "description": "A platform for distributing OpenStreetMap data presets for cities",
   "scripts": {
-    "serve": "http-server data -p 2000",
     "cli": "node cli/index.js",
-    "lint": "eslint cli migrations utils",
-    "migrate": "knex migrate:latest"
+    "lint": "eslint cli"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Vitor George <vitor.george@gmail.com>",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "cli-progress": "^3.11.2",
     "commander": "^9.4.0",
     "knex": "^2.4.2",
     "osmtogeojson": "^3.0.0-beta.4",
-    "pg": "^8.7.3"
+    "pg": "^8.7.3",
+    "pino": "^8.14.1",
+    "pino-pretty": "^10.0.0"
   },
   "devDependencies": {
     "@fast-csv/parse": "^4.3.6",

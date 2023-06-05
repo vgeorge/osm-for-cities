@@ -1,88 +1,98 @@
 import * as path from "path";
+import loadCsv from "../cli/helpers/load-csv.js";
+import { format, subDays } from "date-fns";
 
 const basePath = path.resolve();
 
-export const dataPath =
-  process.env.OGH_DATA_PATH || path.join(basePath, "..", "ogh-data");
+/**
+ * Path to the runner app
+ */
+export const CLI_APP_DIR = path.join(basePath, "cli");
 
 /**
- * HISTORY PBF
+ * Path to the data directory used by the CLI to store data
+ * (e.g. downloaded files, local git repository, etc)
+ *
+ * The path can be set via environment variable CLI_DATA_DIR.
+ * If not set, the default value depends on the environment:
+ *  - In development: The default value is set to "app-data/development"
+ *  - In production: The default value is set to "app-data/production"
+ *  - Other environments: The default value is set to the value of NODE_ENV
+ *
+ */
+const CLI_DATA_DIR = path.join(
+  process.env.CLI_DATA_DIR || path.join(basePath, "app-data", "cli"),
+  process.env.NODE_ENV ? `${process.env.NODE_ENV}` : "development"
+);
+
+/**
+ * The default date for the start of the git history, which can be set via
+ * environment variable. If not set, the default value depends on the
+ * environment:
+ *   - In development: The default value is set to "2010-01-01Z".
+ *   - In production: The default value is set to 30 days from the current date.
+ */
+export const GIT_HISTORY_START_DATE =
+  process.env.GIT_HISTORY_START_DATE ||
+  (process.env.NODE_ENV !== "production"
+    ? "2010-01-01Z"
+    : format(subDays(new Date(), 30), "yyyy-MM-dd") + "Z");
+
+/**
+ * GITEA SERVER
  */
 
-export const historyPbfPath =
-  process.env.HISTORY_PBF_PATH || path.join(dataPath, "history-pbf");
+export const GITEA_USER = process.env.GITEA_USER || "runner";
+export const GITEA_EMAIL = process.env.GITEA_EMAIL || "runner@osmforcities@org";
+export const GITEA_ACCESS_TOKEN = process.env.GITEA_ACCESS_TOKEN;
+export const GITEA_HOST_URL =
+  process.env.GITEA_HOST_URL || `http://localhost:3000`;
 
-export const latestHistoryFilePath = path.join(
-  historyPbfPath,
-  "history-latest.osh.pbf"
-);
+/**
+ * HISTORY PBF URL
+ */
+export const FULL_HISTORY_FILE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf"
+    : "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0";
 
-export const selectedHistoryFilePath = path.join(
-  historyPbfPath,
-  "history-latest-selected.osh.pbf"
-);
+/**
+ * FULL HISTORY PBF LOCAL FILE
+ */
+export const FULL_HISTORY_FILE = `history-latest-${process.env.NODE_ENV}.osh.pbf`
 
-// Data files
-// export const municipalitiesCsvFile = path.resolve(
-//   "./data/br/municipalities.csv"
-// );
-// export const datasetsCsvFile = path.resolve("./data/br/datasets.csv");
+/**
+ * OSM PRESETS
+ */
+export const getPresets = async () =>
+  await loadCsv(path.join(basePath, "config", "presets.csv"));
 
-// Base directories
-// export const dataPath = path.join(basePath, "data", "br");
-export const countriesGitHistoryPath =
-  process.env.COUNTRIES_GIT_HISTORY_PATH ||
-  path.join(dataPath, "countries-git-history");
+/**
+ * TEMPORARY DIRECTORY
+ *
+ * Used to store temporary files during the execution of
+ * the CLI. The path can be set via environment variable TMP_DIR. If not set,
+ * the default value is /tmp/osm-for-cities.
+ */
+export const TMP_DIR =
+  process.env.TMP_DIR || path.join("/", "tmp", "osm-for-cities");
 
-export const countriesExtractsPath = path.join(dataPath, "countries-extracts");
+/**
+ * CONTEXTS DATA PATH
+ * Path to the contexts data directory used by the CLI.
+ */
+export const CONTEXTS_DATA_PATH = path.join(CLI_DATA_DIR, "contexts");
 
-// Areas
-export const brPolyfilesPath = path.join(dataPath, "polyfiles", "br");
-export const brUfsPolyfilesPath = path.join(brPolyfilesPath, "ufs");
-export const brMicroregionsPolyfilesPath = path.join(
-  brPolyfilesPath,
-  "microregions"
-);
-export const brMunicipalitiesPolyfilesPath = path.join(
-  brPolyfilesPath,
-  "municipalities"
-);
+/**
+ * HISTORY PBF PATH
+ * Path to the history pbf data directory used by the CLI, can be set via
+ * environment variable HISTORY_PBF_PATH. If not set, the default value is
+ * $CLI_DATA_DIR/history-pbf.
+ */
+export const HISTORY_PBF_PATH =
+  process.env.HISTORY_PBF_PATH || path.join(CLI_DATA_DIR, "history-pbf");
 
-// // Osmium
-export const osmiumConfigPath = path.join(dataPath, "osmium-config");
-export const brOsmiumConfigPath = path.join(osmiumConfigPath, "br");
-export const brUfsOsmiumConfigFile = path.join(brOsmiumConfigPath, "ufs.conf");
-export const brMicroregionsConfigPath = path.join(
-  brOsmiumConfigPath,
-  "microregions"
-);
-export const brMunicipalitiesConfigPath = path.join(
-  brOsmiumConfigPath,
-  "municipalities"
-);
-
-// // OSM Data
-// export const osmPath = path.join(dataPath, "osm");
-// export const osmLatestFile = path.join(osmPath, "brazil-internal.osh.pbf");
-// export const osmSelectedTagsFile = path.join(
-//   osmPath,
-//   "brazil-selected-tags.osh.pbf"
-// );
-// export const osmCurrentDayFile = path.join(
-//   osmPath,
-//   "brazil-current-day.osm.pbf"
-// );
-export const brCurrentDayPbfPath = path.join(dataPath, "current-day-pbf", "br");
-export const brCurrentDayUfsPath = path.join(brCurrentDayPbfPath, "ufs");
-export const brCurrentDayMicroregionsPath = path.join(
-  brCurrentDayPbfPath,
-  "microregions"
-);
-export const brCurrentDayMunicipalitiesPath = path.join(
-  brCurrentDayPbfPath,
-  "municipalities"
-);
-export const brCurrentDayDatasetsPath = path.join(
-  brCurrentDayPbfPath,
-  "datasets"
+export const PRESETS_HISTORY_PBF_FILE = path.join(
+  HISTORY_PBF_PATH,
+  "presets-history.osh.pbf"
 );
