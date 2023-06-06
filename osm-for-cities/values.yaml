@@ -22,6 +22,8 @@ gitea:
   image:
     name: gitea/gitea
     tag: latest
+  env:
+    DISABLE_REGISTRATION: true
   persistenceDisk:
     enabled: true
     AWS_ElasticBlockStore_volumeID: vol-023a12f7daf1b71ac

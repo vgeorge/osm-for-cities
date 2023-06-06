@@ -29,6 +29,8 @@ spec:
               value: "1000"
             - name: USER_GID
               value: "1000"
+            - name: DISABLE_REGISTRATION
+              value: {{ .Values.gitea.env.DISABLE_REGISTRATION }}
           volumeMounts:
             - name: gitea-ebs-volume
               mountPath: /data
