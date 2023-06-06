@@ -4,6 +4,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ .Release.Name }}-ofc-runner-setup
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ template "osm-for-cities.name" . }}
     component: ofc-runner-setup-job
@@ -21,16 +22,16 @@ spec:
         spec:
           containers:
             - name: {{ .Release.Name }}-ofc-runner-setup-container
-              image: "{{ .Values.runner.image.name }}:{{ .Values.runner.image.tag }}"
+              image: "{{ .Values.runner.image.name }}:v{{ .Values.runner.image.tag | default .Chart.Version }}"
               # command: ["/home/runner/app/setup.sh"]
               command: ["/bin/sh"]
               args: 
                 - -c
                 - |
                   echo 'Start setting up...';
-                  # rm -rf /home/runner/app/app-data/*
-                  yarn cli fetch-full-history
-                  yarn cli update-presets-history --recursive
+                  # yarn cli fetch-full-history
+                  yarn cli context cities-of-brazil reset-git-local
+                  yarn cli context cities-of-brazil reset-git-remote
                   yarn cli context cities-of-brazil setup
               env:
                 - name: NODE_ENV

@@ -134,12 +134,27 @@ export const update = async (options) => {
     // Get first two characters of polyfile name
     const level1AreaId = polyfileName.slice(0, 2);
     const level2AreaId = polyfileName.split(".")[0];
-    logger(`Extracting level 2 area with id: ${level2AreaId}...`);
-    await extractPoly(
-      path.join(POLYFILES_LEVEL_2_DIR, polyfileName),
-      path.join(CURRENT_DAY_LEVEL_1_DIR, `${level1AreaId}.osm.pbf`),
-      path.join(CURRENT_DAY_LEVEL_2_DIR, `${level2AreaId}.osm.pbf`)
+    const level1FilePath = path.join(
+      CURRENT_DAY_LEVEL_1_DIR,
+      `${level1AreaId}.osm.pbf`
     );
+    const level2FilePath = path.join(
+      CURRENT_DAY_LEVEL_2_DIR,
+      `${level2AreaId}.osm.pbf`
+    );
+
+    if (await pbfIsEmpty(level1FilePath)) {
+      // Bypass if file is empty
+      logger(`No data found for level 1 area with id: ${level1AreaId}`);
+    } else {
+      // Extract level 2 area
+      logger(`Extracting level 2 area with id: ${level2AreaId}...`);
+      await extractPoly(
+        path.join(POLYFILES_LEVEL_2_DIR, polyfileName),
+        level1FilePath,
+        level2FilePath
+      );
+    }
   }
 
   // Extract level 3 data
@@ -164,12 +179,29 @@ export const update = async (options) => {
     // Get first two characters of polyfile name
     const level3AreaId = polyfileName.split(".")[0];
     const level2AreaId = level3ToLevel2[level3AreaId];
-    logger(`Extracting level 3 area with id: ${level3AreaId}...`);
-    await extractPoly(
-      path.join(POLYFILES_LEVEL_3_DIR, polyfileName),
-      path.join(CURRENT_DAY_LEVEL_2_DIR, `${level2AreaId}.osm.pbf`),
-      path.join(CURRENT_DAY_LEVEL_3_DIR, `${level3AreaId}.osm.pbf`)
+    const level2FilePath = path.join(
+      CURRENT_DAY_LEVEL_2_DIR,
+      `${level2AreaId}.osm.pbf`
     );
+    const level3FilePath = path.join(
+      CURRENT_DAY_LEVEL_3_DIR,
+      `${level3AreaId}.osm.pbf`
+    );
+
+    if (
+      !(await fs.pathExists(level2FilePath)) ||
+      (await pbfIsEmpty(level2FilePath))
+    ) {
+      // Bypass if file is empty
+      logger(`No data found for level 2 area with id: ${level2AreaId}`);
+    } else {
+      logger(`Extracting level 3 area with id: ${level3AreaId}...`);
+      await extractPoly(
+        path.join(POLYFILES_LEVEL_3_DIR, polyfileName),
+        level2FilePath,
+        level3FilePath
+      );
+    }
   }
 
   logger(`Updating GeoJSON files...`);
@@ -201,7 +233,10 @@ export const update = async (options) => {
         );
 
         // Bypass if municipality is empty
-        if (!(await fs.pathExists(level3File))) {
+        if (
+          !(await fs.pathExists(level3File)) ||
+          (await pbfIsEmpty(level3File))
+        ) {
           geojsonProgressBar.increment();
           return;
         }

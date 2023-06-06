@@ -60,11 +60,19 @@ program
   })
   .argument(
     "<action>",
-    "Action type, must be 'setup' , 'update' or 'reset'",
+    "Action type, must be 'setup' , 'update' , 'reset-git-local' or 'reset-git-remote'",
     (actionType) => {
+      const allowedActions = [
+        "setup",
+        "update",
+        "reset-git-local",
+        "reset-git-remote",
+      ];
       // Check if action is valid
-      if (!["setup", "update", "reset"].includes(actionType)) {
-        program.error(`Action not found, must be 'setup' or 'update'.`);
+      if (!allowedActions.includes(actionType)) {
+        program.error(
+          `Action not found, must be one of: ${allowedActions.join(", ")}.`
+        );
       }
       return actionType;
     }
@@ -80,7 +88,6 @@ program
 // Handle errors
 process.on("unhandledRejection", function (error) {
   logger(error);
-  program.error("Unexpected error.");
 });
 
 // Parse the arguments
