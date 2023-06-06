@@ -67,7 +67,7 @@ jobs:
 
     - name: Staging - helm deploy
       if: github.ref == 'refs/heads/develop'
-      run: helm upgrade develop --wait ./osm-for-cities -f ./osm-for-cities/values.staging.deploy.yaml
+      run: helm upgrade staging --wait ./osm-for-cities -f ./osm-for-cities/values.staging.deploy.yaml
 
     - name: Production - helm deploy
       if: github.ref == 'refs/heads/main'
