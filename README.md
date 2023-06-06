@@ -78,11 +78,11 @@ Once you have access to your kubernetes cluster, you can install Gitea and Runne
 ```sh
 # namespace for staging will be default
 # Install
-helm install develop ./osm-for-cities -f ./osm-for-cities/values.yaml
+helm install staging ./osm-for-cities -f ./osm-for-cities/values.yaml
 # Upgrade
-helm upgrade develop ./osm-for-cities -f ./osm-for-cities/values.yaml
+helm upgrade staging ./osm-for-cities -f ./osm-for-cities/values.yaml
 # Delete
-helm delete develop
+helm delete staging
 ```
 
 ## Helm install production
