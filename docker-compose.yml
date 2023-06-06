@@ -20,6 +20,11 @@ services:
     ports:
       - "3000:3000"
       - "127.0.0.1:2222:22"
+    command: >
+      /bin/bash -c "
+      sed -i -e '/DISABLE_REGISTRATION/c\DISABLE_REGISTRATION = ${DISABLE_REGISTRATION}' /data/gitea/conf/app.ini &&
+      /bin/s6-svscan /etc/s6
+      "
   runner_setup:
     image: developmentseed/osm-for-cities-runner:v1
     build:

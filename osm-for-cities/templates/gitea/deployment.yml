@@ -30,7 +30,13 @@ spec:
             - name: USER_GID
               value: "1000"
             - name: DISABLE_REGISTRATION
-              value: {{ .Values.gitea.env.DISABLE_REGISTRATION }}
+              value: {{ .Values.gitea.env.DISABLE_REGISTRATION | quote }}
+          command: ["/bin/bash"]
+          args: 
+            - -c
+            - |
+              sed -i -e '/DISABLE_REGISTRATION/c\DISABLE_REGISTRATION = '${DISABLE_REGISTRATION}'' /data/gitea/conf/app.ini &&
+              /bin/s6-svscan /etc/s6
           volumeMounts:
             - name: gitea-ebs-volume
               mountPath: /data
