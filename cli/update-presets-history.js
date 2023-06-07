@@ -139,7 +139,7 @@ export async function updatePresetsHistory(options) {
 
     if (options && options.recursive) {
       logger("Replicating history file...");
-      await updatePresetsHistory();
+      await updatePresetsHistory(options);
     }
   } catch (error) {
     logger(error);
