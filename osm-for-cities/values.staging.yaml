@@ -21,7 +21,7 @@ gitea:
   enabled: true
   image:
     name: developmentseed/osm-for-cities-gitea
-    tag: 0.1.0-0.dev.git.228.ha2e093f
+    tag: "{{GITEA_LATEST_TAG}}"
   env:
     GITEA_CUSTOM: /data/gitea-custom
   persistenceDisk:
@@ -40,7 +40,7 @@ runner:
   enabled: true
   image:
     name: developmentseed/osm-for-cities-runner
-    tag: 0.1.0-0.dev.git.237.hb9b5435
+    tag: "{{RUNNER_LATEST_TAG}}"
   env:
     GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
     GITEA_HOST_URL: https://staging.osmforcities.org
@@ -61,8 +61,8 @@ runner:
   ## Update
   update:
     enabled: true
-    schedule: "*/1 * * * *"
-    # schedule: "0 */4 * * *"
+    # schedule: "*/1 * * * *"
+    schedule: "0 */4 * * *"
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
