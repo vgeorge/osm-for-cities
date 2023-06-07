@@ -22,7 +22,7 @@ spec:
         spec:
           containers:
             - name: {{ .Release.Name }}-ofc-runner-update-container
-              image: "{{ .Values.runner.image.name }}:v{{ .Values.runner.image.tag | default .Chart.Version }}"
+              image: "{{ .Values.runner.image.name }}:{{ .Values.runner.image.tag }}"
               # command: ["/home/runner/app/update.sh"]
               command: ["/bin/sh"]
               args: 

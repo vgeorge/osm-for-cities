@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: gitea
-          image: "{{ .Values.gitea.image.name }}:v{{ .Values.gitea.image.tag | default .Chart.Version }}"
+          image: "{{ .Values.gitea.image.name }}:{{ .Values.gitea.image.tag }}"
           ports:
             - containerPort: 3000
           env:
