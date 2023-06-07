@@ -4,27 +4,25 @@ networks:
     external: false
 services:
   server:
-    image: gitea/gitea:1.19.0
-    container_name: gitea
-    environment:
-      - USER_UID=1000
-      - USER_GID=1000
+    image: developmentseed/osm-for-cities-gitea:v1
+    build:
+      context: ./gitea
+      dockerfile: Dockerfile
     restart: always
     networks:
       - gitea
     volumes:
       - ./app-data/gitea/data:/data
       - ./app-data/gitea/ssh:/data/git/.ssh
+      # - ./gitea/custom:/gitea-custom
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      # - ./gitea:/mnt
     ports:
       - "3000:3000"
       - "127.0.0.1:2222:22"
-    command: >
-      /bin/bash -c "
-      sed -i -e '/DISABLE_REGISTRATION/c\DISABLE_REGISTRATION = ${DISABLE_REGISTRATION}' /data/gitea/conf/app.ini &&
-      /bin/s6-svscan /etc/s6
-      "
+    env_file:
+      - ./.env
   runner_setup:
     image: developmentseed/osm-for-cities-runner:v1
     build:

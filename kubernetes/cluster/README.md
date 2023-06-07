@@ -7,7 +7,7 @@ This is a Terraform template that allows you to create a cluster in EKS. eks_blu
 
 ```sh
 terraform init
-terraform plan -var-file=variables.dev.tfvars 
+terraform plan -var-file=variables.dev.tfvars -state=terraform.dev.tfstate
 terraform apply -var-file=variables.dev.tfvars -state=terraform.dev.tfstate -auto-approve
 # terraform destroy -var-file=variables.dev.tfvars -state=terraform.dev.tfstate
 ```
