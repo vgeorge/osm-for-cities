@@ -42,8 +42,8 @@ jobs:
         _format-key: '{{key}}'
         _output-file: 'osm-for-cities/values.staging.deploy.yaml'
         GITEA_ACCESS_TOKEN: ${{ secrets.STAGING_GITEA_ACCESS_TOKEN }}
-        GITEA_LATEST_TAG: ${GITEA_LATEST_TAG}
-        RUNNER_LATEST_TAG: ${RUNNER_LATEST_TAG}
+        GITEA_LATEST_TAG: ${{ env.GITEA_LATEST_TAG }}
+        RUNNER_LATEST_TAG: ${{ env.RUNNER_LATEST_TAG }}
 
     # values prod
     - name: Production - substitute secrets
@@ -54,8 +54,8 @@ jobs:
         _format-key: '{{key}}'
         _output-file: 'osm-for-cities/values.production.deploy.yaml'
         GITEA_ACCESS_TOKEN: ${{ secrets.PRODUCTION_GITEA_ACCESS_TOKEN }}
-        GITEA_LATEST_TAG: ${GITEA_LATEST_TAG}
-        RUNNER_LATEST_TAG: ${RUNNER_LATEST_TAG}
+        GITEA_LATEST_TAG: ${{ env.GITEA_LATEST_TAG }}
+        RUNNER_LATEST_TAG: ${{ env.RUNNER_LATEST_TAG }}
 
     - name: AWS Credentials
       if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
