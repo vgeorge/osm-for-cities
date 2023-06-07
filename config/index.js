@@ -71,8 +71,10 @@ export const getPresets = async () =>
  * the CLI. The path can be set via environment variable TMP_DIR. If not set,
  * the default value is /tmp/osm-for-cities.
  */
-export const TMP_DIR =
-  process.env.TMP_DIR || path.join("/", "tmp", "osm-for-cities", NODE_ENV);
+export const TMP_DIR = path.join(
+  process.env.TMP_DIR || path.join("/", "tmp", "osm-for-cities"),
+  NODE_ENV
+);
 
 /**
  * CONTEXTS DATA PATH
