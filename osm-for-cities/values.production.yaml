@@ -62,7 +62,7 @@ runner:
   update:
     enabled: true
     # schedule: "*/1 * * * *"
-    schedule: "0 0 * * *"
+    schedule: "0 */4 * * *"
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
