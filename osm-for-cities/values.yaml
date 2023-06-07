@@ -2,7 +2,7 @@
 namespace: default
 
 ## Enviroment, value for NODE_ENV
-environment: development
+environment: staging
 
 # Cloud provider
 cloudProvider: aws
@@ -23,7 +23,7 @@ gitea:
     name: developmentseed/osm-for-cities-gitea
     tag: 0.1.0-0.dev.git.228.ha2e093f
   env:
-    DISABLE_REGISTRATION: true
+    GITEA_CUSTOM: /data/gitea-custom
   persistenceDisk:
     enabled: true
     AWS_ElasticBlockStore_volumeID: vol-0317ba85c09bebe62
