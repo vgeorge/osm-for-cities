@@ -20,13 +20,13 @@ adminEmail: admin@osmforcities.org
 gitea:
   enabled: true
   image:
-    name: gitea/gitea
-    tag: latest
+    name: developmentseed/osm-for-cities-gitea
+    tag: 0.1.0-0.dev.git.228.ha2e093f
   env:
     DISABLE_REGISTRATION: true
   persistenceDisk:
     enabled: true
-    AWS_ElasticBlockStore_volumeID: vol-023a12f7daf1b71ac
+    AWS_ElasticBlockStore_volumeID: vol-0317ba85c09bebe62
     AWS_ElasticBlockStore_size: 20Gi
   nodeSelector:
     enabled: true
@@ -40,7 +40,7 @@ runner:
   enabled: true
   image:
     name: developmentseed/osm-for-cities-runner
-    # tag: 0.1.0-0.dev.git.196.hb9b3886
+    tag: 0.1.0-0.dev.git.232.h14a8a59
   env:
     GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
     GITEA_HOST_URL: https://staging.osmforcities.org
