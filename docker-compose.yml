@@ -8,10 +8,6 @@ services:
     build:
       context: ./gitea
       dockerfile: Dockerfile
-    environment:
-      - USER_UID=1000
-      - USER_GID=1000
-      - GITEA_CUSTOM=/data
     restart: always
     networks:
       - gitea
@@ -21,9 +17,12 @@ services:
       # - ./gitea/custom:/gitea-custom
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      # - ./gitea:/mnt
     ports:
       - "3000:3000"
       - "127.0.0.1:2222:22"
+    env_file:
+      - ./.env
   runner_setup:
     image: developmentseed/osm-for-cities-runner:v1
     build:
