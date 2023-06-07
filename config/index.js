@@ -72,7 +72,8 @@ export const getPresets = async () =>
  * the default value is /tmp/osm-for-cities.
  */
 export const TMP_DIR =
-  process.env.TMP_DIR || path.join("/", "tmp", "osm-for-cities", NODE_ENV);
+  path.join(process.env.TMP_DIR, NODE_ENV) ||
+  path.join("/", "tmp", "osm-for-cities", NODE_ENV);
 
 /**
  * CONTEXTS DATA PATH
