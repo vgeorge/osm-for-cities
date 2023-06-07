@@ -7,7 +7,7 @@ charts:
   images:
     runner:
       contextPath: .
-      # dockerfilePath: Dockerfile
+      dockerfilePath: Dockerfile
     gitea:
-      contextPath: gitea
-      # dockerfilePath: Dockerfile
+      contextPath: ./gitea
+      dockerfilePath: ./gitea/Dockerfile
