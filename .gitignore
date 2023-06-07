@@ -46,3 +46,6 @@ data
 package-lock.json
 !variables.prod.tfvars
 !variables.dev.tfvars
+
+# Gitea files
+gitea/custom/conf/app.ini

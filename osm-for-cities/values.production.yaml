@@ -20,11 +20,13 @@ adminEmail: admin@osmforcities.org
 gitea:
   enabled: true
   image:
-    name: gitea/gitea
-    tag: latest
+    name: developmentseed/osm-for-cities-gitea
+    tag: "{{GITEA_LATEST_TAG}}"
+  env:
+    DISABLE_REGISTRATION: true
   persistenceDisk:
     enabled: true
-    AWS_ElasticBlockStore_volumeID: vol-06653e356f7398860
+    AWS_ElasticBlockStore_volumeID: vol-0ddf4fe991beaa360
     AWS_ElasticBlockStore_size: 50Gi
   nodeSelector:
     enabled: true
@@ -38,7 +40,7 @@ runner:
   enabled: true
   image:
     name: developmentseed/osm-for-cities-runner
-    # tag: 0.1.0-0.dev.git.196.hb9b3886
+    tag: "{{RUNNER_LATEST_TAG}}"
   env:
     GITEA_ACCESS_TOKEN: "{{GITEA_ACCESS_TOKEN}}"
     GITEA_HOST_URL: https://osmforcities.org
@@ -60,7 +62,7 @@ runner:
   update:
     enabled: true
     # schedule: "*/1 * * * *"
-    schedule: "0 0 * * *"
+    schedule: "0 */4 * * *"
     nodeSelector:
       enabled: true
       label_key: nodegroup_type

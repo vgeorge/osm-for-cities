@@ -2,6 +2,8 @@ import * as path from "path";
 import loadCsv from "../cli/helpers/load-csv.js";
 import { format, subDays } from "date-fns";
 
+const NODE_ENV = process.env.NODE_ENV || "development";
+
 const basePath = path.resolve();
 
 /**
@@ -22,7 +24,7 @@ export const CLI_APP_DIR = path.join(basePath, "cli");
  */
 const CLI_DATA_DIR = path.join(
   process.env.CLI_DATA_DIR || path.join(basePath, "app-data", "cli"),
-  process.env.NODE_ENV ? `${process.env.NODE_ENV}` : "development"
+  NODE_ENV
 );
 
 /**
@@ -34,9 +36,9 @@ const CLI_DATA_DIR = path.join(
  */
 export const GIT_HISTORY_START_DATE =
   process.env.GIT_HISTORY_START_DATE ||
-  (process.env.NODE_ENV !== "production"
+  (NODE_ENV === "development"
     ? "2010-01-01Z"
-    : format(subDays(new Date(), 30), "yyyy-MM-dd") + "Z");
+    : format(subDays(new Date(), 10), "yyyy-MM-dd") + "Z");
 
 /**
  * GITEA SERVER
@@ -52,14 +54,9 @@ export const GITEA_HOST_URL =
  * HISTORY PBF URL
  */
 export const FULL_HISTORY_FILE_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf"
-    : "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0";
-
-/**
- * FULL HISTORY PBF LOCAL FILE
- */
-export const FULL_HISTORY_FILE = `history-latest-${process.env.NODE_ENV}.osh.pbf`
+  NODE_ENV === "development"
+    ? "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0"
+    : "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf";
 
 /**
  * OSM PRESETS
@@ -74,8 +71,10 @@ export const getPresets = async () =>
  * the CLI. The path can be set via environment variable TMP_DIR. If not set,
  * the default value is /tmp/osm-for-cities.
  */
-export const TMP_DIR =
-  process.env.TMP_DIR || path.join("/", "tmp", "osm-for-cities");
+export const TMP_DIR = path.join(
+  process.env.TMP_DIR || path.join("/", "tmp", "osm-for-cities"),
+  NODE_ENV
+);
 
 /**
  * CONTEXTS DATA PATH

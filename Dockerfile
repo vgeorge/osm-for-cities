@@ -16,5 +16,3 @@ RUN yarn install
 # Copy specific application files
 COPY cli $HOME/app/cli/
 COPY config  $HOME/app/config/
-COPY setup.sh  $HOME/app/
-COPY update.sh $HOME/app/ 

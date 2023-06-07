@@ -19,18 +19,32 @@ jobs:
       run: git config --global user.email "noreply@developmentseed.org" && git config --global user.name "Github Action"
     - name: Install Chartpress
       run: |
-        pip install -v chartpress six awscli
+        pip install -v chartpress six awscli jq
     - name: Run Chartpress
       run: chartpress --push
+
+    - name: Get latest tags for images
+      if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
+      run: |
+        RUNNER_TAGS=$(curl -s "https://hub.docker.com/v2/repositories/developmentseed/osm-for-cities-runner/tags/" | jq -r '.results[].name')
+        RUNNER_LATEST_TAG=$(echo "$RUNNER_TAGS" | sort -V | tail -n 1)
+        GITEA_TAGS=$(curl -s "https://hub.docker.com/v2/repositories/developmentseed/osm-for-cities-gitea/tags/" | jq -r '.results[].name')
+        GITEA_LATEST_TAG=$(echo "$GITEA_TAGS" | sort -V | tail -n 1)
+        echo GITEA_LATEST_TAG=$GITEA_LATEST_TAG >> $GITHUB_ENV
+        echo RUNNER_LATEST_TAG=$RUNNER_LATEST_TAG >> $GITHUB_ENV
+
     # values staging/develop
-    - name: Staging/Develop - substitute secrets
+    - name: Staging - substitute secrets
       if: github.ref == 'refs/heads/develop'
       uses: bluwy/substitute-string-action@v1
       with:
-        _input-file: 'osm-for-cities/values.yaml'
+        _input-file: 'osm-for-cities/values.staging.yaml'
         _format-key: '{{key}}'
         _output-file: 'osm-for-cities/values.staging.deploy.yaml'
         GITEA_ACCESS_TOKEN: ${{ secrets.STAGING_GITEA_ACCESS_TOKEN }}
+        GITEA_LATEST_TAG: ${{ env.GITEA_LATEST_TAG }}
+        RUNNER_LATEST_TAG: ${{ env.RUNNER_LATEST_TAG }}
+
     # values prod
     - name: Production - substitute secrets
       if: github.ref == 'refs/heads/main'
@@ -40,6 +54,8 @@ jobs:
         _format-key: '{{key}}'
         _output-file: 'osm-for-cities/values.production.deploy.yaml'
         GITEA_ACCESS_TOKEN: ${{ secrets.PRODUCTION_GITEA_ACCESS_TOKEN }}
+        GITEA_LATEST_TAG: ${{ env.GITEA_LATEST_TAG }}
+        RUNNER_LATEST_TAG: ${{ env.RUNNER_LATEST_TAG }}
 
     - name: AWS Credentials
       if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
@@ -67,7 +83,7 @@ jobs:
 
     - name: Staging - helm deploy
       if: github.ref == 'refs/heads/develop'
-      run: helm upgrade develop --wait ./osm-for-cities -f ./osm-for-cities/values.staging.deploy.yaml
+      run: helm upgrade staging --wait ./osm-for-cities -f ./osm-for-cities/values.staging.deploy.yaml
 
     - name: Production - helm deploy
       if: github.ref == 'refs/heads/main'

@@ -8,3 +8,6 @@ charts:
     runner:
       contextPath: .
       dockerfilePath: Dockerfile
+    gitea:
+      contextPath: ./gitea
+      dockerfilePath: ./gitea/Dockerfile
