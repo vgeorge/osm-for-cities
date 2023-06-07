@@ -26,7 +26,7 @@ gitea:
     DISABLE_REGISTRATION: true
   persistenceDisk:
     enabled: true
-    AWS_ElasticBlockStore_volumeID: vol-06653e356f7398860
+    AWS_ElasticBlockStore_volumeID: vol-0ddf4fe991beaa360
     AWS_ElasticBlockStore_size: 50Gi
   nodeSelector:
     enabled: true
