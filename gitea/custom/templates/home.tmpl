@@ -9,7 +9,7 @@
 				<h1 class="ui icon header title">
 					{{AppName}}
 				</h1>
-				<h2>Daily updated datasets from OpenStreetMap.</h2>
+				
 			</div>
 			<div>
 				
@@ -21,35 +21,39 @@
 	</div>
 	<div class="ui stackable middle very relaxed page grid">
 		<div class="twelve wide left aligned centered column">
+			<h2>Daily updated datasets from OpenStreetMap</h2>
 			<p class="large">
-				Eu esse elit fugiat exercitation commodo id fugiat. Magna adipisicing laboris et nulla aliqua laborum deserunt laboris ut elit. In sint ipsum fugiat qui laboris minim exercitation velit id cupidatat fugiat cupidatat anim anim. Nulla incididunt cupidatat nisi elit laboris id consequat irure dolore dolor.
+				OSM for Cities is a platform to provide easy access to city-level OpenStreetMap data. It is aimed to simplify retrieving and utilizing OSM data, enabling cities to make informed decisions and leveraged by the power of local mapping.
 			</p>
 			<p class="large">
-				Deserunt in incididunt eu anim amet ullamco. Pariatur ipsum duis dolore sint occaecat laborum labore aute fugiat laborum ipsum eu non. Esse in et magna incididunt consequat duis amet nisi nisi exercitation ipsum sunt minim ad. Deserunt officia eiusmod ipsum irure tempor quis tempor ea. Ad labore deserunt ea esse anim adipisicing.
+				We have developed a tool that tracks daily-updated city-level OSM data in a git repository. This service processes daily diffs of predefined OSM presets, such as schools, hospitals, cycling infrastructure, etc. The processed data is then pushed to the git repository, making it readily available for direct access or integration into third-party applications.
+			</p>
+			<h2>Key features</h2>
+			<p class="large">
+				This platform ensures timeliness by updating data daily, reflecting the latest changes in OpenStreetMap. Additionally, a git server enables users to visualize the data's change history, providing insights into how files have evolved over time.
 			</p>
 			<p class="large">
-				Nostrud reprehenderit dolor magna exercitation dolore mollit nisi laboris voluptate. Nostrud mollit in dolor duis velit. Do anim enim id et quis cillum fugiat est eiusmod aliqua elit cillum laborum.
+				Coverage is another crucial aspect of OSM for Cities. Each city within in the platform can potentially offer 30+ datasets, allowing for a comprehensive understanding of various urban aspects. We aim to include data from all countries on our platform, making city-level OSM data accessible globally.
 			</p>
 			<p class="large">
-				Ea non culpa id tempor. Quis nulla consectetur proident excepteur officia amet occaecat proident id id ea cillum aliqua. Ut culpa reprehenderit culpa cillum duis non do labore veniam duis officia reprehenderit. Ad labore quis non sunt mollit cillum aliqua magna amet id culpa est est. Anim tempor ut irure fugiat duis anim velit anim dolore esse.
+				We have already added the first country: <a href="https://osmforcities.org/cities-of/brazil" target="_blank" referrerpolicy="no-referrer">Brazil</a>. With more than five thousand municipalities and ranking among the top 10 countries in number of OSM elements, Brazil showcases the potential of the platform. As we expand, the next challenge is to add more countries to OSM for Cities.
+			</p>
+			<h2>The data processing workflow</h2>
+			<p class="large">
+				The process begins by recursively slicing the Planet PBF file to the city level. City-level presets are then extracted and converted into GeoJSON format. These files are committed and pushed to a git repository. With a cloud-based infrastructure based on Kubernetes, the platform is scalable.
 			</p>
 			<p class="large">
-				Consequat laborum anim exercitation ea Lorem est ea. Do dolor enim voluptate sunt voluptate. Nostrud aliquip reprehenderit laboris ipsum eiusmod id fugiat magna. Cupidatat labore cupidatat aute duis in reprehenderit aliquip cillum et culpa veniam aliqua. Aliquip laborum ad duis non. Eu non deserunt duis dolor voluptate laborum exercitation reprehenderit dolore.
+				The datasets are available in GeoJSON format, enclosed within the city limits polygon, reducing the need for pre-processing. This ready-to-use approach saves time for anyone interested in using the data and make it easier to integrate of OSM data into workflows.
+			</p>
+			<h2>About this project</h2>
+			<p class="large">
+				The source code for this project is <a href="https://github.com/vgeorge/osm-for-cities" target="_blank" referrerpolicy="no-referrer">available at Github</a>. 
 			</p>
 			<p class="large">
-				Ex est sint anim proident. Tempor ea dolor sunt mollit veniam esse cupidatat aliquip laboris proident fugiat officia Lorem. Commodo ea mollit irure nisi esse incididunt consequat dolore. Cupidatat voluptate exercitation elit et cillum. Nostrud eiusmod adipisicing aliqua nisi fugiat aliqua sint culpa incididunt ex magna incididunt duis reprehenderit. Sunt dolor sint enim excepteur ea deserunt elit ea ut ipsum voluptate.
+				This is a labs project from Development Seed. We value feedback and are looking forward to work with partners to improve its usability and coverage. 
 			</p>
 			<p class="large">
-				Est nisi consectetur esse ad pariatur esse Lorem consequat duis enim. Quis pariatur ut deserunt ipsum esse pariatur. Sint reprehenderit dolor magna aliquip pariatur. Dolore sint deserunt voluptate anim laborum voluptate sint labore occaecat ullamco esse in ea. Esse commodo sit esse velit dolor officia aliqua do elit. Fugiat mollit nisi ad sunt nulla eiusmod amet incididunt consequat aliqua mollit nostrud.
-			</p>
-			<p class="large">
-				Minim exercitation exercitation voluptate dolor deserunt amet non sit sit. Ipsum fugiat magna sint ullamco non id pariatur Lorem commodo cupidatat. Tempor pariatur ea do commodo nostrud minim minim enim minim sunt commodo aliqua elit. Ad ut excepteur magna elit enim veniam exercitation officia occaecat fugiat non sunt aliqua. Proident ullamco ut esse deserunt quis aliqua deserunt. Esse consectetur deserunt commodo sit.
-			</p>
-			<p class="large">
-				Sunt dolor mollit reprehenderit nostrud ad. Do labore amet velit nisi. Qui enim Lorem officia cillum aliqua proident enim. Lorem pariatur pariatur officia duis eiusmod in aute tempor eu id.
-			</p>
-			<p class="large">
-				Mollit cillum sit commodo quis laborum aute cupidatat irure labore tempor. Ex irure et elit amet laboris ex tempor. Consequat enim exercitation dolor officia non incididunt aliquip aliquip labore aliquip do. Adipisicing aute occaecat adipisicing velit do. Id voluptate dolore deserunt magna irure consectetur est in deserunt deserunt est laboris magna culpa. Do labore magna dolor nostrud quis consectetur sint fugiat et id ut.
+				Please reach us at our <a href="https://developmentseed.org/contact" target="_blank" referrerpolicy="no-referrer">contact page</a>.
 			</p>
 		</div>
 	</div>
