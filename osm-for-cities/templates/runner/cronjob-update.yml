@@ -29,9 +29,7 @@ spec:
                 - -c
                 - |
                   echo 'Start updating...';
-                  if [ "$NODE_ENV" = "production" ]; then
-                      yarn cli update-presets-history --recursive
-                  fi
+                  yarn cli update-presets-history --recursive
                   yarn cli context cities-of-brazil update --recursive
               env:
                 - name: NODE_ENV
