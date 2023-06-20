@@ -56,28 +56,28 @@ export const update = async (options) => {
   // Create git client
   const git = await simpleGit({ baseDir: CLI_GIT_DIR });
 
-  // If git history folder exists, get latest date
-  if (await fs.pathExists(path.join(CLI_GIT_DIR, ".git"))) {
-    // Get last commit date
-    try {
-      const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
+  // Reset local git directory
+  await fs.emptyDir(CLI_GIT_DIR);
+  await git.raw("-c", "init.defaultbranch=main", "init");
+  await git.addRemote("origin", `${GIT_REPOSITORY_URL}`);
 
-      // Convert ISO string to date
-      currentDay = new Date(lastCommitTimestamp);
+  // Get last commit from remote
+  const remoteHeads = await git.listRemote(["--heads", "origin"]);
+  if (remoteHeads?.indexOf("main") > -1) {
+    await git.pull("origin", "main", "--depth=1");
+  }
 
-      // Increment pointer
-      currentDay = addDays(currentDay, 1);
-    } catch (error) {
-      logger(
-        `Could not find last commit date, using ${GIT_HISTORY_START_DATE}.`
-      );
-    }
-  } else {
-    // Or just initialize git repository
-    await git.raw("-c", "init.defaultbranch=main", "init");
+  // Get last commit date
+  try {
+    const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
 
-    // Add remote origin
-    await git.addRemote("origin", `${GIT_REPOSITORY_URL}`);
+    // Convert ISO string to date
+    currentDay = new Date(lastCommitTimestamp);
+
+    // Increment pointer
+    currentDay = addDays(currentDay, 1);
+  } catch (error) {
+    logger(`Could not find last commit date, using ${GIT_HISTORY_START_DATE}.`);
   }
 
   // Get current day timestamp
