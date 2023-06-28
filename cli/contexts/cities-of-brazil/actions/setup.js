@@ -20,6 +20,34 @@ import {
 // Create Gitea client
 const giteaClient = new GiteaClient();
 
+export async function initRemoteGit() {
+  // Initialize repository in Gitea
+  try {
+    const { status: repoStatus } = await giteaClient.get(
+      `repos/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`
+    );
+    // Get repository status
+    if (repoStatus === 404) {
+      const repositoryCreationResponse = await giteaClient.post(
+        `orgs/${GIT_ORGANIZATION}/repos`,
+        {
+          name: GIT_REPOSITORY_NAME,
+          private: false,
+        }
+      );
+
+      if (repositoryCreationResponse.status !== 201) {
+        throw "Could not create repository.";
+      }
+    } else {
+      logger(`Repository '${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}' exists.`);
+    }
+  } catch (error) {
+    logger(error);
+    return;
+  }
+}
+
 export const setup = async () => {
   // Initialize directories required by the CLI app
   await ensureDir(CLI_TMP_DIR);
@@ -49,31 +77,7 @@ export const setup = async () => {
     return;
   }
 
-  // Initialize repository in Gitea
-  try {
-    const { status: repoStatus } = await giteaClient.get(
-      `repos/${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}`
-    );
-    // Get repository status
-    if (repoStatus === 404) {
-      const repositoryCreationResponse = await giteaClient.post(
-        `orgs/${GIT_ORGANIZATION}/repos`,
-        {
-          name: GIT_REPOSITORY_NAME,
-          private: false,
-        }
-      );
-
-      if (repositoryCreationResponse.status !== 201) {
-        throw "Could not create repository.";
-      }
-    } else {
-      logger(`Repository '${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}' exists.`);
-    }
-  } catch (error) {
-    logger(error);
-    return;
-  }
+  await initRemoteGit();
 
   // Download boundary polygons
   try {
