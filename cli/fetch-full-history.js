@@ -5,10 +5,12 @@ import {
   FULL_HISTORY_FILE_URL,
   getPresets,
   PRESETS_HISTORY_PBF_FILE,
+  PRESETS_HISTORY_META_JSON,
 } from "../config/index.js";
-import { ensureDir } from "fs-extra";
+import { ensureDir, remove } from "fs-extra";
 import * as path from "path";
 import { curlDownload } from "./helpers/curl-download.js";
+import { updatePresetsHistoryMetafile } from "./update-presets-history.js";
 
 // Local constants
 
@@ -27,6 +29,8 @@ const PRESET_HISTORY_PBF_TMP_FILE = path.join(
 export async function fetchFullHistory() {
   await ensureDir(TMP_DIR);
   await ensureDir(HISTORY_PBF_PATH);
+
+  await remove(FULL_HISTORY_TMP_FILE);
 
   // Download latest history file to local volume with curl
   await curlDownload(FULL_HISTORY_FILE_URL, FULL_HISTORY_TMP_FILE);
@@ -50,4 +54,8 @@ export async function fetchFullHistory() {
     PRESET_HISTORY_PBF_TMP_FILE,
     PRESETS_HISTORY_PBF_FILE,
   ]);
+
+  await remove(PRESETS_HISTORY_META_JSON);
+
+  await updatePresetsHistoryMetafile();
 }
