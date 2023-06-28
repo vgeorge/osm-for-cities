@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "A platform for distributing OpenStreetMap data presets for cities",
   "scripts": {
-    "cli": "node cli/index.js",
+    "cli": "TZ=UTC node cli/index.js",
     "lint": "eslint cli"
   },
   "author": "Vitor George <vitor.george@gmail.com>",
