@@ -52,10 +52,15 @@ export const GITEA_HOST_URL =
 
 /**
  * HISTORY PBF URL
+ *
+ * The sample was generate with the following commands:
+ *
+ * osmium time-filter -o ofc-sample.osh.pbf presets-history.osh.pbf 2015-05-01T00:00:00Z 2015-05-05T00:00:00Z
+ * osmium extract --bbox -77,-34,-28,9 -H ofc-sample.osh.pbf -o sao-paulo-2015-05-01-2015-05-05.osh.pbf
  */
 export const FULL_HISTORY_FILE_URL =
   NODE_ENV === "development"
-    ? "https://www.dropbox.com/s/j6c71o5jll8f067/brazil-history-2010-01.osh.pbf?dl=0"
+    ? "https://www.dropbox.com/s/piqs9gjsre1gg6b/sao-paulo-2015-05-01-2015-05-05.osh.pbf?dl=0"
     : "https://planet.osm.org/pbf/full-history/history-latest.osm.pbf";
 
 /**
