@@ -29,16 +29,19 @@ const CLI_DATA_DIR = path.join(
 
 /**
  * The default date for the start of the git history, which can be set via
- * environment variable. If not set, the default value depends on the
- * environment:
- *   - In development: The default value is set to "2010-01-01Z".
- *   - In production: The default value is set to 30 days from the current date.
+ * environment variable.
  */
 export const GIT_HISTORY_START_DATE =
   process.env.GIT_HISTORY_START_DATE ||
   (NODE_ENV === "development"
-    ? "2010-01-01Z"
+    ? "2015-02-25Z"
     : format(subDays(new Date(), 10), "yyyy-MM-dd") + "Z");
+
+export const GIT_HISTORY_END_DATE =
+  process.env.GIT_HISTORY_END_DATE ||
+  (NODE_ENV === "development"
+    ? "2015-03-05Z"
+    : format(new Date(), "yyyy-MM-dd") + "Z");
 
 /**
  * GITEA SERVER
@@ -100,3 +103,4 @@ export const PRESETS_HISTORY_PBF_FILE = path.join(
   HISTORY_PBF_PATH,
   "presets-history.osh.pbf"
 );
+export const PRESETS_HISTORY_META_JSON = `${PRESETS_HISTORY_PBF_FILE}.json`;
