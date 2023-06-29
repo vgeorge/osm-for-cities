@@ -47,6 +47,7 @@ runner:
     TMP_DIR: /home/runner/app/app-data/tmp
     GITEA_USER: runner
     GITEA_EMAIL: runner@osmforcities.org
+    GIT_HISTORY_START_DATE: "2022-01-01T23:59:59.999Z"
   efs:
     volumeHandle: fs-032240e3968a5fa76
   ## Setup
