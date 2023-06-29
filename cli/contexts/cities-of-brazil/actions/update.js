@@ -1,7 +1,15 @@
 import * as path from "path";
 import fs from "fs-extra";
 import cliProgress from "cli-progress";
-import { addDays, parseISO } from "date-fns";
+import {
+  addDays,
+  endOfDay,
+  isAfter,
+  isBefore,
+  parseISO,
+  startOfDay,
+  subDays,
+} from "date-fns";
 import simpleGit from "simple-git";
 import pLimit from "p-limit";
 import execa from "execa";
@@ -23,6 +31,7 @@ import {
   GIT_HISTORY_START_DATE,
   PRESETS_HISTORY_PBF_FILE,
   getPresets,
+  PRESETS_HISTORY_META_JSON,
 } from "../../../../config/index.js";
 
 // Context config
@@ -51,9 +60,26 @@ export const update = async (options) => {
   await fs.ensureDir(CURRENT_DAY_DIR);
 
   // Initialize current date pointer
-  let currentDay = parseISO(GIT_HISTORY_START_DATE);
+  let firstHistoryTimestamp;
+  let lastHistoryTimestamp;
+  let defaultStartDate = parseISO(GIT_HISTORY_START_DATE);
+  let lastDailyUpdate;
 
-  // Create git client
+  // Check the latest date available in the presets history file
+  if (!(await fs.pathExists(PRESETS_HISTORY_PBF_FILE))) {
+    throw new Error(
+      `Could not find presets history file, please run update-presets-history task.`
+    );
+  } else if (!(await fs.pathExists(PRESETS_HISTORY_META_JSON))) {
+    throw new Error(
+      `Could not find metadata for presets history file, please run update-presets-history task.`
+    );
+  }
+
+  const presetsHistoryMeta = await fs.readJson(PRESETS_HISTORY_META_JSON);
+  firstHistoryTimestamp = new Date(presetsHistoryMeta.elements.firstTimestamp);
+  lastHistoryTimestamp = new Date(presetsHistoryMeta.elements.lastTimestamp);
+
   const git = await simpleGit({ baseDir: CLI_GIT_DIR });
 
   // Reset local git directory
@@ -61,27 +87,40 @@ export const update = async (options) => {
   await git.raw("-c", "init.defaultbranch=main", "init");
   await git.addRemote("origin", `${GIT_REPOSITORY_URL}`);
 
-  // Get last commit from remote
+  // Get last daily update
   const remoteHeads = await git.listRemote(["--heads", "origin"]);
   if (remoteHeads?.indexOf("main") > -1) {
     await git.pull("origin", "main", "--depth=1");
+
+    lastDailyUpdate = parseISO(
+      (await fs.readJSON(path.join(CLI_GIT_DIR, "package.json")))
+        .lastDailyUpdate
+    );
+  } else {
+    // If not commits are available, set the last day update to the day before
+    // the default start date
+    lastDailyUpdate = endOfDay(subDays(defaultStartDate, 1));
   }
 
-  // Get last commit date
-  try {
-    const lastCommitTimestamp = await git.show(["-s", "--format=%ci"]);
+  // Set current daily update to the next after the last daily update
+  let currentDailyUpdate = addDays(lastDailyUpdate, 1);
 
-    // Convert ISO string to date
-    currentDay = new Date(lastCommitTimestamp);
-
-    // Increment pointer
-    currentDay = addDays(currentDay, 1);
-  } catch (error) {
-    logger(`Could not find last commit date, using ${GIT_HISTORY_START_DATE}.`);
+  if (isBefore(currentDailyUpdate, startOfDay(firstHistoryTimestamp))) {
+    // If the repository was updated before the first history timestamp, use
+    // the first history timestamp as start date
+    currentDailyUpdate = endOfDay(firstHistoryTimestamp);
+  } else if (isAfter(currentDailyUpdate, endOfDay(lastHistoryTimestamp))) {
+    logger(
+      `The history file doesn't include ${currentDailyUpdate.toISOString()}, nothing to update.`
+    );
+    return;
   }
 
   // Get current day timestamp
-  const currentDayISO = currentDay.toISOString().replace(".000Z", "Z");
+  const currentDayISO = currentDailyUpdate
+    .toISOString()
+    .slice(0, 19)
+    .concat("Z");
 
   // Extract OSM data from history file at the current date
   logger(`Filtering: ${currentDayISO}`);
@@ -300,9 +339,15 @@ export const update = async (options) => {
 
   geojsonProgressBar.stop();
 
-  await fs.writeJSON(path.join(CLI_GIT_DIR, "package.json"), {
-    updatedAt: currentDay,
-  });
+  await fs.writeJSON(
+    path.join(CLI_GIT_DIR, "package.json"),
+    {
+      firstHistoryTimestamp,
+      lastHistoryTimestamp,
+      lastDailyUpdate: currentDayISO,
+    },
+    { spaces: 2 }
+  );
 
   // Commit
   await git.add(".");
@@ -313,7 +358,7 @@ export const update = async (options) => {
     .env({
       GIT_COMMITTER_DATE: currentDayISO,
     })
-    .commit(`Status of ${currentDayISO}`);
+    .commit(`${currentDayISO}`);
 
   await git.push("origin", "main", { "--set-upstream": null });
 

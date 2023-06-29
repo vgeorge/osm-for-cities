@@ -3,6 +3,7 @@ import GiteaClient from "../../../helpers/gitea-client.js";
 
 // Context config
 import { GIT_ORGANIZATION, GIT_REPOSITORY_NAME } from "../config.js";
+import { initRemoteGit } from "./setup.js";
 
 // Create Gitea client
 const giteaClient = new GiteaClient();
@@ -16,7 +17,8 @@ export const resetRemoteGit = async () => {
 
     switch (status) {
       case 204:
-        logger(`Remote git repository was deleted.`);
+        await initRemoteGit();
+        logger(`Remote git repository was reset.`);
         break;
 
       case 404:
