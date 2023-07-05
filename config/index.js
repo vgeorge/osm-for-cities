@@ -12,6 +12,14 @@ const basePath = path.resolve();
 export const CLI_APP_DIR = path.join(basePath, "cli");
 
 /**
+ * LOGS DIRECTORY
+ */
+export const LOGS_DIR = path.join(
+  process.env.LOGS_DIR || path.join(basePath, "app-data", "logs"),
+  NODE_ENV
+);
+
+/**
  * Path to the data directory used by the CLI to store data
  * (e.g. downloaded files, local git repository, etc)
  *
