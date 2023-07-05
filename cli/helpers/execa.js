@@ -1,13 +1,26 @@
 import execa from "execa";
+import { theLogger } from "./logger.js";
 
-/**
- * Wrapper function to log execa process to stdout
- * */
-export async function execaToStdout(cmd, args, options) {
+export async function execaToStdout(cmd, args) {
   const execProcess = execa(cmd, args);
-  if (!options || !options.silent) {
-    execProcess.stdout.pipe(process.stdout);
-    execProcess.stderr.pipe(process.stdout);
-  }
+
+  execProcess.stdout.on("data", (data) => {
+    const lines = data.toString().split("\n");
+    lines.forEach((line) => {
+      if (line.length > 0) {
+        theLogger.info(line);
+      }
+    });
+  });
+
+  execProcess.stderr.on("data", (data) => {
+    const lines = data.toString().split("\n");
+    lines.forEach((line) => {
+      if (line.length > 0) {
+        theLogger.error(line);
+      }
+    });
+  });
+
   return execProcess;
 }
