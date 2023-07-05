@@ -1,7 +1,7 @@
 import "dotenv/config";
 import fs from "fs-extra";
 import { program } from "commander";
-import logger from "./helpers/logger.js";
+import { logger } from "./helpers/logger.js";
 import { fetchFullHistory } from "./fetch-full-history.js";
 import { updatePresetsHistory } from "./update-presets-history.js";
 
@@ -87,7 +87,7 @@ program
 
 // Handle errors
 process.on("unhandledRejection", function (error) {
-  logger(error);
+  logger.error(error);
 });
 
 // Parse the arguments

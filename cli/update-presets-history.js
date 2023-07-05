@@ -7,7 +7,7 @@ import {
   parseISO,
   subDays,
 } from "date-fns";
-import logger, { time, timeEnd } from "./helpers/logger.js";
+import { logger, time, timeEnd } from "./helpers/logger.js";
 import {
   PRESETS_HISTORY_META_JSON,
   PRESETS_HISTORY_PBF_FILE,
@@ -23,7 +23,7 @@ const TMP_HISTORY_DIR = path.join(TMP_DIR, "history");
 const fistDailyChangefileTimestamp = parseISO("2012-09-12T23:59:59.999Z");
 
 export async function updatePresetsHistoryMetafile(extraMeta = {}) {
-  logger("Updating history file timestamp in meta JSON file...");
+  logger.info("Updating history file timestamp in meta JSON file...");
 
   let historyMeta = {};
 
@@ -95,13 +95,13 @@ export async function updatePresetsHistory(options) {
     );
 
     if (historyFileAgeInDays <= 1) {
-      logger("History file is updated.");
+      logger.info("History file is updated.");
       return;
     }
 
     // Check if history file is older than the fist daily changefile
     if (lastDailyUpdate.getTime() < fistDailyChangefileTimestamp.getTime()) {
-      logger(
+      logger.info(
         `History file is older than ${fistDailyChangefileTimestamp.toISOString()}, applying the first daily diff available.`
       );
 
@@ -123,7 +123,7 @@ export async function updatePresetsHistory(options) {
       `${nextDayChangeFileNumber}.osc.gz`
     );
 
-    logger(`Downloading day changefile ${nextDayChangeFileNumber}...`);
+    logger.info(`Downloading day changefile ${nextDayChangeFileNumber}...`);
 
     // Download daily changefile
     try {
@@ -140,7 +140,7 @@ export async function updatePresetsHistory(options) {
       );
       timeEnd("Duration of daily changefile download");
     } catch (error) {
-      logger("Changefile is not available.");
+      logger.info("Changefile is not available.");
       return;
     }
 
@@ -149,7 +149,7 @@ export async function updatePresetsHistory(options) {
       "presets-history.osh.pbf"
     );
 
-    logger(`Applying changes...`);
+    logger.info(`Applying changes...`);
     time("Duration of daily change apply operation");
     await execa("osmium", [
       "apply-changes",
@@ -160,23 +160,23 @@ export async function updatePresetsHistory(options) {
     ]);
     timeEnd("Duration of daily change apply operation");
 
-    logger(`Replacing current file...`);
+    logger.info(`Replacing current file...`);
     await fs.move(UPDATED_PRESETS_HISTORY_FILE, PRESETS_HISTORY_PBF_FILE, {
       overwrite: true,
     });
 
     await updatePresetsHistoryMetafile();
-    logger(`Finished!`);
+    logger.info(`Finished!`);
 
     await fs.remove(dailyChangeFile);
 
     timeEnd("Daily update total duration");
 
     if (options && options.recursive) {
-      logger("Replicating history file...");
+      logger.info("Replicating history file...");
       await updatePresetsHistory(options);
     }
   } catch (error) {
-    logger(error);
+    logger.error(error);
   }
 }

@@ -15,7 +15,7 @@ import pLimit from "p-limit";
 import execa from "execa";
 
 // Helpers
-import logger from "../../../helpers/logger.js";
+import { logger } from "../../../helpers/logger.js";
 import {
   extractPoly,
   tagsFilter,
@@ -110,7 +110,7 @@ export const update = async (options) => {
     // the first history timestamp as start date
     currentDailyUpdate = endOfDay(firstHistoryTimestamp);
   } else if (isAfter(currentDailyUpdate, endOfDay(lastHistoryTimestamp))) {
-    logger(
+    logger.info(
       `The history file doesn't include ${currentDailyUpdate.toISOString()}, nothing to update.`
     );
     return;
@@ -123,15 +123,15 @@ export const update = async (options) => {
     .concat("Z");
 
   // Extract OSM data from history file at the current date
-  logger(`Filtering: ${currentDayISO}`);
+  logger.info(`Filtering: ${currentDayISO}`);
   await timeFilter(PRESETS_HISTORY_PBF_FILE, currentDayISO, CURRENT_DAY_FILE);
 
   if (await pbfIsEmpty(CURRENT_DAY_FILE)) {
-    logger(`No data found, skipping ${currentDayISO}`);
+    logger.info(`No data found, skipping ${currentDayISO}`);
     return;
   }
 
-  logger(`Extracting country from current day file...`);
+  logger.info(`Extracting country from current day file...`);
   await extractPoly(
     path.join(POLYFILES_LEVEL_0_DIR, "brazil.poly"),
     CURRENT_DAY_FILE,
@@ -139,7 +139,7 @@ export const update = async (options) => {
   );
 
   // Extract level 1 data
-  logger(`Extracting level 1 data...`);
+  logger.info(`Extracting level 1 data...`);
   await fs.remove(CURRENT_DAY_LEVEL_1_DIR);
   await fs.ensureDir(CURRENT_DAY_LEVEL_1_DIR);
 
@@ -150,7 +150,7 @@ export const update = async (options) => {
   for (let i = 0; i < level1Polyfiles.length; i++) {
     const polyfileName = level1Polyfiles[i];
     const level1AreaId = polyfileName.split(".")[0];
-    logger(`Extracting level 1 area with id: ${level1AreaId}...`);
+    logger.info(`Extracting level 1 area with id: ${level1AreaId}...`);
     await extractPoly(
       path.join(POLYFILES_LEVEL_1_DIR, polyfileName),
       CURRENT_DAY_COUNTRY_FILE,
@@ -159,7 +159,7 @@ export const update = async (options) => {
   }
 
   // Extract level 2 data
-  logger(`Extracting level 2 data...`);
+  logger.info(`Extracting level 2 data...`);
   await fs.remove(CURRENT_DAY_LEVEL_2_DIR);
   await fs.ensureDir(CURRENT_DAY_LEVEL_2_DIR);
 
@@ -184,10 +184,10 @@ export const update = async (options) => {
 
     if (await pbfIsEmpty(level1FilePath)) {
       // Bypass if file is empty
-      logger(`No data found for level 1 area with id: ${level1AreaId}`);
+      logger.verbose(`No data found for level 1 area with id: ${level1AreaId}`);
     } else {
       // Extract level 2 area
-      logger(`Extracting level 2 area with id: ${level2AreaId}...`);
+      logger.verbose(`Extracting level 2 area with id: ${level2AreaId}...`);
       await extractPoly(
         path.join(POLYFILES_LEVEL_2_DIR, polyfileName),
         level1FilePath,
@@ -197,7 +197,7 @@ export const update = async (options) => {
   }
 
   // Extract level 3 data
-  logger(`Extracting level 3 data...`);
+  logger.info(`Extracting level 3 data...`);
   await fs.remove(CURRENT_DAY_LEVEL_3_DIR);
   await fs.ensureDir(CURRENT_DAY_LEVEL_3_DIR);
 
@@ -232,9 +232,9 @@ export const update = async (options) => {
       (await pbfIsEmpty(level2FilePath))
     ) {
       // Bypass if file is empty
-      logger(`No data found for level 2 area with id: ${level2AreaId}`);
+      logger.verbose(`No data found for level 2 area with id: ${level2AreaId}`);
     } else {
-      logger(`Extracting level 3 area with id: ${level3AreaId}...`);
+      logger.verbose(`Extracting level 3 area with id: ${level3AreaId}...`);
       await extractPoly(
         path.join(POLYFILES_LEVEL_3_DIR, polyfileName),
         level2FilePath,
@@ -243,7 +243,7 @@ export const update = async (options) => {
     }
   }
 
-  logger(`Updating GeoJSON files...`);
+  logger.info(`Updating GeoJSON files...`);
   // Clear OSM datasets
   await fs.emptyDir(CURRENT_DAY_PRESETS_DIR);
 

@@ -1,5 +1,5 @@
 import execa from "execa";
-import { theLogger } from "./logger.js";
+import { logger } from "./logger.js";
 
 export async function execaToStdout(cmd, args) {
   const execProcess = execa(cmd, args);
@@ -8,7 +8,7 @@ export async function execaToStdout(cmd, args) {
     const lines = data.toString().split("\n");
     lines.forEach((line) => {
       if (line.length > 0) {
-        theLogger.info(line);
+        logger.info(line);
       }
     });
   });
@@ -17,7 +17,7 @@ export async function execaToStdout(cmd, args) {
     const lines = data.toString().split("\n");
     lines.forEach((line) => {
       if (line.length > 0) {
-        theLogger.error(line);
+        logger.error(line);
       }
     });
   });

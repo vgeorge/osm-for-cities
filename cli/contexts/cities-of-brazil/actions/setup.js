@@ -3,7 +3,7 @@ import fs from "fs-extra";
 import { ensureDir } from "fs-extra";
 
 // Helpers
-import logger from "../../../helpers/logger.js";
+import { logger } from "../../../helpers/logger.js";
 import { curlDownload } from "../../../helpers/curl-download.js";
 import { unzip } from "../../../helpers/unzip.js";
 import GiteaClient from "../../../helpers/gitea-client.js";
@@ -40,10 +40,12 @@ export async function initRemoteGit() {
         throw "Could not create repository.";
       }
     } else {
-      logger(`Repository '${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}' exists.`);
+      logger.info(
+        `Repository '${GIT_ORGANIZATION}/${GIT_REPOSITORY_NAME}' exists.`
+      );
     }
   } catch (error) {
-    logger(error);
+    logger.error(error);
     return;
   }
 }
@@ -70,10 +72,10 @@ export const setup = async () => {
         throw "Could not create organization.";
       }
     } else {
-      logger(`Organization '${GIT_ORGANIZATION}' exists.`);
+      logger.info(`Organization '${GIT_ORGANIZATION}' exists.`);
     }
   } catch (error) {
-    logger(error);
+    logger.error(error);
     return;
   }
 
@@ -86,7 +88,7 @@ export const setup = async () => {
     await curlDownload(POLYFILES_URL, POLYFILES_TMP_FILE);
     await unzip(POLYFILES_TMP_FILE, POLYFILES_DIR);
   } catch (error) {
-    logger("Could not download boundary polygons.");
+    logger.error("Could not download boundary polygons.");
     return;
   }
 };
