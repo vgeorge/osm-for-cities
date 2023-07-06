@@ -2,12 +2,7 @@ import winston from "winston";
 import "winston-daily-rotate-file";
 import { LOGS_DIR } from "../../config/index.js";
 
-const { combine, timestamp, printf, simple } = winston.format;
-
-const logFormat = combine(
-  timestamp(),
-  printf(({ level, message, timestamp }) => `${timestamp} ${level}: ${message}`)
-);
+const { printf, simple } = winston.format;
 
 export const logger = winston.createLogger({
   transports: [
@@ -18,7 +13,10 @@ export const logger = winston.createLogger({
       maxSize: "20m",
       maxFiles: "14d",
       dirname: LOGS_DIR,
-      format: logFormat,
+      format: printf(
+        ({ level, message }) =>
+          `${new Date().toISOString()} [${level}] ${message}`
+      ),
     }),
     new winston.transports.DailyRotateFile({
       filename: "error-%DATE%.log",
@@ -28,7 +26,7 @@ export const logger = winston.createLogger({
       maxSize: "20m",
       maxFiles: "14d",
       dirname: LOGS_DIR,
-      format: logFormat,
+      format: printf(({ message }) => `${new Date().toISOString()} ${message}`),
     }),
     new winston.transports.Console({
       format: simple(),
