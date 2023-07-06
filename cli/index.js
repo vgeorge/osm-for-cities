@@ -87,7 +87,7 @@ program
 
 // Handle errors
 process.on("unhandledRejection", function (error) {
-  logger.error(error);
+  logger.error(JSON.stringify(error, null, 2));
 });
 
 // Parse the arguments
