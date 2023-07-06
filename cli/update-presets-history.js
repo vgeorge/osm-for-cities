@@ -13,7 +13,7 @@ import {
   PRESETS_HISTORY_PBF_FILE,
   TMP_DIR,
 } from "../config/index.js";
-import { execaToStdout } from "./helpers/execa.js";
+import exec from "./helpers/exec.js";
 import { curlDownload } from "./helpers/curl-download.js";
 import execa from "execa";
 
@@ -35,7 +35,7 @@ export async function updatePresetsHistoryMetafile(extraMeta = {}) {
   time("Duration of timestamp update");
 
   // Extract metadata from history file
-  const { stdout: firstTimestamp } = await execaToStdout("osmium", [
+  const { stdout: firstTimestamp } = await exec("osmium", [
     "fileinfo",
     "-e",
     "-g",
@@ -43,7 +43,7 @@ export async function updatePresetsHistoryMetafile(extraMeta = {}) {
     PRESETS_HISTORY_PBF_FILE,
   ]);
 
-  const { stdout: lastTimestamp } = await execaToStdout("osmium", [
+  const { stdout: lastTimestamp } = await exec("osmium", [
     "fileinfo",
     "-e",
     "-g",
