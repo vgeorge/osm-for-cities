@@ -85,9 +85,22 @@ program
     await context.default(options);
   });
 
-// Handle errors
+/**
+ * Handle unhandled rejections
+ */
 process.on("unhandledRejection", function (error) {
-  logger.error(JSON.stringify(error, null, 2));
+  // Convert error to object, copying its properties
+  const errorOutput = {
+    ...error,
+  };
+
+  // If error is an instance of Error, add stack and name to output
+  if (error instanceof Error) {
+    errorOutput.stack = error.stack;
+    errorOutput.name = error.name;
+  }
+
+  logger.error(JSON.stringify(errorOutput, null, 2));
 });
 
 // Parse the arguments
