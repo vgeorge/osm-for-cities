@@ -22,7 +22,6 @@ import {
   timeFilter,
 } from "../../../helpers/osmium.js";
 import pbfIsEmpty from "../../../helpers/pbf-is-empty.js";
-import { getCities } from "../helpers.js";
 
 // CLI config
 import {
@@ -50,11 +49,47 @@ import {
   POLYFILES_LEVEL_2_DIR,
   POLYFILES_LEVEL_3_DIR,
 } from "../config.js";
+import db from "../../../helpers/db.js";
+import getCities from "../../../helpers/get-cities.js";
 
 // Set concurrency limit
 const limit = pLimit(20);
 
+class ProcessDurationLogs {
+  constructor() {
+    this.entries = {};
+  }
+
+  start(name, meta) {
+    this.entries[name] = {
+      name,
+      start: new Date(),
+      ...meta,
+    };
+  }
+
+  end(name) {
+    this.entries[name].end = new Date();
+    this.entries[name].duration =
+      this.entries[name].end - this.entries[name].start;
+  }
+
+  async flush() {
+    const entries = Object.values(this.entries).map((entry) => ({
+      meta: entry,
+    }));
+    await db("process_duration_logs").insert(entries);
+    this.entries = {};
+  }
+}
+
 export const update = async (options) => {
+  const processDurationLogs = new ProcessDurationLogs();
+
+  // Get list of cities
+  const cities = await getCities();
+  return;
+
   // Init repository path, if it doesn't exist
   await fs.ensureDir(CLI_GIT_DIR);
   await fs.ensureDir(CURRENT_DAY_DIR);
@@ -204,8 +239,6 @@ export const update = async (options) => {
   // Get list of polyfiles at level 3
   const level3Polyfiles = await fs.readdir(POLYFILES_LEVEL_3_DIR);
 
-  // Map level 3 areas to level 2 areas
-  const cities = await getCities();
   const level3ToLevel2 = cities.reduce((acc, city) => {
     acc[city.municipio] = city.microregion;
     return acc;

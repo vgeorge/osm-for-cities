@@ -10,7 +10,7 @@ import {
   TMP_DIR,
 } from "../../../config/index.js";
 
-const CONTEXT_NAME = "cities-of-brazil";
+export const CONTEXT_NAME = "cities-of-brazil";
 
 // Target organization and repository
 export const GIT_ORGANIZATION = "cities-of";

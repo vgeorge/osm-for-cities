@@ -23,6 +23,18 @@ services:
       - "127.0.0.1:2222:22"
     env_file:
       - ./.env
+  db:
+    container_name: db
+    image: postgis/postgis:14-3.3-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: osm_for_cities
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./app-data/postgresql:/var/lib/postgresql/data
   runner_setup:
     image: developmentseed/osm-for-cities-runner:v1
     build:
