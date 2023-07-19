@@ -1,18 +1,72 @@
 import fs, { ensureDir } from "fs-extra";
-// import { HISTORY_PBF_PATH, latestHistoryFilePath } from "../../config/index.js";
 import * as path from "path";
-import { addDays, differenceInCalendarDays, parseISO, subDays } from "date-fns";
-import logger, { time, timeEnd } from "./helpers/logger.js";
-import { PRESETS_HISTORY_PBF_FILE, TMP_DIR } from "../config/index.js";
-import { execaToStdout } from "./helpers/execa.js";
+import {
+  addDays,
+  differenceInCalendarDays,
+  endOfDay,
+  parseISO,
+  subDays,
+} from "date-fns";
+import { logger, time, timeEnd } from "./helpers/logger.js";
+import {
+  PRESETS_HISTORY_META_JSON,
+  PRESETS_HISTORY_PBF_FILE,
+  TMP_DIR,
+} from "../config/index.js";
+import exec from "./helpers/exec.js";
 import { curlDownload } from "./helpers/curl-download.js";
 import execa from "execa";
 
-const PRESETS_HISTORY_META_JSON = `${PRESETS_HISTORY_PBF_FILE}.json`;
-
 const TMP_HISTORY_DIR = path.join(TMP_DIR, "history");
 
-const fistDailyChangefileTimestamp = parseISO("2012-09-13T00:00:00Z");
+// This is the date of first daily changefile available on OpenStreetMap
+const fistDailyChangefileTimestamp = parseISO("2012-09-12T23:59:59.999Z");
+
+export async function updatePresetsHistoryMetafile(extraMeta = {}) {
+  logger.info("Updating history file timestamp in meta JSON file...");
+
+  let historyMeta = {};
+
+  // Load meta JSON file if it exists
+  if (await fs.pathExists(PRESETS_HISTORY_META_JSON)) {
+    historyMeta = await fs.readJson(PRESETS_HISTORY_META_JSON);
+  }
+
+  time("Duration of timestamp update");
+
+  // Extract metadata from history file
+  const { stdout: firstTimestamp } = await exec("osmium", [
+    "fileinfo",
+    "-e",
+    "-g",
+    "data.timestamp.first",
+    PRESETS_HISTORY_PBF_FILE,
+  ]);
+
+  const { stdout: lastTimestamp } = await exec("osmium", [
+    "fileinfo",
+    "-e",
+    "-g",
+    "data.timestamp.last",
+    PRESETS_HISTORY_PBF_FILE,
+  ]);
+
+  // Write timestamp to meta JSON file
+  await fs.writeJSON(
+    PRESETS_HISTORY_META_JSON,
+    {
+      ...historyMeta,
+      elements: {
+        firstTimestamp,
+        lastTimestamp,
+      },
+      ...extraMeta,
+    },
+    { spaces: 2 }
+  );
+
+  timeEnd("Duration of timestamp update");
+}
 
 export async function updatePresetsHistory(options) {
   try {
@@ -26,83 +80,67 @@ export async function updatePresetsHistory(options) {
 
     // Get timestamp from history file and update meta
     if (!(await fs.pathExists(PRESETS_HISTORY_META_JSON))) {
-      logger("Updating history file timestamp in meta JSON file...");
-
-      time("Duration of timestamp update");
-
-      // Extract metadata from history file
-      const { stdout } = await execaToStdout("osmium", [
-        "fileinfo",
-        "-e",
-        "-g",
-        "data.timestamp.last",
-        PRESETS_HISTORY_PBF_FILE,
-      ]);
-
-      // Write timestamp to meta JSON file
-      await fs.writeJSON(PRESETS_HISTORY_META_JSON, {
-        timestamp: parseISO(stdout),
-      });
-      timeEnd("Duration of timestamp update");
+      await updatePresetsHistoryMetafile();
     }
 
     const historyFileMeta = await fs.readJSON(PRESETS_HISTORY_META_JSON);
-    let historyFileTimestamp = parseISO(historyFileMeta.timestamp);
+
+    let lastDailyUpdate = endOfDay(
+      parseISO(`${historyFileMeta.elements.lastTimestamp.slice(0, 10)}Z`)
+    );
 
     const historyFileAgeInDays = differenceInCalendarDays(
       Date.now(),
-      historyFileTimestamp
+      lastDailyUpdate
     );
 
-    if (historyFileAgeInDays < 1) {
-      logger("History file is updated.");
+    if (historyFileAgeInDays <= 1) {
+      logger.info("History file is updated.");
       return;
     }
 
     // Check if history file is older than the fist daily changefile
-    if (
-      historyFileTimestamp.getTime() < fistDailyChangefileTimestamp.getTime()
-    ) {
-      logger(
+    if (lastDailyUpdate.getTime() < fistDailyChangefileTimestamp.getTime()) {
+      logger.info(
         `History file is older than ${fistDailyChangefileTimestamp.toISOString()}, applying the first daily diff available.`
       );
 
       // Pretend the history file timestamp is from the day before the fist daily changefile
-      historyFileTimestamp = subDays(fistDailyChangefileTimestamp, 1);
+      lastDailyUpdate = subDays(fistDailyChangefileTimestamp, 1);
     }
 
+    const nextDay = addDays(lastDailyUpdate, 1);
+
     // Calculate next day sequence number from current timestamp
-    const nextDaySequenceNumber = (
-      differenceInCalendarDays(
-        historyFileTimestamp,
-        fistDailyChangefileTimestamp
-      ) + 2
+    const nextDayChangeFileNumber = (
+      differenceInCalendarDays(nextDay, fistDailyChangefileTimestamp) + 1
     )
       .toString()
       .padStart(9, "0");
 
     const dailyChangeFile = path.join(
       TMP_HISTORY_DIR,
-      `${nextDaySequenceNumber}.osc.gz`
+      `${nextDayChangeFileNumber}.osc.gz`
     );
 
-    logger(`Downloading day changefile ${nextDaySequenceNumber}...`);
+    logger.info(`Downloading day changefile ${nextDayChangeFileNumber}...`);
 
     // Download daily changefile
     try {
       time("Duration of daily changefile download");
       await curlDownload(
-        `https://planet.osm.org/replication/day/${nextDaySequenceNumber.slice(
+        `https://planet.osm.org/replication/day/${nextDayChangeFileNumber.slice(
           0,
           3
-        )}/${nextDaySequenceNumber.slice(3, 6)}/${nextDaySequenceNumber.slice(
+        )}/${nextDayChangeFileNumber.slice(
+          3,
           6
-        )}.osc.gz`,
+        )}/${nextDayChangeFileNumber.slice(6)}.osc.gz`,
         dailyChangeFile
       );
       timeEnd("Duration of daily changefile download");
     } catch (error) {
-      logger("Changefile is not available.");
+      logger.info("Changefile is not available.");
       return;
     }
 
@@ -111,7 +149,7 @@ export async function updatePresetsHistory(options) {
       "presets-history.osh.pbf"
     );
 
-    logger(`Applying changes...`);
+    logger.info(`Applying changes...`);
     time("Duration of daily change apply operation");
     await execa("osmium", [
       "apply-changes",
@@ -122,26 +160,23 @@ export async function updatePresetsHistory(options) {
     ]);
     timeEnd("Duration of daily change apply operation");
 
-    logger(`Replacing current file...`);
+    logger.info(`Replacing current file...`);
     await fs.move(UPDATED_PRESETS_HISTORY_FILE, PRESETS_HISTORY_PBF_FILE, {
       overwrite: true,
     });
 
-    // Write timestamp to meta JSON file
-    await fs.writeJSON(PRESETS_HISTORY_META_JSON, {
-      timestamp: addDays(historyFileTimestamp, 1).toISOString(),
-    });
-    logger(`Finished!`);
+    await updatePresetsHistoryMetafile();
+    logger.info(`Finished!`);
 
     await fs.remove(dailyChangeFile);
 
     timeEnd("Daily update total duration");
 
     if (options && options.recursive) {
-      logger("Replicating history file...");
+      logger.info("Replicating history file...");
       await updatePresetsHistory(options);
     }
   } catch (error) {
-    logger(error);
+    logger.error(error);
   }
 }
