@@ -57,7 +57,7 @@ runner:
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
-      label_value: data_processing
+      label_value: job
   ## Update
   update:
     enabled: true
@@ -66,4 +66,4 @@ runner:
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
-      label_value: data_processing
+      label_value: job
