@@ -66,4 +66,4 @@ runner:
     nodeSelector:
       enabled: true
       label_key: nodegroup_type
-      label_value: job
+      label_value: job_spot
