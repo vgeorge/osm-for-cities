@@ -1,7 +1,0 @@
-1. Get the application URL by running these commands:
-
-export GITEA_HOST_URL=$(kubectl get ingress {{ .Release.Name }}-ofc-gitea-ingress --namespace {{ .Release.Namespace }} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-echo http://$GITEA_HOST_URL
-
-2. Cron jobs
-kubectl get cronjob
